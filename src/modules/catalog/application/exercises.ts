@@ -2,7 +2,7 @@ import "server-only";
 
 import { and, eq, inArray, isNull, or } from "drizzle-orm";
 
-import { getDb } from "@/platform/db/client";
+import { getDb, type Database } from "@/platform/db/client";
 import type { TenantContext } from "@/shared/db/tenant";
 
 import { exerciseMuscleGroups, exercises, muscleGroups } from "../infrastructure/schema";
@@ -69,4 +69,25 @@ export async function getExercisesByIds(
     }
 
     return result;
+}
+
+export type GlobalExerciseRef = { readonly id: string; readonly incrementKg: number };
+
+/** Global exercises by slug (the keys of the seeded catalog). Pass `db` inside a transaction. */
+export async function getGlobalExercisesBySlug(
+    context: TenantContext,
+    slugs: readonly string[],
+    db?: Database,
+): Promise<Map<string, GlobalExerciseRef>> {
+    const rows = await (db ?? (await getDb()))
+        .select({
+            id: exercises.id,
+            slug: exercises.slug,
+            incrementKg: exercises.defaultIncrementKg,
+        })
+        .from(exercises)
+        .where(and(inArray(exercises.slug, [...slugs]), isNull(exercises.workspaceId)));
+    return new Map(
+        rows.map((row) => [String(row.slug), { id: row.id, incrementKg: Number(row.incrementKg) }]),
+    );
 }

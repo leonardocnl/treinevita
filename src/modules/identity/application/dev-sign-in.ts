@@ -10,7 +10,7 @@ import { createSession, findUserIdByEmail } from "./sessions";
  * PGlite database; everywhere else it reports itself as unavailable.
  */
 export function isDevSignInAvailable(): boolean {
-    if (process.env.NODE_ENV !== "development") {
+    if (process.env.NODE_ENV !== "development" || process.env.VERCEL !== undefined) {
         return false;
     }
     try {

@@ -9,6 +9,8 @@ import { PillActionContent, pillActionClass } from "../_components/primary-actio
 export const metadata: Metadata = { title: "Entrar · VITA" };
 
 const errors: Record<string, string> = {
+    acesso: "Essa conta não tem acesso ao VITA.",
+    google: "Não deu para entrar. Tente de novo.",
     banco: "O banco local está vazio. Rode npm run db:local:reset e tente de novo.",
     indisponivel: "Esse atalho só existe em desenvolvimento, com o banco local.",
 };
@@ -42,21 +44,23 @@ export default async function SignInPage({
                     </p>
                 ) : null}
 
-                {devAvailable ? (
-                    <form action={devSignInAction}>
-                        <button type="submit" className={pillActionClass}>
-                            <PillActionContent icon={<ArrowRightIcon size={20} />}>
-                                Entrar como Leonardo
-                            </PillActionContent>
-                        </button>
-                    </form>
-                ) : (
-                    <button type="button" disabled className={pillActionClass}>
+                <div className="flex flex-col gap-3">
+                    {/* A plain link, not <Link>: prefetching would start the OAuth flow. */}
+                    <a href="/api/auth/google" className={pillActionClass}>
                         <PillActionContent icon={<ArrowRightIcon size={20} />}>
                             Entrar com Google
                         </PillActionContent>
-                    </button>
-                )}
+                    </a>
+                    {devAvailable ? (
+                        <form action={devSignInAction}>
+                            <button type="submit" className={pillActionClass}>
+                                <PillActionContent icon={<ArrowRightIcon size={20} />}>
+                                    Entrar como Leonardo
+                                </PillActionContent>
+                            </button>
+                        </form>
+                    ) : null}
+                </div>
             </div>
         </main>
     );
