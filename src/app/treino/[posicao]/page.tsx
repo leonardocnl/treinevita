@@ -36,16 +36,16 @@ export default async function ExercisePage({ params }: { params: Promise<{ posic
         `https://www.youtube.com/results?search_query=${encodeURIComponent(`${exercise.name} execução`)}`;
 
     return (
-        <main className="px-4 pb-48 pt-[max(env(safe-area-inset-top),52px)] md:px-0 md:pb-16 md:pt-14">
+        <main className="px-4 pb-36 pt-[max(env(safe-area-inset-top),52px)] md:px-0 md:pb-16 md:pt-16">
             <div className="flex items-center justify-between">
                 <Link
                     href="/treino"
                     aria-label="Voltar à lista de exercícios"
-                    className="glass pressable flex size-11 items-center justify-center rounded-full md:invisible"
+                    className="glass-light pressable flex size-11 items-center justify-center rounded-full md:invisible"
                 >
-                    <ChevronLeftIcon size={22} />
+                    <ChevronLeftIcon size={20} strokeWidth={1.8} />
                 </Link>
-                <span className="text-[15px] text-ink-secondary">
+                <span className="text-[15px] font-normal">
                     {position} de {workout.exercises.length}
                 </span>
                 <a
@@ -53,20 +53,18 @@ export default async function ExercisePage({ params }: { params: Promise<{ posic
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="Ver execução do exercício"
-                    className="glass pressable flex size-11 items-center justify-center rounded-full"
+                    className="glass-light pressable flex size-11 items-center justify-center rounded-full"
                 >
-                    <PlayIcon size={18} />
+                    <PlayIcon size={15} />
                 </a>
             </div>
 
-            <header className="mt-5 flex flex-col gap-1.5 px-2">
-                <h1 className="numeric text-[32px] font-extrabold leading-[1.08]">
-                    {exercise.name}
-                </h1>
+            <header className="mt-6 flex flex-col gap-2 px-2">
+                <h1 className="text-[32px] font-light leading-[1.1]">{exercise.name}</h1>
                 <p className="text-[15px] text-ink-secondary">{prescriptionText(exercise)}</p>
             </header>
 
-            <div className="mt-5" key={exercise.performedExerciseId}>
+            <div className="mt-6" key={exercise.performedExerciseId}>
                 <SetLogger
                     performedExerciseId={exercise.performedExerciseId}
                     measurement={exercise.measurement}

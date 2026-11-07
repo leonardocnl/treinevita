@@ -1,88 +1,120 @@
 @import "tailwindcss";
 
 /*
- * VITA design tokens.
- * Color rule 60/30/10: light = white 60, black 30, red 10; dark swaps white and black.
+ * VITA design tokens — "Ponto e linha" (see docs/design/DESIGN.md).
+ * Color rule 60/30/10: light = paper 60, ink 30, red 10; dark swaps paper and ink.
  */
 :root {
+    --vita-canvas: #f4f2f1;
     --vita-paper: #fcf8f7;
     --vita-ink: #0b0b0d;
+    --vita-ink-secondary: #5b5b60;
+    --vita-hairline: #dedad9;
+    --vita-dot-off: #d6d2d1;
+
     --vita-red: #ff1744;
     --vita-red-text: #c8102e;
 
-    --vita-canvas: #ede8e6;
-    --vita-ink-secondary: #6b6b70;
-    --vita-track: #d9d2d0;
-    --vita-on-ink-secondary: #a1a1a6;
-    --vita-ink-track: #2c2c2e;
-
-    --vita-glass: rgb(252 248 247 / 0.6);
-    --vita-glass-highlight: rgb(255 255 255 / 0.95);
-    --vita-glass-shadow: rgb(11 11 13 / 0.07);
-
-    --vita-radius-surface: 32px;
-    --vita-radius-widget: 28px;
-    --vita-radius-control: 24px;
+    /* dark surfaces (panel, smoke glass) keep the same values in both themes */
+    --vita-panel: #0b0b0d;
+    --vita-on-panel: #fcf8f7;
+    --vita-on-panel-secondary: #9a9a9f;
+    --vita-on-panel-dim: #6e6e73;
+    --vita-panel-track: #3a3a3f;
 }
 
 @media (prefers-color-scheme: dark) {
     :root {
-        --vita-paper: #0b0b0d;
+        --vita-canvas: #0b0b0d;
+        --vita-paper: #161618;
         --vita-ink: #fcf8f7;
-        --vita-red-text: #ff4d6d;
-
-        --vita-canvas: #141416;
         --vita-ink-secondary: #a1a1a6;
-        --vita-track: #2c2c2e;
-        --vita-on-ink-secondary: #6b6b70;
-        --vita-ink-track: #d9d2d0;
-
-        --vita-glass: rgb(28 28 30 / 0.55);
-        --vita-glass-highlight: rgb(255 255 255 / 0.14);
-        --vita-glass-shadow: rgb(0 0 0 / 0.35);
+        --vita-hairline: #26262a;
+        --vita-dot-off: #2e2e33;
+        --vita-red-text: #ff4d6d;
+        --vita-panel: #1a1a1d;
     }
 }
 
 @theme inline {
+    --color-canvas: var(--vita-canvas);
     --color-paper: var(--vita-paper);
     --color-ink: var(--vita-ink);
+    --color-ink-secondary: var(--vita-ink-secondary);
+    --color-hairline: var(--vita-hairline);
+    --color-dot-off: var(--vita-dot-off);
     --color-red: var(--vita-red);
     --color-red-text: var(--vita-red-text);
-    --color-canvas: var(--vita-canvas);
-    --color-ink-secondary: var(--vita-ink-secondary);
-    --color-track: var(--vita-track);
-    --color-on-ink-secondary: var(--vita-on-ink-secondary);
-    --color-ink-track: var(--vita-ink-track);
-    --font-sans:
-        -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--font-inter), system-ui, sans-serif;
-    --font-numeric: var(--font-archivo), sans-serif;
-    --radius-surface: var(--vita-radius-surface);
-    --radius-widget: var(--vita-radius-widget);
-    --radius-control: var(--vita-radius-control);
+    --color-panel: var(--vita-panel);
+    --color-on-panel: var(--vita-on-panel);
+    --color-on-panel-secondary: var(--vita-on-panel-secondary);
+    --color-on-panel-dim: var(--vita-on-panel-dim);
+    --color-panel-track: var(--vita-panel-track);
+
+    --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --font-dot: var(--font-doto), ui-monospace, monospace;
 }
 
-@utility glass {
-    background: var(--vita-glass);
-    -webkit-backdrop-filter: blur(28px) saturate(190%);
-    backdrop-filter: blur(28px) saturate(190%);
+/* Dot-matrix numerals: only for data (weights, loads, reps, counts). */
+@utility num {
+    font-family: var(--font-dot);
+    font-weight: 900;
+    font-variation-settings: "ROND" 100;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.01em;
+}
+
+/* Smoke glass (from Kinne's navbar): translucent black, light sheen from the top,
+   what passes behind is blurred, saturated and darkened so text stays legible. */
+@utility smoke {
+    background-color: rgb(11 11 13 / 0.64);
+    background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0));
+    -webkit-backdrop-filter: blur(14px) saturate(165%) brightness(0.55);
+    backdrop-filter: blur(14px) saturate(165%) brightness(0.55);
+    border: 1px solid rgb(255 255 255 / 0.1);
+    box-shadow: 0 22px 50px -24px rgb(11 11 13 / 0.6);
+    color: var(--vita-on-panel);
+}
+
+/* Panel glass (from Kinne's "Escolher agora"): solid dark with a sheen and a top light edge. */
+@utility panel {
+    background-color: var(--vita-panel);
+    background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.06), rgb(255 255 255 / 0) 45%);
+    border: 1px solid rgb(255 255 255 / 0.06);
     box-shadow:
-        inset 0 1px 1.5px var(--vita-glass-highlight),
-        0 10px 30px var(--vita-glass-shadow),
-        0 1px 3px var(--vita-glass-shadow);
+        inset 0 1px 0 rgb(255 255 255 / 0.12),
+        0 24px 50px -32px rgb(11 11 13 / 0.55);
+    color: var(--vita-on-panel);
 }
 
-@utility numeric {
-    font-family: var(--font-numeric);
-    font-stretch: 125%;
-    font-variant-numeric: tabular-nums;
+/* Quiet glass: inner pill on dark surfaces (selection band of the wheel). */
+@utility quiet {
+    background-color: rgb(255 255 255 / 0.07);
+    border: 1px solid rgb(255 255 255 / 0.08);
 }
 
-body {
-    background: var(--vita-canvas);
+/* Light glass: small round buttons over the light canvas. */
+@utility glass-light {
+    background-color: rgb(252 248 247 / 0.72);
+    -webkit-backdrop-filter: blur(20px) saturate(165%);
+    backdrop-filter: blur(20px) saturate(165%);
+    border: 1px solid rgb(11 11 13 / 0.05);
+    box-shadow: 0 8px 24px -16px rgb(11 11 13 / 0.45);
     color: var(--vita-ink);
-    font-family: var(--font-sans);
-    font-variant-numeric: tabular-nums;
-    -webkit-font-smoothing: antialiased;
+    @media (prefers-color-scheme: dark) {
+        background-color: rgb(28 28 30 / 0.72);
+        border-color: rgb(255 255 255 / 0.08);
+    }
+}
+
+/* Red light rising from the bottom edge behind the active tab (Kinne's limelight, in red). */
+@utility limelight {
+    background-image: radial-gradient(
+        50% 100% at 50% 100%,
+        rgb(255 23 68 / 0.42),
+        rgb(255 23 68 / 0.12) 40%,
+        rgb(255 23 68 / 0) 75%
+    );
 }
 
 /* Motion (docs/design/principles.md) */
@@ -111,7 +143,7 @@ body {
         transform: scale(1);
     }
     40% {
-        transform: scale(1.12);
+        transform: scale(1.18);
     }
     100% {
         transform: scale(1);
@@ -119,12 +151,12 @@ body {
 }
 
 @utility rise-in {
-    animation: vita-rise 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation: vita-rise 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
     animation-delay: calc(var(--stagger, 0) * 30ms);
 }
 
 @utility pulse-once {
-    animation: vita-pulse 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+    animation: vita-pulse 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 @utility no-scrollbar {
@@ -141,4 +173,12 @@ body {
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
     }
+}
+
+body {
+    background: var(--vita-canvas);
+    color: var(--vita-ink);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
 }

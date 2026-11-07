@@ -50,6 +50,7 @@ export type Summary = {
         readonly label: string;
         readonly exerciseCount: number;
         readonly increasing: readonly string[];
+        readonly exercises: readonly { readonly name: string; readonly increases: boolean }[];
     } | null;
     readonly hasOpenSession: boolean;
     readonly calendar: {
@@ -107,30 +108,35 @@ export async function getSummary(context: Context, hasOpenSession: boolean): Pro
                 context,
                 workout.exercises.map((exercise) => exercise.exerciseId),
             );
-            const increasing = workout.exercises
-                .filter((exercise) => {
-                    const history = lastSets.get(exercise.exerciseId);
-                    if (!history || exercise.repMin === null || exercise.repMax === null) {
-                        return false;
-                    }
-                    const decision = progressionStrategies[exercise.progressionRule]({
-                        lastSets: history.sets
-                            .filter((set) => set.loadKg !== null && set.reps !== null)
-                            .map((set) => ({
-                                loadKg: set.loadKg ?? 0,
-                                reps: set.reps ?? 0,
-                                setType: set.setType,
-                            })),
-                        range: { min: exercise.repMin, max: exercise.repMax },
-                        incrementKg: exercise.incrementKg,
-                    });
-                    return decision?.kind === "increase";
-                })
-                .map((exercise) => exercise.name);
+            const flags = workout.exercises.map((exercise) => {
+                const history = lastSets.get(exercise.exerciseId);
+                if (!history || exercise.repMin === null || exercise.repMax === null) {
+                    return false;
+                }
+                const decision = progressionStrategies[exercise.progressionRule]({
+                    lastSets: history.sets
+                        .filter((set) => set.loadKg !== null && set.reps !== null)
+                        .map((set) => ({
+                            loadKg: set.loadKg ?? 0,
+                            reps: set.reps ?? 0,
+                            setType: set.setType,
+                        })),
+                    range: { min: exercise.repMin, max: exercise.repMax },
+                    incrementKg: exercise.incrementKg,
+                });
+                return decision?.kind === "increase";
+            });
+            const exercises = workout.exercises.map((exercise, index) => ({
+                name: exercise.name,
+                increases: flags[index],
+            }));
             nextWorkout = {
                 label: workout.label,
                 exerciseCount: workout.exercises.length,
-                increasing,
+                increasing: exercises
+                    .filter((exercise) => exercise.increases)
+                    .map((exercise) => exercise.name),
+                exercises,
             };
         }
     }

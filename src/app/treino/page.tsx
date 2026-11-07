@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { ChevronLeftIcon } from "@/shared/ui/icons";
+import { CheckIcon, ChevronLeftIcon } from "@/shared/ui/icons";
 
 import { discardWorkoutAction, finishWorkoutAction } from "../_components/actions";
-import { PrimaryActionContent, primaryActionClass } from "../_components/primary-action";
+import { PillActionContent, pillActionClass } from "../_components/primary-action";
 
 import { ExerciseList } from "./_components/exercise-list";
 import { loadOpenWorkout } from "./_components/load-workout";
@@ -20,23 +20,25 @@ export default async function WorkoutPage() {
 
     return (
         <>
-            <main className="px-4 pb-48 pt-[max(env(safe-area-inset-top),52px)] md:px-0 md:pt-14">
+            <main className="px-6 pb-36 pt-[max(env(safe-area-inset-top),52px)] md:px-0 md:pt-16">
                 <div className="flex items-center justify-between md:hidden">
                     <Link
                         href="/"
                         aria-label="Voltar ao Resumo"
-                        className="glass pressable flex size-11 items-center justify-center rounded-full"
+                        className="glass-light pressable -ml-2 flex size-11 items-center justify-center rounded-full"
                     >
-                        <ChevronLeftIcon size={22} />
+                        <ChevronLeftIcon size={20} strokeWidth={1.8} />
                     </Link>
-                    <span className="text-[15px] text-ink-secondary">{minutes} min</span>
+                    <span className="text-[15px] font-normal">
+                        <span className="num">{minutes}</span> min
+                    </span>
                 </div>
 
-                <header className="mt-5 flex flex-col gap-1 px-2 md:hidden">
-                    <h1 className="numeric text-[34px] font-extrabold leading-tight">
+                <header className="mt-6 md:hidden">
+                    <h1 className="text-[34px] font-normal leading-tight">
                         Treino {workout.label}
                     </h1>
-                    <p className="text-[15px] text-ink-secondary">
+                    <p className="mt-1.5 text-[15px] text-ink-secondary">
                         {doneExercises} de {workout.exercises.length} exercícios concluídos
                     </p>
                 </header>
@@ -45,35 +47,37 @@ export default async function WorkoutPage() {
                     <ExerciseList workout={workout} />
                 </div>
 
-                <div className="hidden min-h-[60vh] flex-col justify-center gap-2 md:flex">
-                    <h1 className="text-[28px] font-bold">Escolha um exercício</h1>
-                    <p className="text-[17px] text-ink-secondary">
-                        {doneExercises} de {workout.exercises.length} concluídos, {minutes} min de
-                        treino.
+                <div className="hidden min-h-[50vh] flex-col justify-center md:flex">
+                    <p className="num text-[96px] leading-[0.8]">
+                        {doneExercises}
+                        <span className="text-dot-off">/{workout.exercises.length}</span>
+                    </p>
+                    <p className="mt-5 text-[17px] text-ink-secondary">
+                        Exercícios concluídos em {minutes} min. Escolha um exercício na lista.
                     </p>
                 </div>
 
-                <form action={discardWorkoutAction} className="mt-8 px-2">
+                <form action={discardWorkoutAction} className="mt-10">
                     <button
                         type="submit"
-                        className="pressable text-[15px] font-semibold text-red-text"
+                        className="pressable text-[15px] font-normal text-red-text"
                     >
                         Descartar treino
                     </button>
                 </form>
             </main>
 
-            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center px-3 pb-[max(env(safe-area-inset-bottom),14px)]">
-                <div className="glass pointer-events-auto w-full max-w-md rounded-surface p-2">
-                    <form action={finishWorkoutAction}>
-                        <button type="submit" className={primaryActionClass}>
-                            <PrimaryActionContent
-                                title="Finalizar treino"
-                                subtitle={`${doneExercises} de ${workout.exercises.length} exercícios`}
-                            />
-                        </button>
-                    </form>
-                </div>
+            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center px-4 pb-[max(env(safe-area-inset-bottom),20px)]">
+                <form action={finishWorkoutAction} className="pointer-events-auto w-full max-w-md">
+                    <button type="submit" className={pillActionClass}>
+                        <PillActionContent icon={<CheckIcon size={20} />}>
+                            Finalizar treino
+                            <span className="text-[13px] text-on-panel-secondary">
+                                {doneExercises} de {workout.exercises.length}
+                            </span>
+                        </PillActionContent>
+                    </button>
+                </form>
             </div>
         </>
     );

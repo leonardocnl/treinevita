@@ -8,6 +8,8 @@
 
 ## Avoid (signs of AI-generated design)
 
+Dividers and the dot-matrix font are part of the VITA language and are used on purpose (see DESIGN.md); everything below is avoided as decoration.
+
 Tags and pills; excessive italics; Instrument Serif; negative letter spacing; over-detailed UI; too many dividers; many color shades and opacities; containers with borders; over-detailed diagrams; verbose or redundant text; code-like breadcrumbs; section numbering; eyebrows; dithering; ASCII images; squircles; excessive monospace fonts; ALL CAPS subtitles; gradient backgrounds; periods in titles.
 
 ## Motion

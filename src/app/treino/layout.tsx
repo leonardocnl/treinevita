@@ -8,13 +8,13 @@ import { loadOpenWorkout } from "./_components/load-workout";
 export default async function WorkoutLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     const workout = await loadOpenWorkout();
     return (
-        <div className="mx-auto w-full max-w-6xl md:grid md:grid-cols-[minmax(320px,380px)_1fr] md:gap-8 md:px-8">
-            <aside aria-label="Exercícios do treino" className="hidden md:block md:pt-14">
-                <div className="sticky top-8 flex flex-col gap-4">
-                    <h2 className="numeric px-1 text-[28px] font-extrabold">
-                        Treino {workout.label}
-                    </h2>
-                    <ExerciseList workout={workout} />
+        <div className="mx-auto w-full max-w-6xl md:grid md:grid-cols-[minmax(300px,360px)_1fr] md:gap-14 md:px-10">
+            <aside aria-label="Exercícios do treino" className="hidden md:block md:pt-16">
+                <div className="sticky top-10">
+                    <h2 className="text-[28px] font-normal">Treino {workout.label}</h2>
+                    <div className="mt-6">
+                        <ExerciseList workout={workout} />
+                    </div>
                 </div>
             </aside>
             <div className="min-w-0">{children}</div>

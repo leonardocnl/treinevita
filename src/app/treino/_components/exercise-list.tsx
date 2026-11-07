@@ -4,14 +4,14 @@ import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 
 import type { WorkoutView } from "@/modules/progress";
-import { CheckIcon, ArrowUpIcon } from "@/shared/ui/icons";
 
-/** The workout's exercises with their progress; used full screen on the phone and as a sidebar on desktop. */
+/** The workout's exercises with their progress; full screen on the phone, sidebar on desktop. */
 export function ExerciseList({ workout }: { workout: WorkoutView }) {
     const segment = useSelectedLayoutSegment();
     const activePosition = segment ? Number(segment) : undefined;
+
     return (
-        <ol className="flex flex-col gap-2">
+        <ol>
             {workout.exercises.map((exercise, index) => {
                 const done = exercise.doneSets.length;
                 const complete = done >= exercise.targetSets;
@@ -21,43 +21,47 @@ export function ExerciseList({ workout }: { workout: WorkoutView }) {
                     <li
                         key={exercise.performedExerciseId}
                         style={{ "--stagger": index } as React.CSSProperties}
-                        className="rise-in"
+                        className="rise-in border-b border-hairline last:border-b-0"
                     >
                         <Link
                             href={`/treino/${index + 1}`}
                             aria-current={isActive ? "step" : undefined}
-                            className={`pressable flex min-h-16 items-center gap-4 rounded-widget px-5 py-3 ${
-                                isActive ? "bg-ink text-paper" : "glass"
+                            className={`pressable -mx-3 my-1 flex min-h-16 items-center gap-4 rounded-2xl px-3 ${
+                                isActive ? "bg-paper" : ""
                             }`}
                         >
-                            <span className="flex flex-1 flex-col gap-0.5">
-                                <span className="text-[17px] font-semibold leading-snug">
+                            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                                <span
+                                    className={`truncate text-[17px] ${complete ? "text-ink-secondary" : "font-normal"}`}
+                                >
                                     {exercise.name}
                                 </span>
-                                <span
-                                    className={`text-[13px] ${isActive ? "text-on-ink-secondary" : "text-ink-secondary"}`}
-                                >
+                                <span className="text-[13px] text-ink-secondary">
                                     {complete
                                         ? "Concluído"
-                                        : `${done} de ${exercise.targetSets} séries`}
+                                        : goesUp
+                                          ? "Sobe de carga hoje"
+                                          : `${exercise.targetSets} séries`}
                                 </span>
                             </span>
-                            {complete ? (
-                                <CheckIcon
-                                    size={20}
-                                    aria-hidden={false}
-                                    role="img"
-                                    aria-label="Concluído"
-                                />
-                            ) : goesUp ? (
-                                <ArrowUpIcon
-                                    size={16}
-                                    className="text-red"
-                                    aria-hidden={false}
-                                    role="img"
-                                    aria-label="Sobe de carga hoje"
-                                />
-                            ) : null}
+                            <span
+                                className="flex gap-1"
+                                role="img"
+                                aria-label={`${done} de ${exercise.targetSets} séries feitas`}
+                            >
+                                {Array.from({ length: exercise.targetSets }, (_, setIndex) => (
+                                    <span
+                                        key={setIndex}
+                                        className={`size-1.5 rounded-full ${
+                                            setIndex < done
+                                                ? "bg-ink"
+                                                : goesUp && setIndex === 0
+                                                  ? "bg-red"
+                                                  : "bg-dot-off"
+                                        }`}
+                                    />
+                                ))}
+                            </span>
                         </Link>
                     </li>
                 );

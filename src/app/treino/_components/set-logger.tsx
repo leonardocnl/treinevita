@@ -5,12 +5,16 @@ import { useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { formatDuration, formatNumber } from "@/shared/format/numbers";
-import { ArrowRightIcon, ArrowUpIcon, CheckIcon, UndoIcon } from "@/shared/ui/icons";
+import { ArrowRightIcon, CheckIcon, UndoIcon } from "@/shared/ui/icons";
 
 import { logSetAction, undoSetAction } from "../../_components/actions";
-import { PrimaryActionContent, primaryActionClass } from "../../_components/primary-action";
+import {
+    PillActionContent,
+    pillActionClass,
+    roundSmokeClass,
+} from "../../_components/primary-action";
 
-import { WheelPicker } from "./wheel-picker";
+import { WHEEL_ITEM_HEIGHT, WheelPicker } from "./wheel-picker";
 
 export type SetLoggerProps = {
     performedExerciseId: string;
@@ -52,31 +56,29 @@ export function SetLogger(props: SetLoggerProps) {
         props.increasedTo !== null && currentIndex === 0 && loadKg === props.increasedTo;
     const summaryText = isDuration
         ? formatDuration(durationSeconds)
-        : `${formatNumber(loadKg)} kg × ${reps}`;
+        : `${formatNumber(loadKg)} × ${reps}`;
 
     return (
         <>
-            <section
-                aria-label="Registro da série"
-                className="rounded-surface bg-ink px-5 pb-5 pt-5 text-paper"
-            >
+            <section aria-label="Registro da série" className="panel rounded-[30px] px-5 pb-5 pt-5">
                 <div className="flex items-center justify-between px-1">
-                    <h2 className="text-[17px] font-semibold">
+                    <h2 className="text-[15px] text-on-panel-secondary">
                         {finished ? "Exercício concluído" : `Série ${currentIndex + 1}`}
                     </h2>
                     <div
                         className="flex gap-1.5"
+                        role="img"
                         aria-label={`${currentIndex} de ${targetSets} séries feitas`}
                     >
                         {Array.from({ length: targetSets }, (_, index) => (
                             <span
                                 key={index}
-                                className={`h-1 w-5 rounded-full ${
+                                className={`size-[7px] rounded-full ${
                                     index < currentIndex
-                                        ? "bg-paper"
+                                        ? "bg-on-panel"
                                         : index === currentIndex
                                           ? "bg-red"
-                                          : "bg-ink-track"
+                                          : "bg-panel-track"
                                 }`}
                             />
                         ))}
@@ -84,104 +86,113 @@ export function SetLogger(props: SetLoggerProps) {
                 </div>
 
                 {finished ? (
-                    <p className="px-1 pb-2 pt-6 text-[17px] text-on-ink-secondary">
-                        {targetSets} séries registradas. Bom trabalho.
+                    <p className="px-1 pb-3 pt-8 text-[17px] text-on-panel-secondary">
+                        {targetSets} séries registradas.
                     </p>
                 ) : (
                     <>
                         {props.askText ? (
-                            <p className="px-1 pt-3 text-[15px] text-on-ink-secondary">
+                            <p className="px-1 pt-3 text-[13px] text-on-panel-secondary">
                                 {props.askText}
                             </p>
                         ) : null}
-                        <div
-                            className={`mt-2 grid gap-2 ${isDuration ? "grid-cols-1" : "grid-cols-2"}`}
-                        >
-                            {isDuration ? (
-                                <WheelPicker
-                                    values={durationValues}
-                                    value={durationSeconds}
-                                    onChange={setDurationSeconds}
-                                    format={(value) => String(value)}
-                                    label="Duração em segundos"
-                                    unit="segundos"
-                                />
-                            ) : (
-                                <>
+                        <div className="relative mt-3">
+                            <div
+                                aria-hidden
+                                className="quiet pointer-events-none absolute inset-x-0 rounded-full"
+                                style={{
+                                    top: WHEEL_ITEM_HEIGHT + 2,
+                                    height: WHEEL_ITEM_HEIGHT - 4,
+                                }}
+                            />
+                            <div
+                                className={`relative grid ${isDuration ? "grid-cols-1" : "grid-cols-2"}`}
+                            >
+                                {isDuration ? (
                                     <WheelPicker
-                                        values={loadValues}
-                                        value={loadKg}
-                                        onChange={setLoadKg}
-                                        format={(value) => formatNumber(value)}
-                                        label="Carga em quilos"
-                                        unit="kg"
-                                        marker={
-                                            showIncrease ? (
-                                                <ArrowUpIcon
-                                                    size={14}
-                                                    className="text-red"
-                                                    role="img"
-                                                    aria-label="Carga subiu desde a última vez"
-                                                    aria-hidden={false}
-                                                />
-                                            ) : null
-                                        }
-                                    />
-                                    <WheelPicker
-                                        values={repValues}
-                                        value={reps}
-                                        onChange={setReps}
+                                        values={durationValues}
+                                        value={durationSeconds}
+                                        onChange={setDurationSeconds}
                                         format={(value) => String(value)}
-                                        label="Repetições"
-                                        unit="repetições"
+                                        label="Duração em segundos"
+                                        unit="segundos"
                                     />
-                                </>
-                            )}
+                                ) : (
+                                    <>
+                                        <WheelPicker
+                                            values={loadValues}
+                                            value={loadKg}
+                                            onChange={setLoadKg}
+                                            format={(value) => formatNumber(value)}
+                                            label="Carga em quilos"
+                                            unit="kg"
+                                            align="start"
+                                            marker={
+                                                showIncrease ? (
+                                                    <span
+                                                        role="img"
+                                                        aria-label="Carga subiu desde a última vez"
+                                                        className="mb-6 size-[7px] self-center rounded-full bg-red"
+                                                    />
+                                                ) : null
+                                            }
+                                        />
+                                        <WheelPicker
+                                            values={repValues}
+                                            value={reps}
+                                            onChange={setReps}
+                                            format={(value) => String(value)}
+                                            label="Repetições"
+                                            unit="repetições"
+                                            align="end"
+                                        />
+                                    </>
+                                )}
+                            </div>
                         </div>
                     </>
                 )}
 
                 {props.lastTimeText ? (
-                    <p className="px-1 pt-3 text-[15px] text-on-ink-secondary">
+                    <p className="mt-4 border-t border-white/[0.08] px-1 pt-3.5 text-[13px] text-on-panel-secondary">
                         {props.lastTimeText}
                     </p>
                 ) : null}
             </section>
 
-            {doneSets.length > 0 ? (
-                <section
-                    aria-label="Séries feitas"
-                    className="glass mt-4 rounded-widget px-5 py-1.5"
-                >
-                    {doneSets.map((set, index) => (
-                        <div
-                            key={index}
-                            className="flex h-12 items-center justify-between text-[17px]"
-                        >
-                            <span>Série {index + 1}</span>
-                            <span className="numeric flex items-center gap-2 font-bold">
-                                {set.durationSeconds !== null
-                                    ? formatDuration(set.durationSeconds)
-                                    : `${formatNumber(set.loadKg ?? 0)} × ${set.reps ?? 0}`}
-                                <CheckIcon
-                                    key={
-                                        index === doneSets.length - 1
-                                            ? `last-${doneSets.length}`
-                                            : index
-                                    }
-                                    size={18}
-                                    className={
-                                        index === doneSets.length - 1 ? "pulse-once" : undefined
-                                    }
-                                />
-                            </span>
-                        </div>
-                    ))}
-                </section>
+            {doneSets.length > 0 || !finished ? (
+                <ol aria-label="Séries" className="mt-5 px-2">
+                    {Array.from({ length: targetSets }, (_, index) => {
+                        const set = doneSets[index];
+                        const isLast = index === doneSets.length - 1;
+                        return (
+                            <li
+                                key={index}
+                                className={`flex h-12 items-center justify-between text-[15px] ${
+                                    index < targetSets - 1 ? "border-b border-hairline" : ""
+                                } ${set ? "" : "text-ink-secondary"}`}
+                            >
+                                <span>Série {index + 1}</span>
+                                {set ? (
+                                    <span
+                                        key={isLast ? `last-${doneSets.length}` : index}
+                                        className={`num text-[20px] ${isLast ? "pulse-once" : ""}`}
+                                    >
+                                        {set.durationSeconds !== null
+                                            ? formatDuration(set.durationSeconds)
+                                            : `${formatNumber(set.loadKg ?? 0)} × ${set.reps ?? 0}`}
+                                    </span>
+                                ) : (
+                                    <span aria-label="pendente">·</span>
+                                )}
+                            </li>
+                        );
+                    })}
+                </ol>
             ) : null}
 
-            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center px-3 pb-[max(env(safe-area-inset-bottom),14px)] md:static md:mt-6 md:px-0 md:pb-0">
-                <div className="glass pointer-events-auto flex w-full max-w-md gap-2 rounded-surface p-2 md:max-w-none">
+            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center px-4 pb-[max(env(safe-area-inset-bottom),20px)] md:static md:mt-8 md:px-0 md:pb-0">
+                <div className="pointer-events-auto flex w-full max-w-md items-center gap-2.5 md:max-w-none">
                     {doneSets.length > 0 ? (
                         <form action={undoSetAction}>
                             <input
@@ -192,9 +203,9 @@ export function SetLogger(props: SetLoggerProps) {
                             <button
                                 type="submit"
                                 aria-label="Desfazer a última série"
-                                className="pressable flex size-16 items-center justify-center rounded-control text-ink"
+                                className={roundSmokeClass}
                             >
-                                <UndoIcon size={22} />
+                                <UndoIcon size={20} />
                             </button>
                         </form>
                     ) : null}
@@ -202,12 +213,11 @@ export function SetLogger(props: SetLoggerProps) {
                     {finished ? (
                         <Link
                             href={props.nextHref ?? "/treino"}
-                            className={`${primaryActionClass} flex-1`}
+                            className={`${pillActionClass} flex-1`}
                         >
-                            <PrimaryActionContent
-                                title={props.nextHref ? "Próximo exercício" : "Voltar à lista"}
-                                icon={<ArrowRightIcon size={22} />}
-                            />
+                            <PillActionContent icon={<ArrowRightIcon size={20} />}>
+                                {props.nextHref ? "Próximo exercício" : "Voltar à lista"}
+                            </PillActionContent>
                         </Link>
                     ) : (
                         <form action={logSetAction} className="flex-1">
@@ -229,10 +239,7 @@ export function SetLogger(props: SetLoggerProps) {
                                     <input type="hidden" name="reps" value={reps} />
                                 </>
                             )}
-                            <ConfirmButton
-                                title={`Confirmar série ${currentIndex + 1}`}
-                                subtitle={summaryText}
-                            />
+                            <ConfirmButton summary={summaryText} />
                         </form>
                     )}
                 </div>
@@ -241,15 +248,13 @@ export function SetLogger(props: SetLoggerProps) {
     );
 }
 
-function ConfirmButton({ title, subtitle }: { title: string; subtitle: string }) {
+function ConfirmButton({ summary }: { summary: string }) {
     const { pending } = useFormStatus();
     return (
-        <button type="submit" disabled={pending} className={primaryActionClass}>
-            <PrimaryActionContent
-                title={title}
-                subtitle={subtitle}
-                icon={<CheckIcon size={22} />}
-            />
+        <button type="submit" disabled={pending} className={pillActionClass}>
+            <PillActionContent icon={<CheckIcon size={20} />}>
+                Confirmar <span className="num text-[19px]">{summary}</span>
+            </PillActionContent>
         </button>
     );
 }

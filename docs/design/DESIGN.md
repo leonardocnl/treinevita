@@ -1,0 +1,72 @@
+# VITA design system: "Ponto e linha"
+
+A calm, editorial workout tracker. Dot-matrix numbers (in the spirit of Nothing), thin text and hairlines (in the spirit of teenage engineering), and the smoke glass of Kinne for everything that floats.
+
+## Principles
+
+- Data is the hero: numbers are big, in dots; words are small and thin.
+- Simple on screen, smart behind it: the app decides when the answer is obvious and asks only when in doubt.
+- One floating bar, one main action per screen.
+- Color rule 60/30/10. Light: paper 60, ink 30, red 10. Dark: the two swap.
+
+## Color
+
+| Token                      | Light                             | Dark      | Use                                                    |
+| -------------------------- | --------------------------------- | --------- | ------------------------------------------------------ |
+| canvas                     | `#F4F2F1`                         | `#0B0B0D` | page background                                        |
+| paper                      | `#FCF8F7`                         | `#161618` | light surfaces, active row                             |
+| ink                        | `#0B0B0D`                         | `#FCF8F7` | text, trained days                                     |
+| ink-secondary              | `#5B5B60`                         | `#A1A1A6` | labels, captions                                       |
+| hairline                   | `#DEDAD9`                         | `#26262A` | 1px dividers                                           |
+| dot-off                    | `#D6D2D1`                         | `#2E2E33` | unlit dots                                             |
+| red                        | `#FF1744`                         | `#FF1744` | fills only: action circles, status dots, the tab light |
+| red-text                   | `#C8102E`                         | `#FF4D6D` | red text (contrast safe)                               |
+| panel                      | `#0B0B0D`                         | `#1A1A1D` | dark glass panels                                      |
+| on-panel / secondary / dim | `#FCF8F7` / `#9A9A9F` / `#6E6E73` | same      | text on panels and smoke glass                         |
+
+Red never fills large areas. It marks: what to tap, what changed (a load that went up), what is happening now (today, the active tab, the current set).
+
+## Typography
+
+- **Inter** (variable, self-hosted) for all text. Default weight 300; 400 for titles and emphasis; 500 only for the active tab. No bold.
+- **Doto** (variable dot-matrix, self-hosted, round dots: `ROND 100`, weight 900) only for numbers: counts, weights, loads, reps, minutes. Use the `num` utility.
+- Sizes: text 13 / 15 / 17, titles 28 / 32 / 34 / 40; numbers 20 / 36 / 56 (wheel) / 96–112 (hero).
+- Sentence case everywhere. No all caps, no letter-spacing tricks, no italics, no periods in titles.
+
+## Surfaces
+
+| Surface                     | Recipe                                                                                                               | Where                                             |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Smoke glass (`smoke`)       | black 64%, white sheen from the top, blur 14px, saturate 165%, brightness 0.55, 1px white 10% edge, long soft shadow | bottom bar, action pills, round secondary buttons |
+| Panel glass (`panel`)       | solid panel color, sheen to 45%, 1px light top edge, long soft shadow, radius 28–30                                  | next workout, set logger                          |
+| Quiet glass (`quiet`)       | white 7% with a 1px white 8% edge                                                                                    | selection band inside panels                      |
+| Light glass (`glass-light`) | paper 72%, blur 20px, faint edge                                                                                     | small round buttons on the canvas (back, video)   |
+
+The 1px edges are light reflections on the glass, never visible borders on light content. Content containers on the canvas have no background: they are separated by space and, when needed, a hairline.
+
+## Components
+
+- **Bottom bar**: smoke pill with text tabs (13px). The active tab is lit by a red light rising from the bottom edge, with a 2px red line and halo. The screen's main action sits beside it as a 56px red circle.
+- **Action pill**: smoke pill, label at 15px, numbers in dots, red circle with the icon at the end.
+- **Hero number**: label (15px secondary), dot number (112px), caption sentence (15px secondary).
+- **Metric row**: three columns divided by vertical hairlines: label 13, dot number 36, detail 13.
+- **Dot ring**: 24 dots in a circle; the done share is red.
+- **Dot calendar**: one dot per day; ink = trained, red = today, dot-off = past without training, hairline = future.
+- **Selection wheel**: native scroll snap, 64px rows, center value 56px in dots, neighbours 24px dim, one quiet band across all wheels, fade at the edges. Load on the left, reps on the right.
+- **Set list**: rows of 48px with hairlines; done sets show the value in dots and pulse once when logged.
+- **Exercise list**: rows with hairlines, name 17, status 13, one dot per set on the right (ink = done, red = load goes up today).
+
+## Spacing and shape
+
+- 4px base; screen margin 24px; sections 32–36px apart; rows 48–64px.
+- Radius: 999px for anything tappable that floats, 28–30px for panels, 20px for inner areas. Concentric radii when nesting.
+
+## Motion
+
+See [principles.md](principles.md). Key ones: press scales to 0.97; content rises 8px with a 30ms stagger; a logged set pulses once; the tab light slides between tabs; no bounce.
+
+## Do and don't
+
+Do: let numbers be large and words small; use red only to signal; keep one floating bar; align numbers on the same baseline; use hairlines only to separate columns or rows of the same kind.
+
+Don't: pills or tags as decoration; cards around everything; bold text; gradients as backgrounds (the tab light is the only radial light); grain textures; more than one red element competing on screen.
