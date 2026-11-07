@@ -24,6 +24,8 @@ export const exercises = pgTable(
         workspaceId: uuid("workspace_id").references(() => workspaces.id, {
             onDelete: "cascade",
         }),
+        /** Stable key of a global exercise (null for custom ones); keeps the catalog seed idempotent. */
+        slug: text("slug"),
         name: text("name").notNull(),
         equipment: text("equipment", {
             enum: ["machine", "barbell", "dumbbell", "cable", "bodyweight", "other"],
@@ -51,7 +53,10 @@ export const exercises = pgTable(
             .default("2.5"),
         ...auditColumns(),
     },
-    (table) => [index("exercises_workspace_idx").on(table.workspaceId)],
+    (table) => [
+        index("exercises_workspace_idx").on(table.workspaceId),
+        uniqueIndex("exercises_slug_unique").on(table.slug),
+    ],
 );
 
 export const exerciseMuscleGroups = pgTable(
