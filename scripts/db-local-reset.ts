@@ -10,7 +10,7 @@ import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 
-import { doubleProgression } from "../src/modules/progress";
+import { doubleProgression } from "../src/modules/progress/domain/progression";
 import { LOCAL_DATABASE_PATH } from "../src/platform/db/drivers";
 import { schema } from "../src/platform/db/schema";
 
