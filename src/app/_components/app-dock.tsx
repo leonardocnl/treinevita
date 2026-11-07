@@ -14,8 +14,8 @@ const tabs: { id: Tab; href: string; label: string }[] = [
 export function AppDock({ active, action }: { active: Tab; action?: ReactNode }) {
     return (
         <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center px-3 pb-[max(env(safe-area-inset-bottom),20px)]">
-            <div className="float-bar pointer-events-auto flex w-full max-w-md items-center gap-1.5 rounded-[34px] p-2">
-                <nav aria-label="Navegação principal" className="h-14 flex-1">
+            <div className="float-bar pointer-events-auto flex w-full max-w-md items-center gap-1 rounded-full p-2">
+                <nav aria-label="Navegação principal" className="h-12 flex-1">
                     <ul className="grid h-full grid-cols-4">
                         {tabs.map((tab) => {
                             const isActive = tab.id === active;

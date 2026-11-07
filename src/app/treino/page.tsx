@@ -70,7 +70,7 @@ export default async function WorkoutPage() {
             <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center px-3 pb-[max(env(safe-area-inset-bottom),20px)]">
                 <form
                     action={finishWorkoutAction}
-                    className="float-bar pointer-events-auto w-full max-w-md rounded-[34px] p-2"
+                    className="float-bar pointer-events-auto w-full max-w-md rounded-full p-2"
                 >
                     <button type="submit" className={pillActionClass}>
                         <PillActionContent icon={<CheckIcon size={20} />}>

@@ -192,7 +192,7 @@ export function SetLogger(props: SetLoggerProps) {
             ) : null}
 
             <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center px-3 pb-[max(env(safe-area-inset-bottom),20px)] md:static md:mt-8 md:px-0 md:pb-0">
-                <div className="float-bar pointer-events-auto flex w-full max-w-md items-center gap-1.5 rounded-[34px] p-2 md:max-w-none">
+                <div className="float-bar pointer-events-auto flex w-full max-w-md items-center gap-1 rounded-full p-2 md:max-w-none">
                     {doneSets.length > 0 ? (
                         <form action={undoSetAction}>
                             <input
