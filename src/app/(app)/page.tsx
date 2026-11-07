@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { getOpenSession } from "@/modules/logging";
@@ -13,11 +12,13 @@ import {
 } from "@/modules/progress";
 import { requireAppContext } from "@/modules/tenancy";
 import { formatLongDate } from "@/shared/time/local-date";
-import { PlayIcon } from "@/shared/ui/icons";
+import { Icon } from "@/shared/ui/icons";
+import { RoundAction } from "@/shared/ui/round-action";
+import { Label } from "@/shared/ui/text";
+import { Wordmark } from "@/shared/ui/wordmark";
 
 import { startWorkoutAction } from "../_components/actions";
 import { AppDock } from "../_components/app-dock";
-import { roundActionClass } from "../_components/primary-action";
 
 import { Dashboard } from "./_widgets/dashboard";
 import { WIDGET_RENDERERS } from "./_widgets/widgets";
@@ -44,22 +45,17 @@ export default async function SummaryPage() {
     }
 
     const action = openSession ? (
-        <Link
+        <RoundAction
             href="/treino"
             aria-label={`Continuar treino ${openSession.workoutLabel ?? ""}`}
-            className={roundActionClass}
         >
-            <PlayIcon size={18} />
-        </Link>
+            <Icon name="play" />
+        </RoundAction>
     ) : summary.nextWorkout ? (
         <form action={startWorkoutAction}>
-            <button
-                type="submit"
-                aria-label={`Começar treino ${summary.nextWorkout.label}`}
-                className={roundActionClass}
-            >
-                <PlayIcon size={18} />
-            </button>
+            <RoundAction type="submit" aria-label={`Começar treino ${summary.nextWorkout.label}`}>
+                <Icon name="play" />
+            </RoundAction>
         </form>
     ) : null;
 
@@ -69,12 +65,10 @@ export default async function SummaryPage() {
                 <Dashboard
                     header={
                         <div>
-                            <p className="num text-[20px]" aria-label="VITA">
-                                vita
-                            </p>
-                            <p className="mt-3 text-[15px] font-normal">
+                            <Wordmark label="VITA" />
+                            <Label weight="normal" className="mt-3">
                                 {formatLongDate(summary.today)}
-                            </p>
+                            </Label>
                         </div>
                     }
                     initialLayout={layout}

@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 
 import type { WorkoutView } from "@/modules/progress";
+import { DotMeter } from "@/shared/ui/dot-meter";
+import { List, ListRow } from "@/shared/ui/list";
+import { Caption, Label } from "@/shared/ui/text";
 
 /** The workout's exercises with their progress; full screen on the phone, sidebar on desktop. */
 export function ExerciseList({ workout }: { workout: WorkoutView }) {
@@ -11,17 +14,17 @@ export function ExerciseList({ workout }: { workout: WorkoutView }) {
     const activePosition = segment ? Number(segment) : undefined;
 
     return (
-        <ol>
+        <List>
             {workout.exercises.map((exercise, index) => {
                 const done = exercise.doneSets.length;
                 const complete = done >= exercise.targetSets;
                 const isActive = activePosition === index + 1;
                 const goesUp = exercise.decision?.kind === "increase" && done === 0;
                 return (
-                    <li
+                    <ListRow
                         key={exercise.performedExerciseId}
                         style={{ "--stagger": index } as React.CSSProperties}
-                        className="rise-in border-b border-hairline last:border-b-0"
+                        className="rise-in"
                     >
                         <Link
                             href={`/treino/${index + 1}`}
@@ -31,41 +34,33 @@ export function ExerciseList({ workout }: { workout: WorkoutView }) {
                             }`}
                         >
                             <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                                <span
-                                    className={`truncate text-[17px] ${complete ? "text-ink-secondary" : "font-normal"}`}
+                                <Label
+                                    as="span"
+                                    size={17}
+                                    tone={complete ? "secondary" : undefined}
+                                    weight={complete ? undefined : "normal"}
+                                    className="truncate"
                                 >
                                     {exercise.name}
-                                </span>
-                                <span className="text-[13px] text-ink-secondary">
+                                </Label>
+                                <Caption as="span">
                                     {complete
                                         ? "Concluído"
                                         : goesUp
                                           ? "Sobe de carga hoje"
                                           : `${exercise.targetSets} séries`}
-                                </span>
+                                </Caption>
                             </span>
-                            <span
-                                className="flex gap-1"
-                                role="img"
-                                aria-label={`${done} de ${exercise.targetSets} séries feitas`}
-                            >
-                                {Array.from({ length: exercise.targetSets }, (_, setIndex) => (
-                                    <span
-                                        key={setIndex}
-                                        className={`size-1.5 rounded-full ${
-                                            setIndex < done
-                                                ? "bg-ink"
-                                                : goesUp && setIndex === 0
-                                                  ? "bg-red"
-                                                  : "bg-dot-off"
-                                        }`}
-                                    />
-                                ))}
-                            </span>
+                            <DotMeter
+                                total={exercise.targetSets}
+                                done={done}
+                                highlight={goesUp ? 0 : undefined}
+                                label={`${done} de ${exercise.targetSets} séries feitas`}
+                            />
                         </Link>
-                    </li>
+                    </ListRow>
                 );
             })}
-        </ol>
+        </List>
     );
 }

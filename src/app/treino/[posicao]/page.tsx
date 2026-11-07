@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { ChevronLeftIcon, PlayIcon } from "@/shared/ui/icons";
+import { GlassIconButton } from "@/shared/ui/glass-icon-button";
+import { Icon } from "@/shared/ui/icons";
+import { Label, Title } from "@/shared/ui/text";
 
 import {
     askText,
@@ -38,30 +39,31 @@ export default async function ExercisePage({ params }: { params: Promise<{ posic
     return (
         <main className="px-4 pb-36 pt-[max(env(safe-area-inset-top),52px)] md:px-0 md:pb-16 md:pt-16">
             <div className="flex items-center justify-between">
-                <Link
+                <GlassIconButton
                     href="/treino"
                     aria-label="Voltar à lista de exercícios"
-                    className="glass-light pressable flex size-11 items-center justify-center rounded-full md:invisible"
+                    className="md:invisible"
                 >
-                    <ChevronLeftIcon size={20} strokeWidth={1.8} />
-                </Link>
-                <span className="text-[15px] font-normal">
+                    <Icon name="chevron-left" size={20} strokeWidth={1.8} />
+                </GlassIconButton>
+                <Label as="span" weight="normal">
                     {position} de {workout.exercises.length}
-                </span>
-                <a
+                </Label>
+                <GlassIconButton
                     href={videoHref}
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label="Ver execução do exercício"
-                    className="glass-light pressable flex size-11 items-center justify-center rounded-full"
                 >
-                    <PlayIcon size={15} />
-                </a>
+                    <Icon name="play" size={15} />
+                </GlassIconButton>
             </div>
 
             <header className="mt-6 flex flex-col gap-2 px-2">
-                <h1 className="text-[32px] font-light leading-[1.1]">{exercise.name}</h1>
-                <p className="text-[15px] text-ink-secondary">{prescriptionText(exercise)}</p>
+                <Title size={32} weight="light" leading="1.1">
+                    {exercise.name}
+                </Title>
+                <Label tone="secondary">{prescriptionText(exercise)}</Label>
             </header>
 
             <div className="mt-6" key={exercise.performedExerciseId}>

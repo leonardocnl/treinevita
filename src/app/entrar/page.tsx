@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 
 import { isDevSignInAvailable } from "@/modules/identity";
-import { ArrowRightIcon } from "@/shared/ui/icons";
+import { Icon } from "@/shared/ui/icons";
+import { PillAction } from "@/shared/ui/pill-action";
+import { Label, Title } from "@/shared/ui/text";
+import { Wordmark } from "@/shared/ui/wordmark";
 
 import { devSignInAction } from "../_components/actions";
-import { PillActionContent, pillActionClass } from "../_components/primary-action";
 
 export const metadata: Metadata = { title: "Entrar · VITA" };
 
@@ -26,38 +28,36 @@ export default async function SignInPage({
 
     return (
         <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-between px-6 pb-[max(env(safe-area-inset-bottom),24px)] pt-[max(env(safe-area-inset-top),64px)]">
-            <p className="num text-[20px]">vita</p>
+            <Wordmark />
 
             <div className="flex flex-col gap-10">
                 <div>
-                    <h1 className="text-[40px] font-light leading-[1.08]">
+                    <Title size={40} weight="light" leading="1.08">
                         Seus treinos, sua evolução.
-                    </h1>
-                    <p className="mt-4 text-[17px] text-ink-secondary">
+                    </Title>
+                    <Label size={17} tone="secondary" className="mt-4">
                         Registre cada série em segundos e veja o quanto você evoluiu.
-                    </p>
+                    </Label>
                 </div>
 
                 {message ? (
-                    <p role="alert" className="text-[15px] text-red-text">
+                    <Label role="alert" tone="accent">
                         {message}
-                    </p>
+                    </Label>
                 ) : null}
 
                 <div className="flex flex-col gap-3">
-                    {/* A plain link, not <Link>: prefetching would start the OAuth flow. */}
-                    <a href="/api/auth/google" className={pillActionClass}>
-                        <PillActionContent icon={<ArrowRightIcon size={20} />}>
+                    {/* A native GET form, not a <Link>: prefetching would start the OAuth flow. */}
+                    <form action="/api/auth/google" method="get">
+                        <PillAction type="submit" icon={<Icon name="arrow-right" size={20} />}>
                             Entrar com Google
-                        </PillActionContent>
-                    </a>
+                        </PillAction>
+                    </form>
                     {devAvailable ? (
                         <form action={devSignInAction}>
-                            <button type="submit" className={pillActionClass}>
-                                <PillActionContent icon={<ArrowRightIcon size={20} />}>
-                                    Entrar como Leonardo
-                                </PillActionContent>
-                            </button>
+                            <PillAction type="submit" icon={<Icon name="arrow-right" size={20} />}>
+                                Entrar como Leonardo
+                            </PillAction>
                         </form>
                     ) : null}
                 </div>

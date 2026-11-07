@@ -2,8 +2,17 @@ import type { ReactNode } from "react";
 
 import type { DashboardExtras, Summary, WidgetKind, WidgetSize } from "@/modules/progress";
 import { formatNumber } from "@/shared/format/numbers";
+import { Dot, StatusDot } from "@/shared/ui/dot";
+import { DotNumber } from "@/shared/ui/dot-number";
 import { DotRing } from "@/shared/ui/dot-ring";
+import { EmptyState } from "@/shared/ui/empty-state";
+import { List, ValueRow } from "@/shared/ui/list";
+import { Metric, MetricRow } from "@/shared/ui/metric";
+import { ProgressBar } from "@/shared/ui/progress-bar";
 import { Sparkline } from "@/shared/ui/sparkline";
+import { Caption, Label, Title } from "@/shared/ui/text";
+import { WeekRows, type Week } from "@/shared/ui/week-rows";
+import { WidgetFrame as Frame } from "@/shared/ui/widget-frame";
 
 /*
  * Every Summary widget in its three sizes: small (1×1), medium (2×1) and large (2×2).
@@ -17,43 +26,22 @@ export type WidgetData = {
 
 type Render = (data: WidgetData, size: WidgetSize) => ReactNode;
 
-function Frame({
-    title,
-    aside,
-    children,
-}: {
-    title: string;
-    aside?: ReactNode;
-    children: ReactNode;
-}) {
-    return (
-        <div className="flex h-full flex-col p-4">
-            <div className="flex items-start justify-between gap-2">
-                <p className="text-[13px] text-ink-secondary">{title}</p>
-                {aside}
-            </div>
-            <div className="flex min-h-0 flex-1 flex-col">{children}</div>
-        </div>
-    );
-}
-
-function Empty({ text }: { text: string }) {
-    return <p className="mt-auto text-[15px] leading-snug text-ink-secondary">{text}</p>;
-}
-
 const weekly: Render = ({ summary, extras }, size) => {
     const { done, goal } = summary.week;
     const missing = Math.max(goal - done, 0);
     const caption = missing === 0 ? "Meta batida" : `Falta${missing > 1 ? "m" : ""} ${missing}`;
+    const ringLabel = `${done} de ${goal} treinos feitos na semana`;
 
     if (size === "small") {
         return (
-            <Frame title="Semana" aside={<DotRing done={done} goal={goal} size={40} dots={16} />}>
-                <p className="num mt-auto text-[56px] leading-[0.8]">
+            <Frame
+                title="Semana"
+                aside={<DotRing done={done} goal={goal} label={ringLabel} size={40} dots={16} />}
+            >
+                <DotNumber as="p" size={56} leading="0.8" of={goal} className="mt-auto">
                     {done}
-                    <span className="text-dot-off">/{goal}</span>
-                </p>
-                <p className="mt-3 text-[13px] text-ink-secondary">{caption}</p>
+                </DotNumber>
+                <Caption className="mt-3">{caption}</Caption>
             </Frame>
         );
     }
@@ -61,17 +49,16 @@ const weekly: Render = ({ summary, extras }, size) => {
     const hero = (
         <div className="flex items-end justify-between gap-3">
             <div>
-                <p className="num text-[80px] leading-[0.8]">
+                <DotNumber as="p" size={80} leading="0.8" of={goal}>
                     {done}
-                    <span className="text-dot-off">/{goal}</span>
-                </p>
-                <p className="mt-3 text-[15px] text-ink-secondary">
+                </DotNumber>
+                <Label tone="secondary" className="mt-3">
                     {missing === 0
                         ? "Meta da semana batida."
                         : `Falta${missing > 1 ? "m" : ""} ${missing} treino${missing > 1 ? "s" : ""}.`}
-                </p>
+                </Label>
             </div>
-            <DotRing done={done} goal={goal} size={size === "large" ? 108 : 92} />
+            <DotRing done={done} goal={goal} label={ringLabel} size={size === "large" ? 108 : 92} />
         </div>
     );
 
@@ -89,22 +76,16 @@ const weekly: Render = ({ summary, extras }, size) => {
             <div className="mt-auto grid grid-cols-7 gap-1 border-t border-hairline pt-4">
                 {extras.weekDays.map((day) => (
                     <div key={day.date} className="flex flex-col items-center gap-2">
-                        <span
-                            className={`text-[13px] ${day.isToday ? "text-ink" : "text-ink-secondary"}`}
-                        >
+                        <Caption as="span" tone={day.isToday ? "primary" : "secondary"}>
                             {day.label}
-                        </span>
-                        <span
-                            className={`size-3 rounded-full ${
-                                day.trained
-                                    ? "bg-ink"
-                                    : day.isToday
-                                      ? "ring-[1.5px] ring-red ring-inset"
-                                      : day.isFuture
-                                        ? "bg-hairline"
-                                        : "bg-dot-off"
-                            }`}
-                        />
+                        </Caption>
+                        {day.trained ? (
+                            <Dot size={12} fill="ink" />
+                        ) : day.isToday ? (
+                            <Dot size={12} ring="red" />
+                        ) : (
+                            <Dot size={12} fill={day.isFuture ? "hairline" : "off"} />
+                        )}
                     </div>
                 ))}
             </div>
@@ -113,7 +94,7 @@ const weekly: Render = ({ summary, extras }, size) => {
 };
 
 /** Trained count per week (newest first), from the activity data. */
-function weeklyCounts(summary: Summary) {
+function weeklyCounts(summary: Summary): Week[] {
     return summary.activity.weeks
         .map((week) => ({
             start: week[0].date,
@@ -123,86 +104,17 @@ function weeklyCounts(summary: Summary) {
         .reverse();
 }
 
-const weekLabel = (start: string, current: boolean) =>
-    current
-        ? "Esta semana"
-        : new Date(`${start}T12:00:00Z`)
-              .toLocaleDateString("pt-BR", { day: "numeric", month: "short", timeZone: "UTC" })
-              .replace(".", "");
-
-/** One row per week: the goal as dots, lit by each workout; a red mark when the goal was met. */
-function WeekRows({
-    weeks,
-    goal,
-    dot,
-    rowHeight,
-}: {
-    weeks: { start: string; trained: number; current: boolean }[];
-    goal: number;
-    dot: number;
-    rowHeight: number;
-}) {
-    return (
-        <ol>
-            {weeks.map((week) => {
-                const met = week.trained >= goal;
-                return (
-                    <li
-                        key={week.start}
-                        className="grid grid-cols-[1fr_auto_18px] items-center gap-3 border-b border-hairline last:border-b-0"
-                        style={{ height: rowHeight }}
-                    >
-                        <span
-                            className={`truncate text-[13px] ${week.current ? "text-ink" : "text-ink-secondary"}`}
-                        >
-                            {weekLabel(week.start, week.current)}
-                        </span>
-                        <span
-                            className="flex gap-[6px]"
-                            role="img"
-                            aria-label={`${week.trained} de ${goal} treinos`}
-                        >
-                            {Array.from({ length: Math.max(goal, week.trained) }, (_, slot) => (
-                                <span
-                                    key={slot}
-                                    className={`rounded-full ${
-                                        slot < week.trained
-                                            ? "bg-ink"
-                                            : week.current
-                                              ? "ring-1 ring-dot-off ring-inset"
-                                              : "bg-dot-off"
-                                    }`}
-                                    style={{ width: dot, height: dot }}
-                                />
-                            ))}
-                        </span>
-                        <span className="flex justify-end">
-                            {met ? (
-                                <span
-                                    aria-label="meta batida"
-                                    className="h-[3px] w-3.5 rounded-full bg-red"
-                                />
-                            ) : null}
-                        </span>
-                    </li>
-                );
-            })}
-        </ol>
-    );
-}
-
 const consistency: Render = ({ summary }, size) => {
     const goal = summary.week.goal;
     const all = weeklyCounts(summary);
     const closed = all.filter((week) => !week.current);
     const metCount = closed.filter((week) => week.trained >= goal).length;
     const average = (big: boolean) => (
-        <p className="flex items-baseline gap-2">
-            <span className={`num leading-[0.85] ${big ? "text-[64px]" : "text-[48px]"}`}>
-                {formatNumber(summary.activity.averagePerWeek, 1)}
-            </span>
-            <span className="whitespace-nowrap text-[13px] text-ink-secondary">por semana</span>
-        </p>
+        <Metric
+            size={big ? 64 : 48}
+            value={formatNumber(summary.activity.averagePerWeek, 1)}
+            unit="por semana"
+        />
     );
 
     if (size === "small") {
@@ -210,7 +122,7 @@ const consistency: Render = ({ summary }, size) => {
             <Frame title="Constância">
                 <div className="mt-auto">{average(false)}</div>
                 <div className="mt-3">
-                    <WeekRows weeks={all.slice(0, 2)} goal={goal} dot={8} rowHeight={24} />
+                    <WeekRows weeks={all.slice(0, 2)} goal={goal} />
                 </div>
             </Frame>
         );
@@ -222,32 +134,31 @@ const consistency: Render = ({ summary }, size) => {
                 <div className="mt-auto grid grid-cols-[auto_1fr] items-end gap-5">
                     <div>
                         {average(false)}
-                        <p className="mt-2 text-[13px] text-ink-secondary">
+                        <Caption className="mt-2">
                             {metCount} de {closed.length} semanas com meta
-                        </p>
+                        </Caption>
                     </div>
-                    <WeekRows weeks={all.slice(0, 4)} goal={goal} dot={8} rowHeight={24} />
+                    <WeekRows weeks={all.slice(0, 4)} goal={goal} />
                 </div>
             </Frame>
         );
     }
 
     return (
-        <Frame
-            title="Constância"
-            aside={<p className="text-[13px] text-ink-secondary">meta de {goal} por semana</p>}
-        >
+        <Frame title="Constância" aside={<Caption>meta de {goal} por semana</Caption>}>
             <div className="mt-3 flex items-end justify-between gap-3">
                 {average(true)}
-                <p className="pb-1 text-right text-[13px] leading-snug text-ink-secondary">
-                    <span className="text-[17px] font-normal text-ink">{metCount}</span> de{" "}
-                    {closed.length}
+                <Caption className="pb-1 text-right leading-snug">
+                    <Label as="span" size={17} weight="normal" tone="primary">
+                        {metCount}
+                    </Label>{" "}
+                    de {closed.length}
                     <br />
                     semanas com meta
-                </p>
+                </Caption>
             </div>
             <div className="mt-auto">
-                <WeekRows weeks={all.slice(0, 7)} goal={goal} dot={11} rowHeight={30} />
+                <WeekRows weeks={all.slice(0, 7)} goal={goal} size="large" />
             </div>
         </Frame>
     );
@@ -259,14 +170,14 @@ const nextWorkout: Render = ({ summary }, size) => {
     if (!next) {
         return (
             <Frame title={title}>
-                <Empty text="Monte sua ficha em Treinos." />
+                <EmptyState>Monte sua ficha em Treinos.</EmptyState>
             </Frame>
         );
     }
     const increasing =
         next.increasing.length === 0 ? null : (
             <p className="flex items-center gap-2 text-[13px]">
-                <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-red" />
+                <StatusDot />
                 <span className="truncate">
                     {next.increasing.length === 1 && size !== "small"
                         ? `${next.increasing[0]} sobe de carga`
@@ -278,10 +189,10 @@ const nextWorkout: Render = ({ summary }, size) => {
     if (size === "small") {
         return (
             <Frame title={title}>
-                <p className="mt-auto text-[30px] font-light leading-none">Treino {next.label}</p>
-                <p className="mt-2 text-[13px] text-ink-secondary">
-                    {next.exerciseCount} exercícios
-                </p>
+                <Title as="p" size={30} weight="light" leading="none" className="mt-auto">
+                    Treino {next.label}
+                </Title>
+                <Caption className="mt-2">{next.exerciseCount} exercícios</Caption>
                 {increasing ? <div className="mt-2">{increasing}</div> : null}
             </Frame>
         );
@@ -290,48 +201,34 @@ const nextWorkout: Render = ({ summary }, size) => {
     const names = next.exercises.map((exercise) => exercise.name);
     if (size === "medium") {
         return (
-            <Frame
-                title={title}
-                aside={
-                    <p className="text-[13px] text-ink-secondary">
-                        {next.exerciseCount} exercícios
-                    </p>
-                }
-            >
-                <p className="mt-auto text-[34px] font-light leading-none">Treino {next.label}</p>
-                <p className="mt-2 truncate text-[13px] text-ink-secondary">
+            <Frame title={title} aside={<Caption>{next.exerciseCount} exercícios</Caption>}>
+                <Title as="p" size={34} weight="light" leading="none" className="mt-auto">
+                    Treino {next.label}
+                </Title>
+                <Caption className="mt-2 truncate">
                     {names.slice(0, 2).join(", ")}
                     {names.length > 2 ? ` e mais ${names.length - 2}` : ""}
-                </p>
+                </Caption>
                 {increasing ? <div className="mt-2">{increasing}</div> : null}
             </Frame>
         );
     }
 
     return (
-        <Frame
-            title={title}
-            aside={
-                <p className="text-[13px] text-ink-secondary">{next.exerciseCount} exercícios</p>
-            }
-        >
-            <p className="mt-3 text-[34px] font-light leading-none">Treino {next.label}</p>
-            <ol className="mt-auto">
+        <Frame title={title} aside={<Caption>{next.exerciseCount} exercícios</Caption>}>
+            <Title as="p" size={34} weight="light" leading="none" className="mt-3">
+                Treino {next.label}
+            </Title>
+            <List className="mt-auto">
                 {next.exercises.map((exercise, index) => (
-                    <li
+                    <ValueRow
                         key={index}
-                        className="flex h-[26px] items-center justify-between gap-2 border-b border-hairline text-[13px] last:border-b-0"
-                    >
-                        <span className="truncate">{exercise.name}</span>
-                        {exercise.increases ? (
-                            <span
-                                aria-label="sobe de carga"
-                                className="size-1.5 shrink-0 rounded-full bg-red"
-                            />
-                        ) : null}
-                    </li>
+                        size="sm"
+                        label={exercise.name}
+                        marker={exercise.increases ? <StatusDot label="sobe de carga" /> : null}
+                    />
                 ))}
-            </ol>
+            </List>
         </Frame>
     );
 };
@@ -351,7 +248,7 @@ const lastWorkout: Render = ({ extras }, size) => {
     if (!last) {
         return (
             <Frame title="Último treino">
-                <Empty text="Seu primeiro treino aparece aqui." />
+                <EmptyState>Seu primeiro treino aparece aqui.</EmptyState>
             </Frame>
         );
     }
@@ -363,67 +260,51 @@ const lastWorkout: Render = ({ extras }, size) => {
     if (size === "small") {
         return (
             <Frame title="Último treino">
-                <p className="mt-auto flex items-baseline gap-2">
-                    <span className="num text-[48px] leading-[0.85]">{last.minutes}</span>
-                    <span className="text-[13px] text-ink-secondary">min</span>
-                </p>
-                <p className="mt-2 text-[13px] text-ink-secondary">
+                <Metric size={48} value={last.minutes} unit="min" className="mt-auto" />
+                <Caption className="mt-2">
                     Treino {last.label}, {shortDate(last.date)}
-                </p>
+                </Caption>
             </Frame>
         );
     }
 
     const stats = (
-        <div className="grid grid-cols-3">
-            {[
+        <MetricRow
+            items={[
                 { value: String(last.minutes), label: "min" },
                 { value: String(last.sets), label: "séries" },
                 { value: tons, label: "volume" },
-            ].map((stat, index) => (
-                <div
-                    key={stat.label}
-                    className={index > 0 ? "border-l border-hairline pl-3" : "pr-3"}
-                >
-                    <p className="text-[22px] font-normal tabular-nums">{stat.value}</p>
-                    <p className="text-[13px] text-ink-secondary">{stat.label}</p>
-                </div>
-            ))}
-        </div>
+            ]}
+        />
     );
 
     if (size === "medium") {
         return (
-            <Frame
-                title="Último treino"
-                aside={<p className="text-[13px] text-ink-secondary">{shortDate(last.date)}</p>}
-            >
-                <p className="mt-2 text-[28px] font-light leading-none">Treino {last.label}</p>
+            <Frame title="Último treino" aside={<Caption>{shortDate(last.date)}</Caption>}>
+                <Title as="p" size={28} weight="light" leading="none" className="mt-2">
+                    Treino {last.label}
+                </Title>
                 <div className="mt-auto">{stats}</div>
             </Frame>
         );
     }
 
     return (
-        <Frame
-            title="Último treino"
-            aside={<p className="text-[13px] text-ink-secondary">{shortDate(last.date)}</p>}
-        >
-            <p className="mt-2 text-[28px] font-light leading-none">Treino {last.label}</p>
+        <Frame title="Último treino" aside={<Caption>{shortDate(last.date)}</Caption>}>
+            <Title as="p" size={28} weight="light" leading="none" className="mt-2">
+                Treino {last.label}
+            </Title>
             <div className="mt-4">{stats}</div>
-            <ol className="mt-auto">
+            <List className="mt-auto">
                 {last.highlights.slice(0, 5).map((item) => (
-                    <li
+                    <ValueRow
                         key={item.name}
-                        className="flex h-[26px] items-center justify-between gap-2 border-b border-hairline text-[13px] last:border-b-0"
-                    >
-                        <span className="truncate">{item.name}</span>
-                        <span className="tabular-nums text-ink-secondary">
-                            {formatNumber(item.loadKg)} × {item.reps}
-                        </span>
-                    </li>
+                        size="sm"
+                        label={item.name}
+                        value={`${formatNumber(item.loadKg)} × ${item.reps}`}
+                    />
                 ))}
-            </ol>
+            </List>
         </Frame>
     );
 };
@@ -433,7 +314,7 @@ const bodyWeight: Render = ({ summary }, size) => {
     if (!weight) {
         return (
             <Frame title="Peso">
-                <Empty text="Registre seu peso em Corpo." />
+                <EmptyState>Registre seu peso em Corpo.</EmptyState>
             </Frame>
         );
     }
@@ -441,17 +322,13 @@ const bodyWeight: Render = ({ summary }, size) => {
         weight.monthDeltaKg === null
             ? "kg"
             : `kg, ${weight.monthDeltaKg >= 0 ? "+" : ""}${formatNumber(weight.monthDeltaKg, 1)} no mês`;
-    const value = (
-        <span className="num text-[48px] leading-[0.85]">
-            {formatNumber(weight.latestKg, 1, 1)}
-        </span>
-    );
+    const value = <DotNumber size={48}>{formatNumber(weight.latestKg, 1, 1)}</DotNumber>;
 
     if (size === "small") {
         return (
             <Frame title="Peso">
                 <p className="mt-auto">{value}</p>
-                <p className="mt-2 text-[13px] text-ink-secondary">{delta}</p>
+                <Caption className="mt-2">{delta}</Caption>
             </Frame>
         );
     }
@@ -461,7 +338,7 @@ const bodyWeight: Render = ({ summary }, size) => {
                 <div className="mt-auto flex items-end justify-between gap-4">
                     <div>
                         <p>{value}</p>
-                        <p className="mt-2 text-[13px] text-ink-secondary">{delta}</p>
+                        <Caption className="mt-2">{delta}</Caption>
                     </div>
                     <Sparkline
                         values={weight.trend}
@@ -474,16 +351,11 @@ const bodyWeight: Render = ({ summary }, size) => {
         );
     }
     return (
-        <Frame
-            title="Peso"
-            aside={<p className="text-[13px] text-ink-secondary">{weight.trend.length} pesagens</p>}
-        >
+        <Frame title="Peso" aside={<Caption>{weight.trend.length} pesagens</Caption>}>
             <p className="mt-3">
-                <span className="num text-[64px] leading-[0.85]">
-                    {formatNumber(weight.latestKg, 1, 1)}
-                </span>
+                <DotNumber size={64}>{formatNumber(weight.latestKg, 1, 1)}</DotNumber>
             </p>
-            <p className="mt-2 text-[13px] text-ink-secondary">{delta}</p>
+            <Caption className="mt-2">{delta}</Caption>
             <div className="mt-auto">
                 <Sparkline
                     values={weight.trend}
@@ -491,9 +363,13 @@ const bodyWeight: Render = ({ summary }, size) => {
                     height={90}
                     label="Peso nas últimas semanas"
                 />
-                <div className="mt-1 flex justify-between text-[11px] text-ink-secondary">
-                    <span>{formatNumber(Math.min(...weight.trend), 1, 1)} kg</span>
-                    <span>{formatNumber(Math.max(...weight.trend), 1, 1)} kg</span>
+                <div className="mt-1 flex justify-between">
+                    <Caption as="span" size={11}>
+                        {formatNumber(Math.min(...weight.trend), 1, 1)} kg
+                    </Caption>
+                    <Caption as="span" size={11}>
+                        {formatNumber(Math.max(...weight.trend), 1, 1)} kg
+                    </Caption>
                 </div>
             </div>
         </Frame>
@@ -504,13 +380,13 @@ const waist: Render = ({ summary }) => (
     <Frame title="Cintura">
         {summary.waistCm !== null ? (
             <>
-                <p className="num mt-auto text-[48px] leading-[0.85]">
+                <DotNumber as="p" size={48} className="mt-auto">
                     {formatNumber(summary.waistCm, 1, 1)}
-                </p>
-                <p className="mt-2 text-[13px] text-ink-secondary">cm</p>
+                </DotNumber>
+                <Caption className="mt-2">cm</Caption>
             </>
         ) : (
-            <Empty text="Sem medida ainda." />
+            <EmptyState>Sem medida ainda.</EmptyState>
         )}
     </Frame>
 );
@@ -520,61 +396,55 @@ const records: Render = ({ extras }, size) => {
     if (list.length === 0) {
         return (
             <Frame title="Recordes">
-                <Empty text="Nenhum recorde nos últimos 30 dias." />
+                <EmptyState>Nenhum recorde nos últimos 30 dias.</EmptyState>
             </Frame>
         );
     }
     const top = list[0];
-    const marker = <span aria-hidden className="mt-1 size-1.5 rounded-full bg-red" />;
+    const marker = <StatusDot className="mt-1" />;
 
     if (size === "small") {
         return (
             <Frame title="Recorde" aside={marker}>
-                <p className="mt-auto flex items-baseline gap-1.5">
-                    <span className="num text-[48px] leading-[0.85]">
-                        {formatNumber(top.loadKg)}
-                    </span>
-                    <span className="text-[13px] text-ink-secondary">kg</span>
-                </p>
-                <p className="mt-2 truncate text-[13px] text-ink-secondary">{top.exerciseName}</p>
+                <Metric
+                    size={48}
+                    value={formatNumber(top.loadKg)}
+                    unit="kg"
+                    spacing="tight"
+                    className="mt-auto"
+                />
+                <Caption className="mt-2 truncate">{top.exerciseName}</Caption>
             </Frame>
         );
     }
 
     const rows = (count: number) => (
-        <ol>
+        <List>
             {list.slice(0, count).map((record) => (
-                <li
+                <ValueRow
                     key={record.exerciseName}
-                    className="flex h-[28px] items-center justify-between gap-3 border-b border-hairline text-[13px] last:border-b-0"
-                >
-                    <span className="truncate">{record.exerciseName}</span>
-                    <span className="shrink-0 tabular-nums text-ink-secondary">
-                        {formatNumber(record.loadKg)} × {record.reps}
-                    </span>
-                </li>
+                    label={record.exerciseName}
+                    value={`${formatNumber(record.loadKg)} × ${record.reps}`}
+                />
             ))}
-        </ol>
+        </List>
     );
 
     if (size === "medium") {
         return (
-            <Frame
-                title="Recordes"
-                aside={<p className="text-[13px] text-ink-secondary">30 dias</p>}
-            >
+            <Frame title="Recordes" aside={<Caption>30 dias</Caption>}>
                 <div className="mt-auto">{rows(3)}</div>
             </Frame>
         );
     }
     return (
-        <Frame title="Recordes" aside={<p className="text-[13px] text-ink-secondary">30 dias</p>}>
-            <p className="mt-3 flex items-baseline gap-2">
-                <span className="num text-[56px] leading-[0.85]">{list.length}</span>
-                <span className="text-[13px] text-ink-secondary">
-                    recorde{list.length === 1 ? "" : "s"}
-                </span>
-            </p>
+        <Frame title="Recordes" aside={<Caption>30 dias</Caption>}>
+            <Metric
+                size={56}
+                value={list.length}
+                unit={`recorde${list.length === 1 ? "" : "s"}`}
+                className="mt-3"
+            />
             <div className="mt-auto">{rows(6)}</div>
         </Frame>
     );
@@ -585,7 +455,7 @@ const muscleVolume: Render = ({ extras }, size) => {
     if (list.length === 0) {
         return (
             <Frame title="Volume por músculo">
-                <Empty text="Ainda sem séries nesta semana." />
+                <EmptyState>Ainda sem séries nesta semana.</EmptyState>
             </Frame>
         );
     }
@@ -596,15 +466,14 @@ const muscleVolume: Render = ({ extras }, size) => {
         const top = list[0];
         return (
             <Frame title="Mais treinado">
-                <p className="mt-auto flex items-baseline gap-1.5">
-                    <span className="num text-[48px] leading-[0.85]">
-                        {formatNumber(top.sets, 1)}
-                    </span>
-                    <span className="text-[13px] text-ink-secondary">séries</span>
-                </p>
-                <p className="mt-2 truncate text-[13px] text-ink-secondary">
-                    {top.name}, nesta semana
-                </p>
+                <Metric
+                    size={48}
+                    value={formatNumber(top.sets, 1)}
+                    unit="séries"
+                    spacing="tight"
+                    className="mt-auto"
+                />
+                <Caption className="mt-2 truncate">{top.name}, nesta semana</Caption>
             </Frame>
         );
     }
@@ -617,17 +486,7 @@ const muscleVolume: Render = ({ extras }, size) => {
                     className="grid grid-cols-[96px_1fr_28px] items-center gap-2 text-[13px]"
                 >
                     <span className="truncate text-ink-secondary">{item.name}</span>
-                    <span className="relative h-1.5 rounded-full bg-dot-off">
-                        <span
-                            className="absolute inset-y-0 left-0 rounded-full bg-ink"
-                            style={{ width: `${(item.sets / max) * 100}%` }}
-                        />
-                        <span
-                            aria-hidden
-                            className="absolute -inset-y-1 w-px bg-red"
-                            style={{ left: `${(target / max) * 100}%` }}
-                        />
-                    </span>
+                    <ProgressBar value={item.sets} max={max} reference={target} />
                     <span className="text-right tabular-nums">{formatNumber(item.sets, 1)}</span>
                 </li>
             ))}
@@ -636,24 +495,18 @@ const muscleVolume: Render = ({ extras }, size) => {
 
     if (size === "medium") {
         return (
-            <Frame
-                title="Volume por músculo"
-                aside={<p className="text-[13px] text-ink-secondary">séries na semana</p>}
-            >
+            <Frame title="Volume por músculo" aside={<Caption>séries na semana</Caption>}>
                 <div className="mt-auto">{bars(4)}</div>
             </Frame>
         );
     }
     return (
-        <Frame
-            title="Volume por músculo"
-            aside={<p className="text-[13px] text-ink-secondary">séries na semana</p>}
-        >
+        <Frame title="Volume por músculo" aside={<Caption>séries na semana</Caption>}>
             <div className="mt-4">{bars(11)}</div>
-            <p className="mt-auto flex items-center gap-2 text-[11px] text-ink-secondary">
+            <Caption size={11} className="mt-auto flex items-center gap-2">
                 <span aria-hidden className="h-3 w-px bg-red" />
                 referência de {target} séries por semana
-            </p>
+            </Caption>
         </Frame>
     );
 };
@@ -663,36 +516,31 @@ const stagnant: Render = ({ extras }, size) => {
     if (size === "small" || list.length === 0) {
         return (
             <Frame title="Estagnados">
-                <p className="num mt-auto text-[56px] leading-[0.8]">{list.length}</p>
-                <p className="mt-3 text-[13px] text-ink-secondary">
+                <DotNumber as="p" size={56} leading="0.8" className="mt-auto">
+                    {list.length}
+                </DotNumber>
+                <Caption className="mt-3">
                     {list.length === 0 ? "Tudo progredindo" : `sem progredir há 3 semanas`}
-                </p>
+                </Caption>
             </Frame>
         );
     }
     return (
-        <Frame
-            title="Estagnados"
-            aside={<p className="text-[13px] text-ink-secondary">3 semanas sem progredir</p>}
-        >
-            <ol className="mt-auto">
+        <Frame title="Estagnados" aside={<Caption>3 semanas sem progredir</Caption>}>
+            <List className="mt-auto">
                 {list.slice(0, size === "medium" ? 3 : 7).map((item) => (
-                    <li
+                    <ValueRow
                         key={item.name}
-                        className="flex h-[28px] items-center justify-between gap-3 border-b border-hairline text-[13px] last:border-b-0"
-                    >
-                        <span className="truncate">{item.name}</span>
-                        <span className="shrink-0 tabular-nums text-ink-secondary">
-                            {formatNumber(item.bestKg)} kg
-                        </span>
-                    </li>
+                        label={item.name}
+                        value={`${formatNumber(item.bestKg)} kg`}
+                    />
                 ))}
-            </ol>
+            </List>
             {size === "large" ? (
-                <p className="mt-4 text-[13px] leading-snug text-ink-secondary">
+                <Caption className="mt-4 leading-snug">
                     Vale conversar com o instrutor sobre ajustar a faixa de repetições ou trocar o
                     exercício.
-                </p>
+                </Caption>
             ) : null}
         </Frame>
     );

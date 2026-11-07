@@ -1,20 +1,23 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 
 import { formatDuration, formatNumber } from "@/shared/format/numbers";
-import { ArrowRightIcon, CheckIcon, UndoIcon } from "@/shared/ui/icons";
+import { StatusDot } from "@/shared/ui/dot";
+import { DotMeter } from "@/shared/ui/dot-meter";
+import { FloatBar } from "@/shared/ui/float-bar";
+import { Icon } from "@/shared/ui/icons";
+import { List, ListRow } from "@/shared/ui/list";
+import { Panel, PanelNote } from "@/shared/ui/panel";
+import { PillAction } from "@/shared/ui/pill-action";
+import { QuietBand } from "@/shared/ui/quiet-band";
+import { RoundButton } from "@/shared/ui/round-button";
+import { Label } from "@/shared/ui/text";
+import { WHEEL_ITEM_HEIGHT, WheelPicker } from "@/shared/ui/wheel-picker";
 
 import { logSetAction, undoSetAction } from "../../_components/actions";
-import {
-    PillActionContent,
-    pillActionClass,
-    roundSecondaryClass,
-} from "../../_components/primary-action";
-
-import { WHEEL_ITEM_HEIGHT, WheelPicker } from "./wheel-picker";
+import { cx } from "@/shared/ui/cx";
 
 export type SetLoggerProps = {
     performedExerciseId: string;
@@ -60,29 +63,19 @@ export function SetLogger(props: SetLoggerProps) {
 
     return (
         <>
-            <section aria-label="Registro da série" className="panel rounded-[30px] px-5 pb-5 pt-5">
+            <Panel aria-label="Registro da série">
                 <div className="flex items-center justify-between px-1">
                     <h2 className="text-[15px] text-on-panel-secondary">
                         {finished ? "Exercício concluído" : `Série ${currentIndex + 1}`}
                     </h2>
-                    <div
-                        className="flex gap-1.5"
-                        role="img"
-                        aria-label={`${currentIndex} de ${targetSets} séries feitas`}
-                    >
-                        {Array.from({ length: targetSets }, (_, index) => (
-                            <span
-                                key={index}
-                                className={`size-[7px] rounded-full ${
-                                    index < currentIndex
-                                        ? "bg-on-panel"
-                                        : index === currentIndex
-                                          ? "bg-red"
-                                          : "bg-panel-track"
-                                }`}
-                            />
-                        ))}
-                    </div>
+                    <DotMeter
+                        total={targetSets}
+                        done={currentIndex}
+                        highlight={currentIndex}
+                        size={7}
+                        surface="panel"
+                        label={`${currentIndex} de ${targetSets} séries feitas`}
+                    />
                 </div>
 
                 {finished ? (
@@ -97,14 +90,7 @@ export function SetLogger(props: SetLoggerProps) {
                             </p>
                         ) : null}
                         <div className="relative mt-3">
-                            <div
-                                aria-hidden
-                                className="quiet pointer-events-none absolute inset-x-0 rounded-full"
-                                style={{
-                                    top: WHEEL_ITEM_HEIGHT + 2,
-                                    height: WHEEL_ITEM_HEIGHT - 4,
-                                }}
-                            />
+                            <QuietBand top={WHEEL_ITEM_HEIGHT + 2} height={WHEEL_ITEM_HEIGHT - 4} />
                             <div
                                 className={`relative grid ${isDuration ? "grid-cols-1" : "grid-cols-2"}`}
                             >
@@ -129,10 +115,10 @@ export function SetLogger(props: SetLoggerProps) {
                                             align="start"
                                             marker={
                                                 showIncrease ? (
-                                                    <span
-                                                        role="img"
-                                                        aria-label="Carga subiu desde a última vez"
-                                                        className="mb-6 size-[7px] self-center rounded-full bg-red"
+                                                    <StatusDot
+                                                        size={7}
+                                                        label="Carga subiu desde a última vez"
+                                                        className="mb-6 self-center"
                                                     />
                                                 ) : null
                                             }
@@ -153,97 +139,89 @@ export function SetLogger(props: SetLoggerProps) {
                     </>
                 )}
 
-                {props.lastTimeText ? (
-                    <p className="mt-4 border-t border-white/[0.08] px-1 pt-3.5 text-[13px] text-on-panel-secondary">
-                        {props.lastTimeText}
-                    </p>
-                ) : null}
-            </section>
+                {props.lastTimeText ? <PanelNote>{props.lastTimeText}</PanelNote> : null}
+            </Panel>
 
             {doneSets.length > 0 || !finished ? (
-                <ol aria-label="Séries" className="mt-5 px-2">
+                <List aria-label="Séries" className="mt-5 px-2">
                     {Array.from({ length: targetSets }, (_, index) => {
                         const set = doneSets[index];
                         const isLast = index === doneSets.length - 1;
                         return (
-                            <li
+                            <ListRow
                                 key={index}
-                                className={`flex h-12 items-center justify-between text-[15px] ${
-                                    index < targetSets - 1 ? "border-b border-hairline" : ""
-                                } ${set ? "" : "text-ink-secondary"}`}
+                                className={cx(
+                                    "flex h-12 items-center justify-between text-[15px]",
+                                    !set && "text-ink-secondary",
+                                )}
                             >
                                 <span>Série {index + 1}</span>
                                 {set ? (
-                                    <span
+                                    <Label
+                                        as="span"
+                                        size={17}
+                                        weight="normal"
                                         key={isLast ? `last-${doneSets.length}` : index}
-                                        className={`text-[17px] font-normal tabular-nums ${isLast ? "pulse-once inline-block" : ""}`}
+                                        className={cx(
+                                            "tabular-nums",
+                                            isLast && "pulse-once inline-block",
+                                        )}
                                     >
                                         {set.durationSeconds !== null
                                             ? formatDuration(set.durationSeconds)
                                             : `${formatNumber(set.loadKg ?? 0)} × ${set.reps ?? 0}`}
-                                    </span>
+                                    </Label>
                                 ) : (
                                     <span aria-label="pendente">·</span>
                                 )}
-                            </li>
+                            </ListRow>
                         );
                     })}
-                </ol>
+                </List>
             ) : null}
 
-            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center px-3 pb-[max(env(safe-area-inset-bottom),20px)] md:static md:mt-8 md:px-0 md:pb-0">
-                <div className="float-bar pointer-events-auto flex w-full max-w-md items-center gap-1 rounded-full p-2 md:max-w-none">
-                    {doneSets.length > 0 ? (
-                        <form action={undoSetAction}>
-                            <input
-                                type="hidden"
-                                name="performedExerciseId"
-                                value={performedExerciseId}
-                            />
-                            <button
-                                type="submit"
-                                aria-label="Desfazer a última série"
-                                className={roundSecondaryClass}
-                            >
-                                <UndoIcon size={20} />
-                            </button>
-                        </form>
-                    ) : null}
+            <FloatBar inlineOnDesktop>
+                {doneSets.length > 0 ? (
+                    <form action={undoSetAction}>
+                        <input
+                            type="hidden"
+                            name="performedExerciseId"
+                            value={performedExerciseId}
+                        />
+                        <RoundButton type="submit" aria-label="Desfazer a última série">
+                            <Icon name="undo" size={20} />
+                        </RoundButton>
+                    </form>
+                ) : null}
 
-                    {finished ? (
-                        <Link
-                            href={props.nextHref ?? "/treino"}
-                            className={`${pillActionClass} flex-1`}
-                        >
-                            <PillActionContent icon={<ArrowRightIcon size={20} />}>
-                                {props.nextHref ? "Próximo exercício" : "Voltar à lista"}
-                            </PillActionContent>
-                        </Link>
-                    ) : (
-                        <form action={logSetAction} className="flex-1">
-                            <input
-                                type="hidden"
-                                name="performedExerciseId"
-                                value={performedExerciseId}
-                            />
-                            <input type="hidden" name="position" value={currentIndex} />
-                            {isDuration ? (
-                                <input
-                                    type="hidden"
-                                    name="durationSeconds"
-                                    value={durationSeconds}
-                                />
-                            ) : (
-                                <>
-                                    <input type="hidden" name="loadKg" value={loadKg} />
-                                    <input type="hidden" name="reps" value={reps} />
-                                </>
-                            )}
-                            <ConfirmButton summary={summaryText} />
-                        </form>
-                    )}
-                </div>
-            </div>
+                {finished ? (
+                    <PillAction
+                        href={props.nextHref ?? "/treino"}
+                        grow
+                        icon={<Icon name="arrow-right" size={20} />}
+                    >
+                        {props.nextHref ? "Próximo exercício" : "Voltar à lista"}
+                    </PillAction>
+                ) : (
+                    <form action={logSetAction} className="flex-1">
+                        <input
+                            type="hidden"
+                            name="performedExerciseId"
+                            value={performedExerciseId}
+                        />
+                        <input type="hidden" name="position" value={currentIndex} />
+                        {isDuration ? (
+                            <input type="hidden" name="durationSeconds" value={durationSeconds} />
+                        ) : (
+                            <>
+                                <input type="hidden" name="loadKg" value={loadKg} />
+                                <input type="hidden" name="reps" value={reps} />
+                            </>
+                        )}
+                        <ConfirmButton summary={summaryText} />
+                    </form>
+                )}
+            </FloatBar>
         </>
     );
 }
@@ -251,11 +229,9 @@ export function SetLogger(props: SetLoggerProps) {
 function ConfirmButton({ summary }: { summary: string }) {
     const { pending } = useFormStatus();
     return (
-        <button type="submit" disabled={pending} className={pillActionClass}>
-            <PillActionContent icon={<CheckIcon size={20} />}>
-                Confirmar <span className="tabular-nums">{summary}</span>
-            </PillActionContent>
-        </button>
+        <PillAction type="submit" disabled={pending} icon={<Icon name="check" size={20} />}>
+            Confirmar <span className="tabular-nums">{summary}</span>
+        </PillAction>
     );
 }
 

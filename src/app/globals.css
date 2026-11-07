@@ -33,6 +33,7 @@
 
     --vita-red: #ff1744;
     --vita-red-text: #c8102e;
+    --vita-on-red: #ffffff;
 
     /* dark surfaces (panel, smoke glass) keep the same values in both themes */
     --vita-panel: #0b0b0d;
@@ -40,6 +41,7 @@
     --vita-on-panel-secondary: #9a9a9f;
     --vita-on-panel-dim: #6e6e73;
     --vita-panel-track: #3a3a3f;
+    --vita-panel-divider: rgb(255 255 255 / 0.08);
 
     @variant dark {
         --vita-canvas: #0b0b0d;
@@ -70,11 +72,18 @@
     --color-level-3: var(--vita-level-3);
     --color-red: var(--vita-red);
     --color-red-text: var(--vita-red-text);
+    --color-on-red: var(--vita-on-red);
     --color-panel: var(--vita-panel);
     --color-on-panel: var(--vita-on-panel);
     --color-on-panel-secondary: var(--vita-on-panel-secondary);
     --color-on-panel-dim: var(--vita-on-panel-dim);
     --color-panel-track: var(--vita-panel-track);
+    --color-panel-divider: var(--vita-panel-divider);
+
+    /* Radii outside Tailwind's scale: tiles, panels and sheets, and areas inside a panel. */
+    --radius-tile: 26px;
+    --radius-panel: 30px;
+    --radius-inner: 20px;
 
     --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     --font-dot: var(--font-doto), ui-monospace, monospace;
@@ -203,6 +212,11 @@
 
 @utility pulse-once {
     animation: vita-pulse 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Fades the top and bottom rows of a scroller (the selection wheel). */
+@utility fade-y {
+    mask-image: linear-gradient(transparent, #000 34%, #000 66%, transparent);
 }
 
 @utility no-scrollbar {
