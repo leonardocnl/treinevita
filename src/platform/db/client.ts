@@ -1,31 +1,21 @@
 import "server-only";
 
-import { Pool } from "@neondatabase/serverless";
-import { drizzle, type NeonDatabase } from "drizzle-orm/neon-serverless";
-
-import { schema } from "./schema";
+import { createLocalDatabase, createNeonDatabase, resolveDriver, type Database } from "./drivers";
 
 /**
- * Single database entry point.
+ * Single database entry point for the app.
  *
- * The Pool driver (WebSocket) is used instead of the HTTP driver because it
- * supports interactive transactions, which the tenant context needs to set
- * per-transaction settings once Row-Level Security is turned on (ADR 0002).
+ * Neon in preview and production; a local PGlite database in development when
+ * DATABASE_URL is not set (see `npm run db:local:reset`).
  */
-let database: NeonDatabase<typeof schema> | undefined;
+let database: Promise<Database> | undefined;
 
-export function getDb(): NeonDatabase<typeof schema> {
-    if (database) {
-        return database;
+export function getDb(): Promise<Database> {
+    if (!database) {
+        const driver = resolveDriver(process.env);
+        database = driver.kind === "neon" ? createNeonDatabase(driver.url) : createLocalDatabase();
     }
-
-    const connectionString = process.env.DATABASE_URL;
-    if (!connectionString) {
-        throw new Error("DATABASE_URL is not set. Copy .env.example to .env.local and fill it in.");
-    }
-
-    database = drizzle(new Pool({ connectionString }), { schema });
     return database;
 }
 
-export type Database = NeonDatabase<typeof schema>;
+export type { Database };
