@@ -11,7 +11,7 @@ import { logSetAction, undoSetAction } from "../../_components/actions";
 import {
     PillActionContent,
     pillActionClass,
-    roundSmokeClass,
+    roundSecondaryClass,
 } from "../../_components/primary-action";
 
 import { WHEEL_ITEM_HEIGHT, WheelPicker } from "./wheel-picker";
@@ -191,8 +191,8 @@ export function SetLogger(props: SetLoggerProps) {
                 </ol>
             ) : null}
 
-            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center px-4 pb-[max(env(safe-area-inset-bottom),20px)] md:static md:mt-8 md:px-0 md:pb-0">
-                <div className="pointer-events-auto flex w-full max-w-md items-center gap-2.5 md:max-w-none">
+            <div className="fixed inset-x-0 bottom-0 z-20 flex justify-center border-t border-hairline bg-canvas px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 md:static md:mt-8 md:border-0 md:bg-transparent md:px-0 md:pb-0 md:pt-0">
+                <div className="flex w-full max-w-md items-center gap-2.5 md:max-w-none">
                     {doneSets.length > 0 ? (
                         <form action={undoSetAction}>
                             <input
@@ -203,7 +203,7 @@ export function SetLogger(props: SetLoggerProps) {
                             <button
                                 type="submit"
                                 aria-label="Desfazer a última série"
-                                className={roundSmokeClass}
+                                className={roundSecondaryClass}
                             >
                                 <UndoIcon size={20} />
                             </button>

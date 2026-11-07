@@ -67,12 +67,12 @@ export default async function WorkoutPage() {
                 </form>
             </main>
 
-            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center px-4 pb-[max(env(safe-area-inset-bottom),20px)]">
-                <form action={finishWorkoutAction} className="pointer-events-auto w-full max-w-md">
+            <div className="fixed inset-x-0 bottom-0 z-20 flex justify-center border-t border-hairline bg-canvas px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3">
+                <form action={finishWorkoutAction} className="w-full max-w-md">
                     <button type="submit" className={pillActionClass}>
                         <PillActionContent icon={<CheckIcon size={20} />}>
                             Finalizar treino
-                            <span className="text-[13px] text-on-panel-secondary">
+                            <span className="text-[13px] text-on-ink-secondary">
                                 {doneExercises} de {workout.exercises.length}
                             </span>
                         </PillActionContent>

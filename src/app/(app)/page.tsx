@@ -5,7 +5,7 @@ import { getOpenSession } from "@/modules/logging";
 import { getSummary, type Summary } from "@/modules/progress";
 import { requireAppContext } from "@/modules/tenancy";
 import { formatNumber } from "@/shared/format/numbers";
-import { formatLongDate, monthName } from "@/shared/time/local-date";
+import { formatLongDate } from "@/shared/time/local-date";
 import { DotRing } from "@/shared/ui/dot-ring";
 import { PlayIcon } from "@/shared/ui/icons";
 
@@ -64,7 +64,7 @@ export default async function SummaryPage() {
                             next={summary.nextWorkout}
                             hasOpenSession={summary.hasOpenSession}
                         />
-                        <Calendar calendar={summary.calendar} />
+                        <Activity activity={summary.activity} />
                     </div>
                 </div>
             </main>
@@ -176,79 +176,127 @@ function NextWorkout({
 }) {
     if (!next) {
         return (
-            <section className="panel mt-9 rounded-[28px] p-6">
-                <p className="text-[15px] text-on-panel-secondary">
+            <section aria-label="Próximo treino" className="mt-10 border-t border-hairline pt-6">
+                <p className="text-[15px] text-ink-secondary">
                     Monte sua ficha em Treinos para começar.
                 </p>
             </section>
         );
     }
-    const increasingText =
-        next.increasing.length === 0
-            ? `${next.exerciseCount} exercícios`
-            : next.increasing.length === 1
-              ? `${next.increasing[0]} sobe de carga`
-              : `${next.increasing.length} exercícios sobem de carga`;
+    const names = next.exercises.map((exercise) => exercise.name);
+    const preview =
+        names.length > 2
+            ? `${names.slice(0, 2).join(", ")} e mais ${names.length - 2}`
+            : names.join(", ");
 
     return (
         <section
             aria-label="Próximo treino"
-            className="panel rise-in mt-9 flex items-end justify-between gap-6 rounded-[28px] px-6 py-6 md:mt-0"
+            className="rise-in mt-10 border-t border-hairline pt-6 md:mt-0"
             style={{ "--stagger": 4 } as React.CSSProperties}
         >
-            <div className="flex min-w-0 flex-col gap-2">
-                <p className="text-[13px] text-on-panel-secondary">
+            <div className="flex items-baseline justify-between">
+                <p className="text-[13px] text-ink-secondary">
                     {hasOpenSession ? "Em andamento" : "Próximo"}
                 </p>
-                <p className="text-[30px] font-normal leading-none">Treino {next.label}</p>
-                <p className="mt-1 truncate text-[13px] text-on-panel-secondary">
-                    {increasingText}
+                <p className="text-[13px] text-ink-secondary">
+                    <span className="num text-[15px] text-ink">{next.exerciseCount}</span>{" "}
+                    exercícios
                 </p>
             </div>
-            <ul aria-hidden className="grid shrink-0 grid-cols-4 gap-1.5">
-                {next.exercises.map((exercise, index) => (
-                    <li
-                        key={index}
-                        className={`size-2 rounded-full ${exercise.increases ? "bg-red" : "bg-on-panel"}`}
-                    />
-                ))}
-            </ul>
+            <p className="mt-2 text-[40px] font-light leading-none">Treino {next.label}</p>
+            <p className="mt-3 text-[15px] leading-snug text-ink-secondary">{preview}</p>
+            {next.increasing.length > 0 ? (
+                <p className="mt-3 flex items-center gap-2 text-[15px]">
+                    <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-red" />
+                    {next.increasing.length === 1
+                        ? `${next.increasing[0]} sobe de carga`
+                        : `${next.increasing.length} exercícios sobem de carga`}
+                </p>
+            ) : null}
         </section>
     );
 }
 
-function Calendar({ calendar }: { calendar: Summary["calendar"] }) {
-    const trained = calendar.days.filter((day) => day.state === "trained").length;
-    const colors: Record<string, string> = {
-        trained: "bg-ink",
-        today: "bg-red",
-        missed: "bg-dot-off",
-        future: "bg-hairline",
+function Activity({ activity }: { activity: Summary["activity"] }) {
+    const levelClass: Record<number, string> = {
+        [-1]: "bg-transparent",
+        0: "bg-dot-off",
+        1: "bg-level-1",
+        2: "bg-level-2",
+        3: "bg-level-3",
     };
+    const weekCount = activity.weeks.length;
+    // Drop a month label that would collide with the next one (less than 3 weeks apart).
+    const monthLabels = activity.monthLabels.filter(
+        (month, index, all) =>
+            index === all.length - 1 || all[index + 1].weekIndex - month.weekIndex >= 3,
+    );
 
     return (
         <section
-            aria-label="Calendário do mês"
-            className="rise-in mt-8"
+            aria-label="Atividade das últimas semanas"
+            className="rise-in mt-10 border-t border-hairline pt-6"
             style={{ "--stagger": 6 } as React.CSSProperties}
         >
-            <div className="flex items-baseline justify-between text-[15px]">
-                <p className="font-normal">{monthName(calendar.monthStart)}</p>
-                <p className="text-ink-secondary">
-                    {trained} treino{trained === 1 ? "" : "s"}
+            <div className="flex items-baseline justify-between">
+                <p className="text-[13px] text-ink-secondary">Atividade</p>
+                <p className="text-[13px] text-ink-secondary">
+                    <span className="num text-[15px] text-ink">{activity.trainedDays}</span> treinos
+                    em {weekCount} semanas
                 </p>
             </div>
-            <div
-                className="mt-3.5 grid grid-cols-[repeat(15,minmax(0,1fr))] gap-[7px]"
-                role="img"
-                aria-label={`${trained} dias treinados no mês`}
-            >
-                {calendar.days.map((day) => (
-                    <span
-                        key={day.date}
-                        className={`aspect-square rounded-full ${colors[day.state]}`}
-                    />
-                ))}
+
+            <div className="mt-4">
+                <div
+                    aria-hidden
+                    className="grid text-[11px] text-ink-secondary"
+                    style={{ gridTemplateColumns: `repeat(${weekCount}, minmax(0, 1fr))` }}
+                >
+                    {monthLabels.map((month) => (
+                        <span
+                            key={month.weekIndex}
+                            style={{ gridColumnStart: month.weekIndex + 1 }}
+                            className="whitespace-nowrap"
+                        >
+                            {month.label}
+                        </span>
+                    ))}
+                </div>
+                <div
+                    role="img"
+                    aria-label={`${activity.trainedDays} dias treinados nas últimas ${weekCount} semanas`}
+                    className="mt-2 grid grid-flow-col grid-rows-7 gap-[3px]"
+                    style={{ gridTemplateColumns: `repeat(${weekCount}, minmax(0, 1fr))` }}
+                >
+                    {activity.weeks.flatMap((week) =>
+                        week.map((day) => (
+                            <span
+                                key={day.date}
+                                className={`aspect-square rounded-full ${
+                                    day.isToday && day.level <= 0
+                                        ? "bg-transparent ring-[1.5px] ring-red ring-inset"
+                                        : day.isToday
+                                          ? "bg-red"
+                                          : levelClass[day.level]
+                                }`}
+                            />
+                        )),
+                    )}
+                </div>
+                <div
+                    aria-hidden
+                    className="mt-3 flex items-center justify-end gap-1.5 text-[11px] text-ink-secondary"
+                >
+                    <span>menos</span>
+                    {[0, 1, 2, 3].map((level) => (
+                        <span
+                            key={level}
+                            className={`size-2.5 rounded-full ${levelClass[level]}`}
+                        />
+                    ))}
+                    <span>mais</span>
+                </div>
             </div>
         </section>
     );

@@ -2,7 +2,13 @@
  * Public API of the progress module. Other modules import only from here.
  */
 export { startNextWorkout } from "./application/start-workout";
-export { getSummary, type CalendarDay, type Summary } from "./application/summary";
+export {
+    ACTIVITY_WEEKS,
+    getSummary,
+    type ActivityDay,
+    type CalendarDay,
+    type Summary,
+} from "./application/summary";
 export { getWorkoutView, type ExerciseView, type WorkoutView } from "./application/workout-view";
 export {
     doubleProgression,

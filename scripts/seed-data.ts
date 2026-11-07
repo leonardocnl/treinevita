@@ -407,15 +407,22 @@ export const workoutSeeds: { label: string; exercises: PrescriptionSeed[] }[] = 
     },
 ];
 
-/** Training days of the mock history (local dates). The Friday of the current week is missing on purpose. */
-export function trainingDays(): { date: string; label: string }[] {
-    const days: { date: string; label: string }[] = [];
-    const firstMonday = new Date(Date.UTC(2026, 8, 28));
-    const skipped = new Set(["2026-10-16", "2026-11-06"]);
+/** Training days of the mock history (local dates): 16 weeks, a few missed days, the Friday of the current week missing on purpose. */
+export function trainingDays(): { date: string; label: string; skipExercises: number }[] {
+    const days: { date: string; label: string; skipExercises: number }[] = [];
+    const firstMonday = new Date(Date.UTC(2026, 6, 20));
+    const skipped = new Set([
+        "2026-08-07",
+        "2026-08-26",
+        "2026-09-11",
+        "2026-09-14",
+        "2026-10-16",
+        "2026-11-06",
+    ]);
     let rotation = 0;
     const labels = ["A", "B", "C"];
 
-    for (let week = 0; week < 6; week += 1) {
+    for (let week = 0; week < 16; week += 1) {
         for (const offset of [0, 2, 4]) {
             const day = new Date(firstMonday);
             day.setUTCDate(firstMonday.getUTCDate() + week * 7 + offset);
@@ -423,7 +430,10 @@ export function trainingDays(): { date: string; label: string }[] {
             if (skipped.has(date)) {
                 continue;
             }
-            days.push({ date, label: labels[rotation % 3] });
+            // Deterministic variety: some sessions end early (fewer exercises).
+            const hash = [...date].reduce((sum, char) => sum + char.charCodeAt(0) * 7, 0);
+            const skipExercises = hash % 5 === 0 ? 3 : hash % 3 === 0 ? 1 : 0;
+            days.push({ date, label: labels[rotation % 3], skipExercises });
             rotation += 1;
         }
     }

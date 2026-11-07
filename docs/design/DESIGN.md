@@ -1,6 +1,6 @@
 # VITA design system: "Ponto e linha"
 
-A calm, editorial workout tracker. Dot-matrix numbers (in the spirit of Nothing), thin text and hairlines (in the spirit of teenage engineering), and the smoke glass of Kinne for everything that floats.
+A calm, editorial workout tracker. Dot-matrix numbers (in the spirit of Nothing) and thin text and hairlines (in the spirit of teenage engineering). Glass is used sparingly; where it lives is still being decided.
 
 ## Principles
 
@@ -46,12 +46,13 @@ The 1px edges are light reflections on the glass, never visible borders on light
 
 ## Components
 
-- **Bottom bar**: smoke pill with text tabs (13px). The active tab is lit by a red light rising from the bottom edge, with a 2px red line and halo. The screen's main action sits beside it as a 56px red circle.
-- **Action pill**: smoke pill, label at 15px, numbers in dots, red circle with the icon at the end.
+- **Bottom bar**: canvas color with a hairline on top, text tabs (13px); the active tab has a 5px red dot below the label. The screen's main action sits at the end as a 48px red circle.
+- **Action pill**: solid ink pill (inverts in dark mode), label at 15px, numbers in dots, red circle with the icon at the end.
+- **Next workout**: an editorial section, not a card: label, the workout name at 40px light, a short preview of the exercises, and a red dot line when a load goes up.
+- **Activity graph**: the last 20 weeks as a contribution graph (weeks in columns, Monday on top), dots in four intensity levels by number of effective sets, today in red.
 - **Hero number**: label (15px secondary), dot number (112px), caption sentence (15px secondary).
 - **Metric row**: three columns divided by vertical hairlines: label 13, dot number 36, detail 13.
 - **Dot ring**: 24 dots in a circle; the done share is red.
-- **Dot calendar**: one dot per day; ink = trained, red = today, dot-off = past without training, hairline = future.
 - **Selection wheel**: native scroll snap, 64px rows, center value 56px in dots, neighbours 24px dim, one quiet band across all wheels, fade at the edges. Load on the left, reps on the right.
 - **Set list**: rows of 48px with hairlines; done sets show the value in dots and pulse once when logged.
 - **Exercise list**: rows with hairlines, name 17, status 13, one dot per set on the right (ink = done, red = load goes up today).

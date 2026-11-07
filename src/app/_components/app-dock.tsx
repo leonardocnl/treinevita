@@ -11,34 +11,16 @@ const tabs: { id: Tab; href: string; label: string }[] = [
 ];
 
 /**
- * Floating bottom bar: a smoke-glass chip with the tabs (the active one lit
- * by a red light rising from the bottom edge) and, beside it, the screen's
- * main action as a round button.
+ * Bottom bar in the "line" language: the canvas color with a hairline on top,
+ * text tabs (the active one marked by a red dot) and, at the end, the screen's
+ * main action as a red circle.
  */
 export function AppDock({ active, action }: { active: Tab; action?: ReactNode }) {
-    const index = tabs.findIndex((tab) => tab.id === active);
     return (
-        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center px-4 pb-[max(env(safe-area-inset-bottom),20px)]">
-            <div className="pointer-events-auto flex w-full max-w-md items-center gap-2.5">
-                <nav
-                    aria-label="Navegação principal"
-                    className="smoke relative h-14 flex-1 overflow-hidden rounded-full"
-                >
-                    {index >= 0 ? (
-                        <>
-                            <span
-                                aria-hidden
-                                className="limelight absolute inset-y-0 w-1/4 transition-[left] duration-300 ease-out"
-                                style={{ left: `${index * 25}%` }}
-                            />
-                            <span
-                                aria-hidden
-                                className="absolute bottom-0 h-0.5 w-6 -translate-x-1/2 rounded-full bg-red shadow-[0_0_10px_var(--vita-red)] transition-[left] duration-300 ease-out"
-                                style={{ left: `${index * 25 + 12.5}%` }}
-                            />
-                        </>
-                    ) : null}
-                    <ul className="relative grid h-full grid-cols-4">
+        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-hairline bg-canvas pb-[env(safe-area-inset-bottom)]">
+            <div className="mx-auto flex h-[72px] w-full max-w-md items-center gap-3 px-4 md:max-w-5xl md:px-10">
+                <nav aria-label="Navegação principal" className="h-full flex-1">
+                    <ul className="grid h-full grid-cols-4 md:flex md:gap-10">
                         {tabs.map((tab) => {
                             const isActive = tab.id === active;
                             return (
@@ -46,13 +28,17 @@ export function AppDock({ active, action }: { active: Tab; action?: ReactNode })
                                     <Link
                                         href={tab.href}
                                         aria-current={isActive ? "page" : undefined}
-                                        className={`flex flex-1 items-center justify-center text-[13px] transition-colors ${
+                                        className={`relative flex flex-1 flex-col items-center justify-center gap-1.5 text-[13px] transition-colors md:flex-none ${
                                             isActive
-                                                ? "font-medium text-on-panel"
-                                                : "font-normal text-on-panel-secondary hover:text-on-panel"
+                                                ? "font-normal text-ink"
+                                                : "text-ink-secondary hover:text-ink"
                                         }`}
                                     >
-                                        {tab.label}
+                                        <span>{tab.label}</span>
+                                        <span
+                                            aria-hidden
+                                            className={`size-[5px] rounded-full ${isActive ? "bg-red" : "bg-transparent"}`}
+                                        />
                                     </Link>
                                 </li>
                             );

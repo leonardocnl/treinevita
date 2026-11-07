@@ -27,6 +27,15 @@ import { bodyMeasurements } from "../infrastructure/schema";
 
 type Context = TenantContext & { timezone: string };
 
+export type ActivityDay = {
+    readonly date: string;
+    /** 0 = no training, 1–3 = intensity by number of effective sets, -1 = future. */
+    readonly level: -1 | 0 | 1 | 2 | 3;
+    readonly isToday: boolean;
+};
+
+export const ACTIVITY_WEEKS = 20;
+
 export type CalendarDay = {
     readonly date: string;
     readonly state: "trained" | "today" | "missed" | "future";
@@ -53,6 +62,11 @@ export type Summary = {
         readonly exercises: readonly { readonly name: string; readonly increases: boolean }[];
     } | null;
     readonly hasOpenSession: boolean;
+    readonly activity: {
+        readonly weeks: readonly (readonly ActivityDay[])[];
+        readonly monthLabels: readonly { readonly weekIndex: number; readonly label: string }[];
+        readonly trainedDays: number;
+    };
     readonly calendar: {
         readonly monthStart: string;
         readonly leadingBlanks: number;
@@ -141,8 +155,11 @@ export async function getSummary(context: Context, hasOpenSession: boolean): Pro
         }
     }
 
+    const activity = await getActivity(context, today);
+
     return {
         today,
+        activity,
         week: { done: doneThisWeek, goal },
         weight,
         waistCm,
@@ -245,4 +262,66 @@ async function getWeeklyRecord(context: Context, weekStart: string): Promise<Sum
         loadKg: top.loadKg,
         reps: top.reps,
     };
+}
+
+/**
+ * Training activity of the last weeks, one column per week (Monday on top),
+ * like a contribution graph. Intensity comes from the number of effective sets.
+ */
+async function getActivity(context: Context, today: string): Promise<Summary["activity"]> {
+    const firstDay = addDays(startOfWeek(today), -7 * (ACTIVITY_WEEKS - 1));
+    const rows = await listSetsSince(context, new Date(`${addDays(firstDay, -1)}T00:00:00Z`));
+
+    const setsByDay = new Map<string, number>();
+    for (const row of rows) {
+        if (row.set.setType !== "working" && row.set.setType !== "failure") {
+            continue;
+        }
+        const date = toLocalDate(row.startedAt, context.timezone);
+        setsByDay.set(date, (setsByDay.get(date) ?? 0) + 1);
+    }
+
+    const weeks: ActivityDay[][] = [];
+    const monthLabels: { weekIndex: number; label: string }[] = [];
+    let trainedDays = 0;
+    let lastMonth = "";
+
+    for (let week = 0; week < ACTIVITY_WEEKS; week += 1) {
+        const days: ActivityDay[] = [];
+        for (let weekday = 0; weekday < 7; weekday += 1) {
+            const date = addDays(firstDay, week * 7 + weekday);
+            const sets = setsByDay.get(date) ?? 0;
+            let level: ActivityDay["level"] = 0;
+            if (date > today) {
+                level = -1;
+            } else if (sets >= 24) {
+                level = 3;
+            } else if (sets >= 16) {
+                level = 2;
+            } else if (sets > 0) {
+                level = 1;
+            }
+            if (sets > 0 && date <= today) {
+                trainedDays += 1;
+            }
+            days.push({ date, level, isToday: date === today });
+        }
+        const month = days[0].date.slice(0, 7);
+        if (month !== lastMonth) {
+            monthLabels.push({ weekIndex: week, label: shortMonth(days[0].date) });
+            lastMonth = month;
+        }
+        weeks.push(days);
+    }
+
+    return { weeks, monthLabels, trainedDays };
+}
+
+function shortMonth(localDate: string): string {
+    const text = new Date(`${localDate}T12:00:00Z`).toLocaleDateString("pt-BR", {
+        month: "short",
+        timeZone: "UTC",
+    });
+    const clean = text.replace(".", "");
+    return clean.charAt(0).toUpperCase() + clean.slice(1);
 }

@@ -97,7 +97,7 @@ async function main() {
             athleteUserId: owner.id,
             createdByUserId: owner.id,
             name: "Ficha de novembro",
-            startedOn: "2026-09-28",
+            startedOn: "2026-07-20",
         })
         .returning();
 
@@ -181,7 +181,8 @@ async function main() {
             .returning();
         sessionCount += 1;
 
-        const states = required(stateByLabel.get(day.label), day.label);
+        const allStates = required(stateByLabel.get(day.label), day.label);
+        const states = allStates.slice(0, allStates.length - day.skipExercises);
         for (const [position, state] of states.entries()) {
             const { seed } = state;
             const [performed] = await db

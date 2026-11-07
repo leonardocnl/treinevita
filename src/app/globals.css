@@ -11,6 +11,10 @@
     --vita-ink-secondary: #5b5b60;
     --vita-hairline: #dedad9;
     --vita-dot-off: #d6d2d1;
+    --vita-on-ink-secondary: #a1a1a6;
+    --vita-level-1: #bdb8b7;
+    --vita-level-2: #7d797c;
+    --vita-level-3: #0b0b0d;
 
     --vita-red: #ff1744;
     --vita-red-text: #c8102e;
@@ -31,6 +35,10 @@
         --vita-ink-secondary: #a1a1a6;
         --vita-hairline: #26262a;
         --vita-dot-off: #2e2e33;
+        --vita-on-ink-secondary: #5b5b60;
+        --vita-level-1: #4a4a50;
+        --vita-level-2: #96969b;
+        --vita-level-3: #fcf8f7;
         --vita-red-text: #ff4d6d;
         --vita-panel: #1a1a1d;
     }
@@ -43,6 +51,10 @@
     --color-ink-secondary: var(--vita-ink-secondary);
     --color-hairline: var(--vita-hairline);
     --color-dot-off: var(--vita-dot-off);
+    --color-on-ink-secondary: var(--vita-on-ink-secondary);
+    --color-level-1: var(--vita-level-1);
+    --color-level-2: var(--vita-level-2);
+    --color-level-3: var(--vita-level-3);
     --color-red: var(--vita-red);
     --color-red-text: var(--vita-red-text);
     --color-panel: var(--vita-panel);
