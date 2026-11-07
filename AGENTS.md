@@ -17,4 +17,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Respect the module boundaries in `docs/adr/0001-modular-monolith.md`; run `npm run check:architecture`.
 - Every repository function takes a `TenantContext` (`docs/adr/0002-multi-tenancy.md`).
 - Before building a feature, list the attack vectors it brings (OWASP Top 10) and how the implementation closes them.
-- Follow `docs/design/principles.md` for UI and motion.
+- Every screen and component follows `docs/design/DESIGN.md` (locked). Use only the tokens and utilities from `src/app/globals.css`; never hard-code colors, fonts, radii or shadows. Visual changes need the owner's approval.
