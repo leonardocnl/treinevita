@@ -1,6 +1,21 @@
 @import "tailwindcss";
 
 /*
+ * Dark theme: follows the system, unless an ancestor forces a theme with
+ * data-theme="dark" or data-theme="light" (Storybook, a future theme setting).
+ */
+@custom-variant dark {
+    &:where([data-theme="dark"], [data-theme="dark"] *) {
+        @slot;
+    }
+    @media (prefers-color-scheme: dark) {
+        &:not(:where([data-theme="light"], [data-theme="light"] *)) {
+            @slot;
+        }
+    }
+}
+
+/*
  * VITA design tokens — "Ponto e linha" (see docs/design/DESIGN.md).
  * Color rule 60/30/10: light = paper 60, ink 30, red 10; dark swaps paper and ink.
  */
@@ -25,10 +40,8 @@
     --vita-on-panel-secondary: #9a9a9f;
     --vita-on-panel-dim: #6e6e73;
     --vita-panel-track: #3a3a3f;
-}
 
-@media (prefers-color-scheme: dark) {
-    :root {
+    @variant dark {
         --vita-canvas: #0b0b0d;
         --vita-paper: #161618;
         --vita-ink: #fcf8f7;
@@ -112,7 +125,7 @@
     -webkit-backdrop-filter: blur(28px) saturate(200%);
     backdrop-filter: blur(28px) saturate(200%);
     border: 1px solid rgb(11 11 13 / 0.06);
-    @media (prefers-color-scheme: dark) {
+    @variant dark {
         background-color: rgb(30 30 33 / 0.5);
         border-color: rgb(255 255 255 / 0.08);
     }
@@ -126,7 +139,7 @@
     border: 1px solid rgb(11 11 13 / 0.05);
     box-shadow: 0 8px 24px -16px rgb(11 11 13 / 0.45);
     color: var(--vita-ink);
-    @media (prefers-color-scheme: dark) {
+    @variant dark {
         background-color: rgb(28 28 30 / 0.72);
         border-color: rgb(255 255 255 / 0.08);
     }
