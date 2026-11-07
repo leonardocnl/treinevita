@@ -6,7 +6,7 @@ import { z } from "zod";
 
 import { devSignIn, destroySession } from "@/modules/identity";
 import { discardOpenSession, finishSession, logSet, undoLastSet } from "@/modules/logging";
-import { startNextWorkout } from "@/modules/progress";
+import { saveDashboardLayout, startNextWorkout, type WidgetPlacement } from "@/modules/progress";
 import { requireAppContext } from "@/modules/tenancy";
 
 /*
@@ -92,4 +92,20 @@ export async function discardWorkoutAction(): Promise<void> {
     await discardOpenSession(context);
     revalidatePath("/", "layout");
     redirect("/");
+}
+
+const layoutSchema = z
+    .array(z.object({ kind: z.string().max(40), size: z.string().max(10) }))
+    .max(30);
+
+/** Saves the Summary widget layout; the module validates kinds and sizes against the catalog. */
+export async function saveLayoutAction(layout: unknown): Promise<WidgetPlacement[]> {
+    const context = await requireAppContext();
+    const parsed = layoutSchema.safeParse(layout);
+    if (!parsed.success) {
+        return [];
+    }
+    const saved = await saveDashboardLayout(context, parsed.data);
+    revalidatePath("/");
+    return saved;
 }

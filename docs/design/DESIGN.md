@@ -57,6 +57,15 @@ The 1px edges are light reflections on the glass, never visible borders on light
 - **Set list**: rows of 48px with hairlines; done sets show the value in dots and pulse once when logged.
 - **Exercise list**: rows with hairlines, name 17, status 13, one dot per set on the right (ink = done, red = load goes up today).
 
+## Summary widgets
+
+The Summary is a grid of widgets the person chooses and arranges, in three iOS-like sizes: small (1×1), medium (2×1) and large (2×2). Rows are square, sized from the container width (2 columns on the phone, 4 on desktop), packed densely.
+
+- Tiles: paper surface, radius 26, no border or shadow; content follows the type rules (dot numbers ≥ 36px).
+- Catalog: Semana, Constância, Próximo treino, Último treino, Peso, Cintura (small only), Recordes, Volume por músculo, Estagnados. Each defines its sizes in `progress/domain/widgets.ts`.
+- **Constância** (weeks against the goal): one row per week with the goal as dots, each workout lights one; a red mark when the goal was met; the weekly average as the big number.
+- Editing: the "Editar" button turns each tile into a frosted overlay with remove, move earlier or later, and a size switch; "Adicionar" opens a frosted sheet with the widgets not on screen; "Concluir" saves (validated against the catalog on the server).
+
 ## Spacing and shape
 
 - 4px base; screen margin 24px; sections 32–36px apart; rows 48–64px.

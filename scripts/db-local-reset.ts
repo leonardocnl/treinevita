@@ -11,6 +11,7 @@ import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 
 import { doubleProgression } from "../src/modules/progress/domain/progression";
+import { DEFAULT_LAYOUT } from "../src/modules/progress/domain/widgets";
 import { LOCAL_DATABASE_PATH } from "../src/platform/db/drivers";
 import { schema } from "../src/platform/db/schema";
 
@@ -242,14 +243,7 @@ async function main() {
         })),
     );
 
-    const widgets = [
-        { kind: "weekly_goal", size: "medium" },
-        { kind: "body_weight", size: "small" },
-        { kind: "personal_record", size: "small" },
-        { kind: "next_workout", size: "medium" },
-        { kind: "training_calendar", size: "small" },
-        { kind: "waist", size: "small" },
-    ] as const;
+    const widgets = DEFAULT_LAYOUT;
     await db.insert(schema.dashboardWidgets).values(
         widgets.map((widget, position) => ({
             workspaceId: workspace.id,
