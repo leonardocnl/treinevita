@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+/*
+ * VITA design tokens.
+ * Color rule 60/30/10: light = white 60, black 30, red 10; dark swaps white and black.
+ */
+:root {
+    --vita-paper: #fcf8f7;
+    --vita-ink: #0b0b0d;
+    --vita-red: #ff1744;
+    --vita-red-text: #c8102e;
+
+    --vita-canvas: #ede8e6;
+    --vita-ink-secondary: #6b6b70;
+    --vita-track: #d9d2d0;
+
+    --vita-glass: rgb(252 248 247 / 0.6);
+    --vita-glass-highlight: rgb(255 255 255 / 0.95);
+    --vita-glass-shadow: rgb(11 11 13 / 0.07);
+
+    --vita-radius-surface: 32px;
+    --vita-radius-widget: 28px;
+    --vita-radius-control: 24px;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --vita-paper: #0b0b0d;
+        --vita-ink: #fcf8f7;
+        --vita-red-text: #ff4d6d;
+
+        --vita-canvas: #141416;
+        --vita-ink-secondary: #a1a1a6;
+        --vita-track: #2c2c2e;
+
+        --vita-glass: rgb(28 28 30 / 0.55);
+        --vita-glass-highlight: rgb(255 255 255 / 0.14);
+        --vita-glass-shadow: rgb(0 0 0 / 0.35);
+    }
+}
+
+@theme inline {
+    --color-paper: var(--vita-paper);
+    --color-ink: var(--vita-ink);
+    --color-red: var(--vita-red);
+    --color-red-text: var(--vita-red-text);
+    --color-canvas: var(--vita-canvas);
+    --color-ink-secondary: var(--vita-ink-secondary);
+    --color-track: var(--vita-track);
+    --font-sans:
+        -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--font-inter), system-ui, sans-serif;
+    --font-numeric: var(--font-archivo), sans-serif;
+    --radius-surface: var(--vita-radius-surface);
+    --radius-widget: var(--vita-radius-widget);
+    --radius-control: var(--vita-radius-control);
+}
+
+@utility glass {
+    background: var(--vita-glass);
+    -webkit-backdrop-filter: blur(28px) saturate(190%);
+    backdrop-filter: blur(28px) saturate(190%);
+    box-shadow:
+        inset 0 1px 1.5px var(--vita-glass-highlight),
+        0 10px 30px var(--vita-glass-shadow),
+        0 1px 3px var(--vita-glass-shadow);
+}
+
+@utility numeric {
+    font-family: var(--font-numeric);
+    font-stretch: 125%;
+    font-variant-numeric: tabular-nums;
+}
+
+body {
+    background: var(--vita-canvas);
+    color: var(--vita-ink);
+    font-family: var(--font-sans);
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+}

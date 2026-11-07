@@ -1,0 +1,20 @@
+# Git hooks (installed by `npm install` through the "prepare" script).
+pre-commit:
+    parallel: true
+    commands:
+        format:
+            glob: "*.{ts,tsx,js,mjs,cjs,json,css,md,yml}"
+            run: npx prettier --check {staged_files}
+        lint:
+            glob: "*.{ts,tsx}"
+            run: npx eslint {staged_files}
+        architecture:
+            run: npm run check:architecture
+
+pre-push:
+    parallel: true
+    commands:
+        types:
+            run: npm run check:types
+        tests:
+            run: npm run test
