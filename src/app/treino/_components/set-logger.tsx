@@ -176,7 +176,7 @@ export function SetLogger(props: SetLoggerProps) {
                                 {set ? (
                                     <span
                                         key={isLast ? `last-${doneSets.length}` : index}
-                                        className={`num text-[20px] ${isLast ? "pulse-once" : ""}`}
+                                        className={`text-[17px] font-normal tabular-nums ${isLast ? "pulse-once inline-block" : ""}`}
                                     >
                                         {set.durationSeconds !== null
                                             ? formatDuration(set.durationSeconds)
@@ -191,8 +191,8 @@ export function SetLogger(props: SetLoggerProps) {
                 </ol>
             ) : null}
 
-            <div className="fixed inset-x-0 bottom-0 z-20 flex justify-center border-t border-hairline bg-canvas px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3 md:static md:mt-8 md:border-0 md:bg-transparent md:px-0 md:pb-0 md:pt-0">
-                <div className="flex w-full max-w-md items-center gap-2.5 md:max-w-none">
+            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center px-3 pb-[max(env(safe-area-inset-bottom),20px)] md:static md:mt-8 md:px-0 md:pb-0">
+                <div className="float-bar pointer-events-auto flex w-full max-w-md items-center gap-1.5 rounded-[34px] p-2 md:max-w-none">
                     {doneSets.length > 0 ? (
                         <form action={undoSetAction}>
                             <input
@@ -253,7 +253,7 @@ function ConfirmButton({ summary }: { summary: string }) {
     return (
         <button type="submit" disabled={pending} className={pillActionClass}>
             <PillActionContent icon={<CheckIcon size={20} />}>
-                Confirmar <span className="num text-[19px]">{summary}</span>
+                Confirmar <span className="tabular-nums">{summary}</span>
             </PillActionContent>
         </button>
     );

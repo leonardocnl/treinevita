@@ -105,6 +105,18 @@
     border: 1px solid rgb(255 255 255 / 0.08);
 }
 
+/* Floating bar (the "ponto e linha" bottom bar): frosted paper with a soft shadow. */
+@utility float-bar {
+    background-color: rgb(252 248 247 / 0.72);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    box-shadow: 0 12px 34px rgb(11 11 13 / 0.1);
+    @media (prefers-color-scheme: dark) {
+        background-color: rgb(30 30 33 / 0.72);
+        box-shadow: 0 12px 34px rgb(0 0 0 / 0.45);
+    }
+}
+
 /* Light glass: small round buttons over the light canvas. */
 @utility glass-light {
     background-color: rgb(252 248 247 / 0.72);

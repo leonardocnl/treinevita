@@ -2,11 +2,11 @@ import type { ReactNode } from "react";
 
 /** Round red action (start or continue a workout). */
 export const roundActionClass =
-    "pressable flex size-12 shrink-0 items-center justify-center rounded-full bg-red text-white";
+    "pressable flex size-14 shrink-0 items-center justify-center rounded-full bg-red text-white";
 
 /** Round secondary button (undo). */
 export const roundSecondaryClass =
-    "pressable flex size-14 shrink-0 items-center justify-center rounded-full bg-paper text-ink";
+    "pressable flex size-14 shrink-0 items-center justify-center rounded-full text-ink";
 
 /** Wide pill in the ink color (inverts in dark mode) with a red action circle at the end. */
 export const pillActionClass =

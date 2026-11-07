@@ -29,8 +29,8 @@ Red never fills large areas. It marks: what to tap, what changed (a load that we
 ## Typography
 
 - **Inter** (variable, self-hosted) for all text. Default weight 300; 400 for titles and emphasis; 500 only for the active tab. No bold.
-- **Doto** (variable dot-matrix, self-hosted, round dots: `ROND 100`, weight 900) only for numbers: counts, weights, loads, reps, minutes. Use the `num` utility.
-- Sizes: text 13 / 15 / 17, titles 28 / 32 / 34 / 40; numbers 20 / 36 / 56 (wheel) / 96–112 (hero).
+- **Doto** (variable dot-matrix, self-hosted, round dots: `ROND 100`, weight 900) only for **large** numbers (36px and up): the hero, metrics, the selected wheel value, the activity total. Use the `num` utility. Smaller numbers use Inter with tabular figures, because small dots are hard to read.
+- Sizes: text 13 / 15 / 17, titles 28 / 32 / 34 / 40; dot numbers 36 / 56 / 96–112.
 - Sentence case everywhere. No all caps, no letter-spacing tricks, no italics, no periods in titles.
 
 ## Surfaces
@@ -46,10 +46,10 @@ The 1px edges are light reflections on the glass, never visible borders on light
 
 ## Components
 
-- **Bottom bar**: canvas color with a hairline on top, text tabs (13px); the active tab has a 5px red dot below the label. The screen's main action sits at the end as a 48px red circle.
+- **Bottom bar**: a floating frosted bar (`float-bar`: paper 72%, blur 24px, soft shadow, radius 34, 8px inset) with text tabs (13px; active in ink at weight 500) and the screen's main action at the end as a 56px red circle. In a workout the same bar holds undo and the ink action pill.
 - **Action pill**: solid ink pill (inverts in dark mode), label at 15px, numbers in dots, red circle with the icon at the end.
 - **Next workout**: an editorial section, not a card: label, the workout name at 40px light, a short preview of the exercises, and a red dot line when a load goes up.
-- **Activity graph**: the last 20 weeks as a contribution graph (weeks in columns, Monday on top), dots in four intensity levels by number of effective sets, today in red.
+- **Activity graph**: the last 16 weeks as a contribution graph (weeks in columns, Monday on top, S/Q/S labels), dots in four intensity levels by number of effective sets, today in red, a red bar under each week that met the weekly goal; header with the total in dots and the weekly average.
 - **Hero number**: label (15px secondary), dot number (112px), caption sentence (15px secondary).
 - **Metric row**: three columns divided by vertical hairlines: label 13, dot number 36, detail 13.
 - **Dot ring**: 24 dots in a circle; the done share is red.

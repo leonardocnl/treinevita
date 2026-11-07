@@ -200,7 +200,9 @@ function NextWorkout({
                     {hasOpenSession ? "Em andamento" : "Próximo"}
                 </p>
                 <p className="text-[13px] text-ink-secondary">
-                    <span className="num text-[15px] text-ink">{next.exerciseCount}</span>{" "}
+                    <span className="text-[15px] font-normal tabular-nums text-ink">
+                        {next.exerciseCount}
+                    </span>{" "}
                     exercícios
                 </p>
             </div>
@@ -227,11 +229,12 @@ function Activity({ activity }: { activity: Summary["activity"] }) {
         3: "bg-level-3",
     };
     const weekCount = activity.weeks.length;
-    // Drop a month label that would collide with the next one (less than 3 weeks apart).
+    const columns = { gridTemplateColumns: `repeat(${weekCount}, minmax(0, 1fr))` };
     const monthLabels = activity.monthLabels.filter(
         (month, index, all) =>
             index === all.length - 1 || all[index + 1].weekIndex - month.weekIndex >= 3,
     );
+    const weekdayLabels = ["S", "", "Q", "", "S", "", ""];
 
     return (
         <section
@@ -239,20 +242,26 @@ function Activity({ activity }: { activity: Summary["activity"] }) {
             className="rise-in mt-10 border-t border-hairline pt-6"
             style={{ "--stagger": 6 } as React.CSSProperties}
         >
-            <div className="flex items-baseline justify-between">
-                <p className="text-[13px] text-ink-secondary">Atividade</p>
-                <p className="text-[13px] text-ink-secondary">
-                    <span className="num text-[15px] text-ink">{activity.trainedDays}</span> treinos
-                    em {weekCount} semanas
+            <div className="flex items-baseline justify-between text-[13px] text-ink-secondary">
+                <p>Atividade</p>
+                <p>Últimas {weekCount} semanas</p>
+            </div>
+            <div className="mt-3 flex items-end justify-between gap-4">
+                <p className="flex items-baseline gap-2.5">
+                    <span className="num text-[56px] leading-[0.85]">{activity.trainedDays}</span>
+                    <span className="text-[15px] text-ink-secondary">treinos</span>
+                </p>
+                <p className="text-[15px] text-ink-secondary">
+                    <span className="font-normal tabular-nums text-ink">
+                        {formatNumber(activity.averagePerWeek, 1)}
+                    </span>{" "}
+                    por semana
                 </p>
             </div>
 
-            <div className="mt-4">
-                <div
-                    aria-hidden
-                    className="grid text-[11px] text-ink-secondary"
-                    style={{ gridTemplateColumns: `repeat(${weekCount}, minmax(0, 1fr))` }}
-                >
+            <div className="mt-6 grid grid-cols-[14px_1fr] gap-x-2">
+                <span />
+                <div aria-hidden className="grid text-[11px] text-ink-secondary" style={columns}>
                     {monthLabels.map((month) => (
                         <span
                             key={month.weekIndex}
@@ -263,11 +272,22 @@ function Activity({ activity }: { activity: Summary["activity"] }) {
                         </span>
                     ))}
                 </div>
+
+                <div
+                    aria-hidden
+                    className="mt-2 grid grid-rows-7 gap-[4px] text-[11px] leading-none text-ink-secondary"
+                >
+                    {weekdayLabels.map((label, index) => (
+                        <span key={index} className="flex items-center">
+                            {label}
+                        </span>
+                    ))}
+                </div>
                 <div
                     role="img"
                     aria-label={`${activity.trainedDays} dias treinados nas últimas ${weekCount} semanas`}
-                    className="mt-2 grid grid-flow-col grid-rows-7 gap-[3px]"
-                    style={{ gridTemplateColumns: `repeat(${weekCount}, minmax(0, 1fr))` }}
+                    className="mt-2 grid grid-flow-col grid-rows-7 gap-[4px]"
+                    style={columns}
                 >
                     {activity.weeks.flatMap((week) =>
                         week.map((day) => (
@@ -275,7 +295,7 @@ function Activity({ activity }: { activity: Summary["activity"] }) {
                                 key={day.date}
                                 className={`aspect-square rounded-full ${
                                     day.isToday && day.level <= 0
-                                        ? "bg-transparent ring-[1.5px] ring-red ring-inset"
+                                        ? "ring-[1.5px] ring-red ring-inset"
                                         : day.isToday
                                           ? "bg-red"
                                           : levelClass[day.level]
@@ -284,19 +304,37 @@ function Activity({ activity }: { activity: Summary["activity"] }) {
                         )),
                     )}
                 </div>
-                <div
-                    aria-hidden
-                    className="mt-3 flex items-center justify-end gap-1.5 text-[11px] text-ink-secondary"
-                >
-                    <span>menos</span>
+
+                <span />
+                <div aria-hidden className="mt-2.5 grid gap-[4px]" style={columns}>
+                    {activity.goalMet.map((met, index) => (
+                        <span key={index} className="flex justify-center">
+                            <span
+                                className={`h-[3px] w-full rounded-full ${met ? "bg-red" : "bg-transparent"}`}
+                            />
+                        </span>
+                    ))}
+                </div>
+            </div>
+
+            <div
+                aria-hidden
+                className="mt-4 flex items-center justify-between text-[11px] text-ink-secondary"
+            >
+                <span className="flex items-center gap-1.5">
+                    <span className="h-[3px] w-3 rounded-full bg-red" />
+                    meta da semana batida
+                </span>
+                <span className="flex items-center gap-1.5">
+                    menos
                     {[0, 1, 2, 3].map((level) => (
                         <span
                             key={level}
                             className={`size-2.5 rounded-full ${levelClass[level]}`}
                         />
                     ))}
-                    <span>mais</span>
-                </div>
+                    mais
+                </span>
             </div>
         </section>
     );

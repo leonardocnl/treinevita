@@ -30,7 +30,7 @@ export default async function WorkoutPage() {
                         <ChevronLeftIcon size={20} strokeWidth={1.8} />
                     </Link>
                     <span className="text-[15px] font-normal">
-                        <span className="num">{minutes}</span> min
+                        <span className="tabular-nums">{minutes}</span> min
                     </span>
                 </div>
 
@@ -67,8 +67,11 @@ export default async function WorkoutPage() {
                 </form>
             </main>
 
-            <div className="fixed inset-x-0 bottom-0 z-20 flex justify-center border-t border-hairline bg-canvas px-4 pb-[max(env(safe-area-inset-bottom),12px)] pt-3">
-                <form action={finishWorkoutAction} className="w-full max-w-md">
+            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center px-3 pb-[max(env(safe-area-inset-bottom),20px)]">
+                <form
+                    action={finishWorkoutAction}
+                    className="float-bar pointer-events-auto w-full max-w-md rounded-[34px] p-2"
+                >
                     <button type="submit" className={pillActionClass}>
                         <PillActionContent icon={<CheckIcon size={20} />}>
                             Finalizar treino

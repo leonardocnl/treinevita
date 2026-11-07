@@ -34,7 +34,7 @@ export type ActivityDay = {
     readonly isToday: boolean;
 };
 
-export const ACTIVITY_WEEKS = 20;
+export const ACTIVITY_WEEKS = 16;
 
 export type CalendarDay = {
     readonly date: string;
@@ -64,6 +64,9 @@ export type Summary = {
     readonly hasOpenSession: boolean;
     readonly activity: {
         readonly weeks: readonly (readonly ActivityDay[])[];
+        /** One flag per week: the weekly goal was met. */
+        readonly goalMet: readonly boolean[];
+        readonly averagePerWeek: number;
         readonly monthLabels: readonly { readonly weekIndex: number; readonly label: string }[];
         readonly trainedDays: number;
     };
@@ -155,7 +158,7 @@ export async function getSummary(context: Context, hasOpenSession: boolean): Pro
         }
     }
 
-    const activity = await getActivity(context, today);
+    const activity = await getActivity(context, today, goal);
 
     return {
         today,
@@ -268,7 +271,11 @@ async function getWeeklyRecord(context: Context, weekStart: string): Promise<Sum
  * Training activity of the last weeks, one column per week (Monday on top),
  * like a contribution graph. Intensity comes from the number of effective sets.
  */
-async function getActivity(context: Context, today: string): Promise<Summary["activity"]> {
+async function getActivity(
+    context: Context,
+    today: string,
+    goal: number,
+): Promise<Summary["activity"]> {
     const firstDay = addDays(startOfWeek(today), -7 * (ACTIVITY_WEEKS - 1));
     const rows = await listSetsSince(context, new Date(`${addDays(firstDay, -1)}T00:00:00Z`));
 
@@ -282,6 +289,7 @@ async function getActivity(context: Context, today: string): Promise<Summary["ac
     }
 
     const weeks: ActivityDay[][] = [];
+    const goalMet: boolean[] = [];
     const monthLabels: { weekIndex: number; label: string }[] = [];
     let trainedDays = 0;
     let lastMonth = "";
@@ -312,9 +320,16 @@ async function getActivity(context: Context, today: string): Promise<Summary["ac
             lastMonth = month;
         }
         weeks.push(days);
+        goalMet.push(days.filter((day) => day.level > 0).length >= goal);
     }
 
-    return { weeks, monthLabels, trainedDays };
+    const elapsedWeeks = Math.max(
+        1,
+        ACTIVITY_WEEKS - (weeks.at(-1)?.some((day) => day.level === -1) ? 0.5 : 0),
+    );
+    const averagePerWeek = Math.round((trainedDays / elapsedWeeks) * 10) / 10;
+
+    return { weeks, goalMet, averagePerWeek, monthLabels, trainedDays };
 }
 
 function shortMonth(localDate: string): string {

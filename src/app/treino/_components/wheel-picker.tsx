@@ -108,10 +108,10 @@ export function WheelPicker({
                         <div
                             key={option}
                             onClick={() => step(index - selectedIndex)}
-                            className={`num flex snap-center items-center gap-1.5 ${justify} transition-[font-size,color] duration-150 ease-out ${
+                            className={`flex snap-center items-center gap-1.5 ${justify} transition-[font-size,color] duration-150 ease-out ${
                                 isSelected
-                                    ? "text-[56px] text-on-panel"
-                                    : "text-[24px] text-on-panel-dim"
+                                    ? "num text-[56px] text-on-panel"
+                                    : "text-[22px] font-light tabular-nums text-on-panel-dim"
                             }`}
                             style={{ height: WHEEL_ITEM_HEIGHT }}
                         >

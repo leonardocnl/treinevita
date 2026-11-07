@@ -10,17 +10,13 @@ const tabs: { id: Tab; href: string; label: string }[] = [
     { id: "corpo", href: "/corpo", label: "Corpo" },
 ];
 
-/**
- * Bottom bar in the "line" language: the canvas color with a hairline on top,
- * text tabs (the active one marked by a red dot) and, at the end, the screen's
- * main action as a red circle.
- */
+/** Floating frosted bar with text tabs and, at the end, the screen's main action. */
 export function AppDock({ active, action }: { active: Tab; action?: ReactNode }) {
     return (
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-hairline bg-canvas pb-[env(safe-area-inset-bottom)]">
-            <div className="mx-auto flex h-[72px] w-full max-w-md items-center gap-3 px-4 md:max-w-5xl md:px-10">
-                <nav aria-label="Navegação principal" className="h-full flex-1">
-                    <ul className="grid h-full grid-cols-4 md:flex md:gap-10">
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center px-3 pb-[max(env(safe-area-inset-bottom),20px)]">
+            <div className="float-bar pointer-events-auto flex w-full max-w-md items-center gap-1.5 rounded-[34px] p-2">
+                <nav aria-label="Navegação principal" className="h-14 flex-1">
+                    <ul className="grid h-full grid-cols-4">
                         {tabs.map((tab) => {
                             const isActive = tab.id === active;
                             return (
@@ -28,17 +24,13 @@ export function AppDock({ active, action }: { active: Tab; action?: ReactNode })
                                     <Link
                                         href={tab.href}
                                         aria-current={isActive ? "page" : undefined}
-                                        className={`relative flex flex-1 flex-col items-center justify-center gap-1.5 text-[13px] transition-colors md:flex-none ${
+                                        className={`pressable flex flex-1 items-center justify-center text-[13px] transition-colors ${
                                             isActive
-                                                ? "font-normal text-ink"
+                                                ? "font-medium text-ink"
                                                 : "text-ink-secondary hover:text-ink"
                                         }`}
                                     >
-                                        <span>{tab.label}</span>
-                                        <span
-                                            aria-hidden
-                                            className={`size-[5px] rounded-full ${isActive ? "bg-red" : "bg-transparent"}`}
-                                        />
+                                        {tab.label}
                                     </Link>
                                 </li>
                             );
