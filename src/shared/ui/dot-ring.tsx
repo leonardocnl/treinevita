@@ -1,12 +1,18 @@
+/*
+ * Progress as a circle of dots: the done share of the goal is red, the rest
+ * unlit. Dot size is the larger of 5px and one fifteenth of the ring.
+ */
 type DotRingProps = {
     done: number;
     goal: number;
+    /** Text alternative ("2 de 3 treinos feitos na semana"). */
+    label: string;
+    /** Diameter in px. */
     size?: number;
     dots?: number;
 };
 
-/** Weekly progress as a circle of dots; the done share is red. */
-export function DotRing({ done, goal, size = 104, dots = 24 }: DotRingProps) {
+export function DotRing({ done, goal, label, size = 104, dots = 24 }: DotRingProps) {
     const filled = goal > 0 ? Math.round((Math.min(done, goal) / goal) * dots) : 0;
     const dot = Math.max(5, Math.round(size / 15));
     const radius = size / 2 - dot / 2;
@@ -15,7 +21,7 @@ export function DotRing({ done, goal, size = 104, dots = 24 }: DotRingProps) {
     return (
         <div
             role="img"
-            aria-label={`${done} de ${goal} treinos feitos na semana`}
+            aria-label={label}
             className="relative shrink-0"
             style={{ width: size, height: size }}
         >
