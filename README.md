@@ -20,6 +20,19 @@ npm run db:migrate # apply migrations to your Neon database
 npm run dev
 ```
 
+## Local development without Neon
+
+Without `DATABASE_URL` the app uses a local Postgres (PGlite) stored in `.data/`.
+
+```bash
+npm run db:local:reset   # recreate the local database with six weeks of mock training
+npm run dev -- -p 3005   # open http://localhost:3005 and use "Entrar como Leonardo"
+```
+
+The "Entrar como Leonardo" shortcut exists only in development with the local database; it is never available in production.
+
+PGlite allows one process at a time: close Drizzle Studio (`npm run db:studio`) before `npm run dev`, and stop the dev server before `npm run db:local:reset`.
+
 ## Scripts
 
 | Script                       | What it does                               |
