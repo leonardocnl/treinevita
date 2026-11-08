@@ -2,7 +2,7 @@ import "server-only";
 
 import { and, asc, eq, inArray } from "drizzle-orm";
 
-import { getExercisesByIds, getGlobalExercisesBySlug } from "@/modules/catalog";
+import { getExercisesByIds, getGlobalExercisesBySlug, type ExerciseMedia } from "@/modules/catalog";
 import { getDb, type Database } from "@/platform/db/client";
 import { inTenant, type TenantContext } from "@/shared/db/tenant";
 import { toLocalDate } from "@/shared/time/local-date";
@@ -31,6 +31,7 @@ export type PrescribedExercise = {
     readonly progressionRule: "double_progression" | "none";
     readonly incrementKg: number;
     readonly videoUrl: string | null;
+    readonly media: ExerciseMedia | null;
 };
 
 export type Workout = {
@@ -121,6 +122,7 @@ export async function getActiveProgram(context: TenantContext): Promise<ActivePr
                             row.loadIncrementKg ?? exercise?.defaultIncrementKg ?? 2.5,
                         ),
                         videoUrl: row.videoUrl ?? exercise?.videoUrl ?? null,
+                        media: exercise?.media ?? null,
                     };
                 }),
         })),

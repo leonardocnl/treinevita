@@ -18,6 +18,8 @@ import { saveLayoutAction } from "../../_components/actions";
 
 type DashboardProps = {
     header: ReactNode;
+    /** The round glass button to Ajustes, at the top right next to "Editar". */
+    settings: ReactNode;
     initialLayout: WidgetPlacement[];
     catalog: Record<WidgetKind, WidgetDefinition>;
     /** Server-rendered content of each widget in each supported size. */
@@ -31,7 +33,7 @@ const sizeOptions: Record<WidgetSize, SegmentedOption<WidgetSize>> = {
 };
 
 /** The Summary grid: widgets in three sizes, editable with the "Editar" button. */
-export function Dashboard({ header, initialLayout, catalog, renders }: DashboardProps) {
+export function Dashboard({ header, settings, initialLayout, catalog, renders }: DashboardProps) {
     const [layout, setLayout] = useState(initialLayout);
     const [saved, setSaved] = useState(initialLayout);
     const [editing, setEditing] = useState(false);
@@ -95,7 +97,10 @@ export function Dashboard({ header, initialLayout, catalog, renders }: Dashboard
                         </TextButton>
                     </div>
                 ) : (
-                    <TextButton onClick={() => setEditing(true)}>Editar</TextButton>
+                    <div className="flex items-center gap-4 self-start">
+                        <TextButton onClick={() => setEditing(true)}>Editar</TextButton>
+                        {settings}
+                    </div>
                 )}
             </div>
 
