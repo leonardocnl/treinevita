@@ -5,6 +5,9 @@
 export {
     getExercisesByIds,
     getGlobalExercisesBySlug,
+    listGlobalExercises,
+    type CatalogEntry,
     type CatalogExercise,
+    type ExerciseMedia,
     type GlobalExerciseRef,
 } from "./application/exercises";
