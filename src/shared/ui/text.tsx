@@ -87,7 +87,7 @@ export function Label({ as: Tag = "p", size = 15, tone, weight, className, ...re
 }
 
 type CaptionProps = TextProps & {
-    as?: "p" | "span";
+    as?: "p" | "span" | "h2";
     size?: 11 | 13;
 };
 

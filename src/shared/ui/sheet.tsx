@@ -1,13 +1,25 @@
 "use client";
 
 /*
- * A sheet that rises from the bottom over a dimmed screen. It closes with a tap
- * outside, with Esc or with "Fechar"; while open, Tab stays inside it, and on
- * closing the focus returns to whatever opened it.
+ * A sheet that slides up from the bottom (translateY) while the backdrop fades
+ * in. It closes by dragging the handle or the title down, tapping the backdrop,
+ * pressing Esc or the close button. The panel is opaque paper with ink text.
+ * While open, Tab stays inside it, and on closing the focus returns to whatever
+ * opened it.
  */
-import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from "react";
+import {
+    useEffect,
+    useId,
+    useRef,
+    useState,
+    type KeyboardEvent,
+    type PointerEvent,
+    type ReactNode,
+} from "react";
 
-import { TextButton } from "./text-button";
+import { cx } from "./cx";
+import { Icon } from "./icons";
+import { RoundButton } from "./round-button";
 import { Title } from "./text";
 
 type SheetProps = {
@@ -20,14 +32,51 @@ type SheetProps = {
 const FOCUSABLE =
     'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
+/** Matches --vita-duration-exit in globals.css. */
+const LEAVE_MS = 250;
+/** Dragged this far (px), or flicked this fast (px/ms), the sheet closes. */
+const CLOSE_DISTANCE = 96;
+const CLOSE_VELOCITY = 0.5;
+
 export function Sheet({ open, onClose, title, children }: SheetProps) {
     const titleId = useId();
     const dialogRef = useRef<HTMLDivElement>(null);
+    const drag = useRef<{ y: number; time: number } | null>(null);
+    const [mounted, setMounted] = useState(open);
+    const [leaving, setLeaving] = useState(false);
+    const [dragY, setDragY] = useState(0);
+    const [dragging, setDragging] = useState(false);
+    const [wasOpen, setWasOpen] = useState(open);
+
     // Kept in a ref so a new onClose on each render does not reopen (and refocus) the sheet.
     const onCloseRef = useRef(onClose);
     useEffect(() => {
         onCloseRef.current = onClose;
     });
+
+    // Opening mounts at once; closing keeps the sheet on screen while it slides away.
+    if (open !== wasOpen) {
+        setWasOpen(open);
+        if (open) {
+            setMounted(true);
+            setLeaving(false);
+            setDragY(0);
+        } else if (mounted) {
+            setLeaving(true);
+        }
+    }
+
+    useEffect(() => {
+        if (!leaving) {
+            return;
+        }
+        const timer = setTimeout(() => {
+            setMounted(false);
+            setLeaving(false);
+            setDragY(0);
+        }, LEAVE_MS);
+        return () => clearTimeout(timer);
+    }, [leaving]);
 
     useEffect(() => {
         if (!open) {
@@ -48,7 +97,7 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
         };
     }, [open]);
 
-    if (!open) {
+    if (!mounted) {
         return null;
     }
 
@@ -73,30 +122,84 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
         }
     }
 
+    function startDrag(event: PointerEvent<HTMLDivElement>) {
+        // The close button keeps its own click.
+        if ((event.target as Element).closest("button") || leaving) {
+            return;
+        }
+        drag.current = { y: event.clientY, time: event.timeStamp };
+        event.currentTarget.setPointerCapture(event.pointerId);
+        setDragging(true);
+    }
+
+    function moveDrag(event: PointerEvent<HTMLDivElement>) {
+        if (drag.current) {
+            setDragY(Math.max(0, event.clientY - drag.current.y));
+        }
+    }
+
+    function endDrag(event: PointerEvent<HTMLDivElement>) {
+        if (!drag.current) {
+            return;
+        }
+        const distance = Math.max(0, event.clientY - drag.current.y);
+        const velocity = distance / Math.max(1, event.timeStamp - drag.current.time);
+        drag.current = null;
+        setDragging(false);
+        if (distance > CLOSE_DISTANCE || (distance > 16 && velocity > CLOSE_VELOCITY)) {
+            onClose();
+        } else {
+            setDragY(0);
+        }
+    }
+
     return (
         <div
-            className="fixed inset-0 z-40 flex items-end justify-center bg-ink/20"
-            onClick={onClose}
+            className={cx(
+                "fixed inset-0 z-40 flex items-end justify-center",
+                leaving && "pointer-events-none",
+            )}
         >
+            <div
+                aria-hidden
+                onClick={onClose}
+                className={cx("absolute inset-0 bg-scrim", leaving ? "leave opacity-0" : "fade-in")}
+            />
             <div
                 ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={titleId}
                 tabIndex={-1}
-                onClick={(event) => event.stopPropagation()}
                 onKeyDown={trapTab}
-                className="float-bar rise-in m-3 w-full max-w-md rounded-panel p-5 pb-6 outline-none"
+                style={{ transform: leaving ? "translateY(100%)" : `translateY(${dragY}px)` }}
+                className={cx(
+                    "relative flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-panel bg-paper text-ink outline-none",
+                    leaving ? "leave" : dragging ? undefined : "sheet-in",
+                )}
             >
-                <div className="flex items-baseline justify-between">
-                    <Title as="h2" size={22} weight="normal" id={titleId}>
-                        {title}
-                    </Title>
-                    <TextButton tone="secondary" onClick={onClose}>
-                        Fechar
-                    </TextButton>
+                <div
+                    onPointerDown={startDrag}
+                    onPointerMove={moveDrag}
+                    onPointerUp={endDrag}
+                    onPointerCancel={endDrag}
+                    className="shrink-0 cursor-grab touch-none select-none px-5 pb-1"
+                >
+                    <div className="flex h-6 items-center justify-center">
+                        <span aria-hidden className="h-[5px] w-9 rounded-full bg-dot-off" />
+                    </div>
+                    <div className="flex min-h-11 items-center justify-between gap-4">
+                        <Title as="h2" size={22} weight="normal" id={titleId}>
+                            {title}
+                        </Title>
+                        <RoundButton size={32} tone="canvas" onClick={onClose} aria-label="Fechar">
+                            <Icon name="close" size={16} />
+                        </RoundButton>
+                    </div>
                 </div>
-                {children}
+                <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 pb-[max(env(safe-area-inset-bottom),24px)] text-[17px]">
+                    {children}
+                </div>
             </div>
         </div>
     );
