@@ -141,6 +141,7 @@ export async function getGlobalExercisesBySlug(
 export type CatalogEntry = {
     readonly slug: string;
     readonly name: string;
+    readonly measurement: "load_reps" | "duration";
     readonly primaryMuscles: readonly { readonly slug: string; readonly name: string }[];
     readonly media: ExerciseMedia | null;
 };
@@ -153,6 +154,7 @@ export async function listGlobalExercises(): Promise<CatalogEntry[]> {
             id: exercises.id,
             slug: exercises.slug,
             name: exercises.name,
+            measurement: exercises.measurement,
             ...mediaColumns,
         })
         .from(exercises)
@@ -176,6 +178,7 @@ export async function listGlobalExercises(): Promise<CatalogEntry[]> {
             {
                 slug: row.slug,
                 name: row.name,
+                measurement: row.measurement,
                 primaryMuscles: primaries
                     .filter((muscle) => muscle.exerciseId === row.id)
                     .map(({ slug, name }) => ({ slug, name })),
