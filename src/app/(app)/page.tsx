@@ -19,7 +19,7 @@ import { Wordmark } from "@/shared/ui/wordmark";
 
 import { startWorkoutAction } from "../_components/actions";
 import { AppDock } from "../_components/app-dock";
-import { SettingsButton } from "../_components/settings-button";
+import { ThemeToggle } from "../_components/theme-toggle";
 
 import { Dashboard } from "./_widgets/dashboard";
 import { WIDGET_RENDERERS } from "./_widgets/widgets";
@@ -79,7 +79,7 @@ export default async function SummaryPage() {
                             </Label>
                         </div>
                     }
-                    settings={<SettingsButton />}
+                    themeToggle={<ThemeToggle />}
                     initialLayout={layout}
                     catalog={WIDGET_CATALOG}
                     renders={renders}

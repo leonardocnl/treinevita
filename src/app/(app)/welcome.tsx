@@ -10,7 +10,7 @@ import { Wordmark } from "@/shared/ui/wordmark";
 
 import { startWorkoutAction } from "../_components/actions";
 import { AppDock } from "../_components/app-dock";
-import { SettingsButton } from "../_components/settings-button";
+import { ThemeToggle } from "../_components/theme-toggle";
 
 /**
  * Home until the first workout is logged: a greeting, the next workout and the
@@ -32,7 +32,7 @@ export async function Welcome({
             <main className="mx-auto w-full max-w-md px-5 pb-32 pt-[max(env(safe-area-inset-top),52px)]">
                 <div className="flex items-center justify-between">
                     <Wordmark label="VITA" />
-                    <SettingsButton />
+                    <ThemeToggle />
                 </div>
 
                 <Title size={40} weight="light" leading="1.08" className="mt-10">
