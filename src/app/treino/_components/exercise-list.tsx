@@ -5,6 +5,7 @@ import { useSelectedLayoutSegment } from "next/navigation";
 
 import type { WorkoutView } from "@/modules/progress";
 import { DotMeter } from "@/shared/ui/dot-meter";
+import { ExerciseThumb } from "@/shared/ui/exercise-demo";
 import { List, ListRow } from "@/shared/ui/list";
 import { Caption, Label } from "@/shared/ui/text";
 
@@ -33,6 +34,7 @@ export function ExerciseList({ workout }: { workout: WorkoutView }) {
                                 isActive ? "bg-paper" : ""
                             }`}
                         >
+                            <ExerciseThumb media={exercise.media} />
                             <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                                 <Label
                                     as="span"
