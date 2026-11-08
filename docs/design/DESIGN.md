@@ -10,7 +10,7 @@ This file describes what is in the code today. The source of truth for every val
 
 ## Colors
 
-All colors are CSS custom properties on `:root` in `src/app/globals.css`, switched by `prefers-color-scheme: dark`, and exposed to Tailwind as `bg-*`, `text-*`, `border-*`, `ring-*`, `fill-*` and `stroke-*` through `@theme inline` (for example `--vita-ink` → `text-ink`).
+All colors are CSS custom properties on `:root` in `src/app/globals.css`, switched by `prefers-color-scheme: dark` unless the person forced a theme in Ajustes (a `vita_theme` cookie read by the root layout, which sets `data-theme="light"` or `"dark"` on `<html>`), and exposed to Tailwind as `bg-*`, `text-*`, `border-*`, `ring-*`, `fill-*` and `stroke-*` through `@theme inline` (for example `--vita-ink` → `text-ink`).
 
 | Role                    | Token                       | Light     | Dark      | Where to use                                                                                  |
 | ----------------------- | --------------------------- | --------- | --------- | --------------------------------------------------------------------------------------------- |
@@ -141,7 +141,7 @@ Stacking: bottom bars at `z-20`, the "Adicionar widget" sheet at `z-40` over a s
 | Widget tile   | `bg-paper`, radius 26, no border, no shadow, 16px padding                                                                                                                                                                 | every Resumo widget                                                       |
 | Edit overlay  | `bg-paper/45` with `backdrop-blur-[2px]`, over the tile content at 40% opacity; the tile gets `ring-1 ring-hairline`                                                                                                      | widget tiles in edit mode                                                 |
 
-Glass appears only in four places: the bottom bar, the round buttons at the top, the edit layer of the widgets and the sheets that rise from the bottom. Content on the canvas has no container: it is separated by space and, when needed, a hairline. `smoke` and `limelight` are defined in `globals.css` and not used by any screen.
+Glass appears only in four places: the bottom bar, the round buttons at the top (including the settings button), the edit layer of the widgets and the sheets that rise from the bottom. Content on the canvas has no container: it is separated by space and, when needed, a hairline. `smoke` and `limelight` are defined in `globals.css` and not used by any screen.
 
 ## Components
 
@@ -170,7 +170,21 @@ Glass appears only in four places: the bottom bar, the round buttons at the top,
 
 ### Round light glass button
 
-44px `glass-light` circle at the top of the workout screens: back (chevron at 20px, stroke 1.8) and the exercise video (play at 15px). On desktop the exercise screen hides its back button but keeps its space.
+44px `glass-light` circle at the top of the workout screens: back (chevron at 20px, stroke 1.8) and the exercise video (play at 15px). On desktop the exercise screen hides its back button but keeps its space. The same button opens Ajustes (settings icon at 20px) at the top right of Resumo and of the welcome screen, and goes back on Ajustes and Créditos.
+
+### Choice list (`src/shared/ui/choice-list.tsx`)
+
+A radio group as a list: one row is chosen. Rows at least 64px with hairlines between them; the name at 17px weight 400, an optional detail at 13px in `ink-secondary`, and a 20px `ink` check at the right of the chosen row (the other rows keep its space). Arrow keys move the choice; only the chosen row (or the first, when none is) is in the Tab order. Used for every choice in the onboarding and in Ajustes (goal, experience, session length, place, program template, theme).
+
+### Text field (`src/shared/ui/text-field.tsx`)
+
+No box: a 13px `ink-secondary` label over a 28px weight 300 input on a 1px `hairline` line that turns `ink` while focused; the placeholder is `dot-off`. Used for the name.
+
+### Exercise demo (`src/shared/ui/exercise-demo.tsx`)
+
+- `ExerciseDemo`: the start and end drawings, 176px tall and full width, taking turns with a soft crossfade (`pose-cycle`, 2.4s per cycle, about 1.2s per pose; the end pose runs half a cycle later). Under them, always, the text link "Ver no YouTube" (15px, weight 400, `ink-secondary`), which opens a YouTube search for the exercise name in Portuguese. Without drawings, only the link. With reduced motion, both poses sit side by side, still.
+- `ExerciseThumb`: the start pose, 40px and still, in `ink-secondary`, at the left of rows in exercise lists (workout list, welcome, the onboarding review and its sheets). An empty 40px space keeps rows aligned when there is no drawing.
+- The drawings are SVG files used as CSS masks (`pose` utility) over `currentColor`, so the line art takes the ink color of either theme. They come from Everkinetic (CC BY-SA 4.0), sanitized and recolored by `scripts/import-everkinetic.ts`; credits live at `/creditos`.
 
 ### Selection wheel
 
@@ -223,6 +237,35 @@ A 2px `ink` polyline with round caps and joins, 4px inner padding, and the last 
 
 A `float-bar` sheet with radius 30 (12px from the screen edges, up to 448px wide, 20px padding) that rises in over a 20% `ink` scrim; tapping the scrim or "Fechar" closes it. Title at 22px weight 400. One row per widget not on screen, with hairlines between: the title at 17px weight 400, the description at 13px, and a 32px red circle with a white "+". A new widget comes in the medium size when it supports it, otherwise its first size.
 
+### Onboarding (Começar, `/comecar`)
+
+- One short question per screen, up to 448px wide with 24px margins: Boas-vindas, Nome, Objetivo, Experiência, Meta semanal, Peso e altura, Tempo por treino, Onde treina, Escolha da ficha, Revisão da ficha.
+- Top: on the first screen the `vita` wordmark; afterwards a quiet row of ten 6px dots (done `ink`, current `red`, pending `dot-off`), never a percentage bar. "Pular" (15px, `ink-secondary`) at the top right of the two optional questions.
+- The question is a title at 34px weight 300 (40px on Boas-vindas), with an optional 17px `ink-secondary` hint. Numbers use the selection wheels on the dark panel (weekly goal; weight and height side by side); choices use the choice list; the name uses the text field. The screen rises in (`rise-in`) on each step.
+- The floating bar holds the round back button (from the second screen) and the action pill: "Começar", "Continuar", then "Concluir" ("Salvando" while saving). The pill is disabled until the answer is valid.
+- Escolha da ficha: "Manter minha ficha atual" first and preselected when the person already has a program; then the templates, with "Sugerido para você." at the start of the detail of the one that fits the answers.
+- Revisão da ficha: one section per day ("Treino A", 22px weight 400, with the day's focus at 13px on the right), the exercises with their prescription at 13px tabular ("3 × 10–12"), a "Trocar" text button and a 32px `canvas` minus to remove. "Adicionar exercício" under each day and "Limpar ficha" (`red-text`) at the end. Swapping and adding open a sheet listing catalog exercises (swap: same primary muscle); "Limpar ficha" asks first in a sheet with the action pill. Never a browser dialog.
+
+### Welcome (Resumo before the first workout)
+
+Up to 448px with 20px margins: the wordmark and the settings button on top; "Olá, Nome" at 40px weight 300; "O painel aparece depois do seu primeiro treino." at 17px in `ink-secondary`; then "Próximo treino" (13px), "Treino A" (34px weight 400), the exercises as 64px rows with their thumb, and the action pill "Começar treino" (or "Continuar treino" while one is open). The bottom bar has the tabs and no red circle, so only one action competes.
+
+### Ajustes (`/ajustes`)
+
+Up to 448px with 24px margins: the back button, "Ajustes" at 34px weight 400, then three groups, each a 13px `ink-secondary` heading over 64px rows with hairlines:
+
+- Perfil: one row per field, the name at 17px on the left, the value at 15px `ink-secondary` and a 16px chevron on the right. A row opens a sheet with the same control as the onboarding and the action pill "Salvar".
+- Aparência: a choice list with "Sistema", "Claro" and "Escuro".
+- Conta: the email (read only), "Créditos" (opens `/creditos`) and "Sair" in `red-text`.
+
+### Créditos (`/creditos`)
+
+The back button, "Créditos" at 34px weight 400 and two 17px paragraphs with the attribution; links are weight 400 `ink` with a `hairline` underline.
+
+### Desktop notice
+
+From 1024px (`lg`) every app route shows a calm notice instead of the app: the wordmark at the top left and, at the bottom, "A versão para computador está em construção." at 40px weight 300, "Por enquanto, use o VITA no celular." at 17px in `ink-secondary` and the site address at 17px weight 400, with 64px of padding. Phones and tablets below 1024px are untouched; Entrar and Créditos are not gated.
+
 ### Sign in (Entrar)
 
 A single column up to 448px: the `vita` wordmark at the top, and at the bottom the hero sentence (40px, weight 300), a 17px lead in `ink-secondary`, an optional error at 15px in `red-text` (`role="alert"`) and the action pill. In development it signs in as the seeded user; elsewhere it shows "Entrar com Google" disabled.
@@ -259,6 +302,7 @@ With no data, Estagnados shows `0` and "Tudo progredindo" in every size; the oth
 - Stroke: 1.9 by default; ArrowRight 2.4, ArrowUp 2.8, Check 2.6, ChevronLeft 2 (called with 1.8 on the top buttons). Play is the only filled icon.
 - Size: 22px by default; used at 20px (arrow, check, chevron, undo) and at 18 and 15px (play).
 - Color: inherits the text color: white inside red circles, `ink` on glass and transparent buttons.
+- `settings` (two sliders) on the round button that opens Ajustes.
 - Defined but not used today: SummaryIcon, DumbbellIcon, ChartIcon, ScaleIcon, ArrowUpIcon.
 - The edit mode draws its own small glyphs inline in `dashboard.tsx` (minus, chevrons, size shapes, 14–16px) and uses a text "+" for adding.
 
@@ -283,6 +327,7 @@ With no data, Estagnados shows `0` and "Tudo progredindo" in every size; the oth
 - `pressable`: on press, scale to 0.97 at once (0ms, no animation while held); release returns over 140ms with `cubic-bezier(0.2, 0.8, 0.2, 1)`. Also removes the tap highlight. On every tappable control.
 - `rise-in`: fade in and rise 8px over 360ms with the same curve, delayed by `--stagger` × 30ms. On widget tiles, exercise rows and the "Adicionar widget" sheet.
 - `pulse-once`: scale 1 → 1.18 → 1 over 380ms. On the value of the set that was just logged.
+- `pose-cycle`: the exercise demo's start and end drawings crossfade with ease in out, 2.4s per cycle (about 1.2s per pose, 0.24s fades). Turned off with reduced motion, where both poses sit side by side.
 - The selection wheel animates size and color of the values over 150ms ease out; the tabs change color with a transition.
 - `prefers-reduced-motion: reduce` cuts every animation and transition to 0.01ms.
 - The `motion` package is installed but not imported yet, so no shared `layoutId` transitions exist.

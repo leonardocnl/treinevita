@@ -2,7 +2,8 @@
 
 /*
  * Dark theme: follows the system, unless an ancestor forces a theme with
- * data-theme="dark" or data-theme="light" (Storybook, a future theme setting).
+ * data-theme="dark" or data-theme="light" (the theme chosen in Ajustes, set on <html>
+ * by the root layout from the vita_theme cookie).
  */
 @custom-variant dark {
     &:where([data-theme="dark"], [data-theme="dark"] *) {

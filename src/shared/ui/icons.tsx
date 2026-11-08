@@ -49,7 +49,6 @@ const icons = {
     "chevron-left": { stroke: 2, shape: <path d="M15 5l-7 7 7 7" /> },
     "chevron-right": { stroke: 2, shape: <path d="M9 5l7 7-7 7" /> },
     minus: { stroke: 2.4, shape: <path d="M6 12h12" /> },
-    plus: { stroke: 2.4, shape: <path d="M12 6v12M6 12h12" /> },
     settings: {
         shape: (
             <>
