@@ -10,6 +10,7 @@ export {
     clearDraft,
     removeExercise,
     replaceExercise,
+    suggest,
     suggestTemplate,
     type Prescription,
     type ProgramChoice,

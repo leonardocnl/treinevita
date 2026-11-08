@@ -30,6 +30,10 @@ export type ProgramTemplate = {
     id: TemplateId;
     name: string;
     description: string;
+    /** How many times a week the model is meant to be trained. */
+    daysPerWeek: number;
+    /** One sentence on who the model is for, shown on its card. */
+    audience: string;
     days: TemplateDay[];
 };
 
@@ -88,12 +92,16 @@ export const TEMPLATES: Record<TemplateId, ProgramTemplate> = {
         id: "abc",
         name: "A/B/C",
         description: "Três treinos que se alternam, cada um com o corpo todo dividido em partes.",
+        daysPerWeek: 3,
+        audience: "Para quem já treina e quer dividir o corpo em três treinos.",
         days: STARTER_WORKOUTS,
     },
     full_body: {
         id: "full_body",
         name: "Corpo inteiro",
         description: "Três vezes por semana, o corpo todo em cada treino.",
+        daysPerWeek: 3,
+        audience: "Para quem está começando ou treina poucas vezes por semana.",
         days: [
             {
                 label: "A",
@@ -123,6 +131,8 @@ export const TEMPLATES: Record<TemplateId, ProgramTemplate> = {
         id: "upper_lower",
         name: "Superior e inferior",
         description: "Quatro vezes por semana, alternando a parte de cima e a de baixo.",
+        daysPerWeek: 4,
+        audience: "Para quem quer ganhar força, com mais descanso para cada músculo.",
         days: [
             {
                 label: "A",
@@ -154,6 +164,8 @@ export const TEMPLATES: Record<TemplateId, ProgramTemplate> = {
         id: "push_pull_legs",
         name: "Empurrar, puxar e pernas",
         description: "Um treino para empurrar, um para puxar e um para as pernas.",
+        daysPerWeek: 3,
+        audience: "Para quem já tem experiência e quer mais volume por músculo.",
         days: [
             {
                 label: "A",
@@ -195,26 +207,45 @@ export const TEMPLATES: Record<TemplateId, ProgramTemplate> = {
     },
 };
 
-/** The template that fits the answers best; the person can still pick any. */
-export function suggestTemplate(answers: {
-    goal: string;
-    experience: string;
-    trainingPlace: string | null;
-}): TemplateId {
+type Answers = { goal: string; experience: string; trainingPlace: string | null };
+
+/**
+ * The template that fits the answers best, with a one-line reason for its card.
+ * The person can still pick any.
+ */
+export function suggest(answers: Answers): { templateId: TemplateId; reason: string } {
     if (answers.trainingPlace === "home" || answers.trainingPlace === "basic_gym") {
-        return "full_body";
+        return { templateId: "full_body", reason: "Funciona bem com poucos aparelhos." };
     }
     if (answers.goal === "strength") {
-        return "upper_lower";
+        return {
+            templateId: "upper_lower",
+            reason: "Para ganhar força: cada músculo descansa entre os treinos.",
+        };
     }
-    if (
-        answers.goal === "conditioning" ||
-        answers.goal === "health" ||
-        answers.experience === "beginner"
-    ) {
-        return "full_body";
+    if (answers.experience === "beginner") {
+        return {
+            templateId: "full_body",
+            reason: "Simples para começar: o corpo todo em cada treino.",
+        };
     }
-    return answers.experience === "advanced" ? "push_pull_legs" : "abc";
+    if (answers.goal === "conditioning" || answers.goal === "health") {
+        return {
+            templateId: "full_body",
+            reason: "O corpo todo em cada treino, bom para fôlego e saúde.",
+        };
+    }
+    return answers.experience === "advanced"
+        ? {
+              templateId: "push_pull_legs",
+              reason: "Mais volume por músculo para quem já tem experiência.",
+          }
+        : { templateId: "abc", reason: "Equilibra volume e descanso para quem já treina." };
+}
+
+/** The suggested template id (see `suggest`). */
+export function suggestTemplate(answers: Answers): TemplateId {
+    return suggest(answers).templateId;
 }
 
 /** What the review screen edits: the exercises (catalog slugs) of each day. */
