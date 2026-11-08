@@ -13,6 +13,8 @@ import { users } from "@/modules/identity/infrastructure/schema";
 import { workspaces } from "@/modules/tenancy/infrastructure/schema";
 import { auditColumns, id } from "@/shared/db/columns";
 
+import { WIDGET_KINDS, WIDGET_SIZES } from "../domain/widgets";
+
 /**
  * Weight and body measurements. Under the LGPD these can be health data
  * (sensitive personal data), so they live in their own table and only the
@@ -81,19 +83,8 @@ export const dashboardWidgets = pgTable(
         userId: uuid("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
-        kind: text("kind", {
-            enum: [
-                "weekly_goal",
-                "body_weight",
-                "next_workout",
-                "personal_record",
-                "training_calendar",
-                "waist",
-                "muscle_volume",
-                "stagnant_exercises",
-            ],
-        }).notNull(),
-        size: text("size", { enum: ["small", "medium"] }).notNull(),
+        kind: text("kind", { enum: WIDGET_KINDS }).notNull(),
+        size: text("size", { enum: WIDGET_SIZES }).notNull(),
         position: smallint("position").notNull(),
         ...auditColumns(),
     },

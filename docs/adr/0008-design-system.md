@@ -2,13 +2,11 @@
 
 ## Status
 
-Accepted, 2026-11-07.
+Accepted, 2026-11-07. Revised the same day: direction "Ponto e linha".
 
 ## Decision
 
-- Reference: iOS 26 Liquid Glass. Simple on screen, smart behind the scenes.
-- Colors follow 60/30/10. Light: paper `#FCF8F7` 60, ink `#0B0B0D` 30, red `#FF1744` 10. Dark swaps paper and ink. Small red text uses `#C8102E` in light mode for contrast.
-- Frosted glass without borders: strong blur with boosted saturation, a thin light highlight on the top edge, a soft shadow. No grain textures.
-- Numbers use **Archivo Expanded** (width 125%), self-hosted. Body text uses the system font (SF Pro on Apple devices).
-- Radii: 32 px surfaces, 28 px widgets, 24 px controls inside glass bars (concentric with an 8 px inset).
-- Rules for writing UI and motion are in [docs/design/principles.md](../design/principles.md).
+- Direction "Ponto e linha": dot-matrix numbers (Nothing), thin text and hairlines (teenage engineering), smoke glass from the author's Kinne for floating elements.
+- Colors follow 60/30/10. Light: paper 60, ink 30, red `#FF1744` 10. Dark swaps paper and ink.
+- Numbers use **Doto** (round dots); text uses **Inter** at weight 300. Both self-hosted. Archivo Expanded was dropped.
+- The full system, including writing and motion rules, is in [docs/design/DESIGN.md](../design/DESIGN.md), locked on 2026-11-07.
