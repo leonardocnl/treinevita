@@ -47,6 +47,12 @@ export const exercises = pgTable(
             .notNull()
             .default("load_reps"),
         demoImagePath: text("demo_image_path"),
+        /** Where the start and end drawings come from; own drawings can replace them one by one. */
+        mediaSource: text("media_source", { enum: ["everkinetic", "none", "own"] })
+            .notNull()
+            .default("none"),
+        mediaStartPath: text("media_start_path"),
+        mediaEndPath: text("media_end_path"),
         videoUrl: text("video_url"),
         defaultIncrementKg: numeric("default_increment_kg", { precision: 5, scale: 2 })
             .notNull()

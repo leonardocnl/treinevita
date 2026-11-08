@@ -3,7 +3,7 @@ import "server-only";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 
-import { getCurrentUser } from "@/modules/identity";
+import { getCurrentUser, onboardingRedirect } from "@/modules/identity";
 import { getDb, type Database } from "@/platform/db/client";
 import type { TenantContext } from "@/shared/db/tenant";
 
@@ -12,12 +12,12 @@ import { workspaceMemberships, workspaces } from "../infrastructure/schema";
 export type AppContext = TenantContext & {
     readonly timezone: string;
     readonly displayName: string | null;
+    readonly email: string;
 };
 
 /**
- * The entry point of every signed-in screen: who is acting and in which
- * workspace. Sends to the sign-in screen when there is no valid session.
- * For now the personal workspace is used; choosing among several comes with B2B.
+ * The person's personal workspace. For now it is the only one; choosing among
+ * several comes with B2B.
  */
 function personalMembership(db: Database, userId: string) {
     return db
@@ -36,14 +36,13 @@ function personalMembership(db: Database, userId: string) {
 }
 
 /**
- * Creates the person's personal workspace on first sign-in and runs `onCreate`
- * (e.g. the starter program) in the same transaction. A per-user advisory lock
+ * Creates the person's personal workspace on first sign-in. A per-user advisory lock
  * keeps two simultaneous first sign-ins from creating two workspaces.
  */
-export async function ensurePersonalWorkspace(
-    user: { readonly id: string; readonly displayName: string | null },
-    onCreate: (db: Database, context: TenantContext) => Promise<void>,
-): Promise<void> {
+export async function ensurePersonalWorkspace(user: {
+    readonly id: string;
+    readonly displayName: string | null;
+}): Promise<void> {
     const db = await getDb();
     await db.transaction(async (tx) => {
         await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${user.id}))`);
@@ -58,11 +57,23 @@ export async function ensurePersonalWorkspace(
         await tx
             .insert(workspaceMemberships)
             .values({ workspaceId: workspace.id, userId: user.id, role: "owner" });
-        await onCreate(tx, { workspaceId: workspace.id, userId: user.id });
     });
 }
 
+/**
+ * The entry point of every app screen and action. Sends to the sign-in screen
+ * without a valid session, and to the onboarding (/comecar) until it is done.
+ */
 export async function requireAppContext(): Promise<AppContext> {
+    return resolveContext(false);
+}
+
+/** Like requireAppContext, for the onboarding itself: sends home once it is done. */
+export async function requireOnboardingContext(): Promise<AppContext> {
+    return resolveContext(true);
+}
+
+async function resolveContext(onOnboardingRoute: boolean): Promise<AppContext> {
     const user = await getCurrentUser();
     if (!user) {
         redirect("/entrar");
@@ -74,10 +85,16 @@ export async function requireAppContext(): Promise<AppContext> {
         redirect("/entrar");
     }
 
+    const target = onboardingRedirect({ onboarded: user.onboarded, onOnboardingRoute });
+    if (target) {
+        redirect(target);
+    }
+
     return {
         workspaceId: membership.workspaceId,
         userId: user.id,
         timezone: user.timezone,
         displayName: user.displayName,
+        email: user.email,
     };
 }

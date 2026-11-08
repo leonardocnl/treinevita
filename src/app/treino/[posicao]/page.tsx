@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
+import { ExerciseDemo } from "@/shared/ui/exercise-demo";
 import { GlassIconButton } from "@/shared/ui/glass-icon-button";
 import { Icon } from "@/shared/ui/icons";
 import { Label, Title } from "@/shared/ui/text";
@@ -65,6 +66,10 @@ export default async function ExercisePage({ params }: { params: Promise<{ posic
                 </Title>
                 <Label tone="secondary">{prescriptionText(exercise)}</Label>
             </header>
+
+            <div className="mt-6">
+                <ExerciseDemo name={exercise.name} media={exercise.media} />
+            </div>
 
             <div className="mt-6" key={exercise.performedExerciseId}>
                 <SetLogger

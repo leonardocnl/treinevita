@@ -29,23 +29,26 @@ npm run db:local:reset   # recreate the local database with six weeks of mock tr
 npm run dev -- -p 3005   # open http://localhost:3005 and use "Entrar como Leonardo"
 ```
 
+The seeded owner has no profile yet, so the first visit goes through the onboarding (`/comecar`), where "Manter minha ficha atual" keeps the seeded A/B/C program.
+
 The "Entrar como Leonardo" shortcut exists only in development with the local database; it is never available in production.
 
 PGlite allows one process at a time: close Drizzle Studio (`npm run db:studio`) before `npm run dev`, and stop the dev server before `npm run db:local:reset`.
 
 ## Scripts
 
-| Script                       | What it does                               |
-| ---------------------------- | ------------------------------------------ |
-| `npm run dev`                | Development server                         |
-| `npm run build`              | Production build                           |
-| `npm run test`               | Unit tests (Vitest)                        |
-| `npm run lint`               | ESLint                                     |
-| `npm run check:types`        | TypeScript check                           |
-| `npm run check:architecture` | Module boundary rules (dependency-cruiser) |
-| `npm run check:format`       | Prettier check (4-space indentation)       |
-| `npm run db:generate`        | Create a migration from the table files    |
-| `npm run db:migrate`         | Apply migrations                           |
+| Script                            | What it does                                                                     |
+| --------------------------------- | -------------------------------------------------------------------------------- |
+| `npm run dev`                     | Development server                                                               |
+| `npm run build`                   | Production build                                                                 |
+| `npm run test`                    | Unit tests (Vitest)                                                              |
+| `npm run lint`                    | ESLint                                                                           |
+| `npm run check:types`             | TypeScript check                                                                 |
+| `npm run check:architecture`      | Module boundary rules (dependency-cruiser)                                       |
+| `npm run check:format`            | Prettier check (4-space indentation)                                             |
+| `npm run db:generate`             | Create a migration from the table files                                          |
+| `npm run db:migrate`              | Apply migrations                                                                 |
+| `npm run catalog:import-drawings` | Re-import the Everkinetic exercise drawings (pinned commit, cached in `.cache/`) |
 
 ## Architecture
 

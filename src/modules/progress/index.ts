@@ -8,6 +8,7 @@ export {
     type RecordEntry,
     type WeekDay,
 } from "./application/dashboard-data";
+export { recordBodyWeight } from "./application/body-weight";
 export { startNextWorkout } from "./application/start-workout";
 export {
     DEFAULT_LAYOUT,

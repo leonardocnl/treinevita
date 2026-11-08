@@ -2,6 +2,8 @@ import { sql } from "drizzle-orm";
 
 import type { Database } from "@/platform/db/drivers";
 
+import { EVERKINETIC_DRAWINGS } from "../data/everkinetic-drawings";
+
 import { exerciseMuscleGroups, exercises, muscleGroups } from "./schema";
 
 /**
@@ -255,6 +257,18 @@ export const GLOBAL_EXERCISES: GlobalExercise[] = [
     },
 ];
 
+/** Drawings imported by scripts/import-everkinetic.ts live in public/exercises/<slug>/. */
+function mediaFor(slug: string) {
+    if (!EVERKINETIC_DRAWINGS.includes(slug)) {
+        return { mediaSource: "none" as const, mediaStartPath: null, mediaEndPath: null };
+    }
+    return {
+        mediaSource: "everkinetic" as const,
+        mediaStartPath: `/exercises/${slug}/start.svg`,
+        mediaEndPath: `/exercises/${slug}/end.svg`,
+    };
+}
+
 /** Inserts or updates the global catalog; safe to run on every deploy. Returns ids by slug. */
 export async function upsertGlobalCatalog(
     db: Database,
@@ -275,6 +289,7 @@ export async function upsertGlobalCatalog(
             movementPattern: seed.movementPattern,
             measurement: seed.measurement ?? "load_reps",
             defaultIncrementKg: String(seed.incrementKg),
+            ...mediaFor(seed.slug),
         };
         const [exercise] = await db
             .insert(exercises)
