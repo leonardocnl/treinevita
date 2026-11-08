@@ -1,6 +1,7 @@
 /**
  * Recreates the local development database from scratch and fills it with
- * mock data. Never touches Neon: it only writes to ./.data/pglite.
+ * mock data. Never touches Neon: it only writes to ./.data/pglite, and it
+ * refuses to run on Vercel or in production.
  *
  * Usage: npm run db:local:reset
  */
@@ -10,26 +11,26 @@ import { PGlite } from "@electric-sql/pglite";
 import { drizzle } from "drizzle-orm/pglite";
 import { migrate } from "drizzle-orm/pglite/migrator";
 
+import { upsertGlobalCatalog } from "../src/modules/catalog/infrastructure/global-catalog";
 import { doubleProgression } from "../src/modules/progress/domain/progression";
 import { DEFAULT_LAYOUT } from "../src/modules/progress/domain/widgets";
-import { LOCAL_DATABASE_PATH } from "../src/platform/db/drivers";
-import { schema } from "../src/platform/db/schema";
-
 import {
-    bodyMeasurementSeeds,
-    exerciseSeeds,
-    muscleGroupSeeds,
-    trainingDays,
-    workoutSeeds,
-} from "./seed-data";
+    insertStarterProgram,
+    STARTER_WORKOUTS,
+} from "../src/modules/training/infrastructure/starter-program";
+import { LOCAL_DATABASE_PATH, type Database } from "../src/platform/db/drivers";
+import { schema } from "../src/platform/db/schema";
+import { isProductionEnv } from "../src/platform/env";
+
+import { bodyMeasurementSeeds, MOCK_START, trainingDays } from "./seed-data";
 
 const OWNER_EMAIL = "leonardocnl.dev@gmail.com";
 const TIMEZONE = "America/Sao_Paulo";
 
 async function main() {
-    if (process.env.DATABASE_URL) {
+    if (process.env.DATABASE_URL || isProductionEnv(process.env)) {
         throw new Error(
-            "DATABASE_URL is set. This script only resets the local database; unset it first.",
+            "This script only resets the local database. Unset DATABASE_URL; it never runs on Vercel or in production.",
         );
     }
 
@@ -58,110 +59,41 @@ async function main() {
         .insert(schema.trainingPreferences)
         .values({ workspaceId: workspace.id, userId: owner.id, weeklyGoal: 3 });
 
-    const muscles = await db
-        .insert(schema.muscleGroups)
-        .values([...muscleGroupSeeds])
-        .returning();
-    const muscleIdBySlug = new Map(muscles.map((muscle) => [muscle.slug, muscle.id]));
+    const context = { workspaceId: workspace.id, userId: owner.id };
+    const exercises = await upsertGlobalCatalog(db as unknown as Database);
+    const program = await insertStarterProgram(
+        db as unknown as Database,
+        context,
+        exercises,
+        "2026-07-20",
+    );
 
-    const exerciseIdByKey = new Map<string, string>();
-    for (const seed of exerciseSeeds) {
-        const [exercise] = await db
-            .insert(schema.exercises)
-            .values({
-                name: seed.name,
-                equipment: seed.equipment,
-                movementPattern: seed.movementPattern,
-                measurement: seed.measurement ?? "load_reps",
-                defaultIncrementKg: String(seed.incrementKg),
-            })
-            .returning();
-        exerciseIdByKey.set(seed.key, exercise.id);
-
-        const links = [
-            ...seed.primary.map((slug) => ({ slug, role: "primary" as const })),
-            ...(seed.secondary ?? []).map((slug) => ({ slug, role: "secondary" as const })),
-        ];
-        await db.insert(schema.exerciseMuscleGroups).values(
-            links.map((link) => ({
-                exerciseId: exercise.id,
-                muscleGroupId: required(muscleIdBySlug.get(link.slug), link.slug),
-                role: link.role,
-            })),
-        );
-    }
-
-    const [program] = await db
-        .insert(schema.programs)
-        .values({
-            workspaceId: workspace.id,
-            athleteUserId: owner.id,
-            createdByUserId: owner.id,
-            name: "Ficha de novembro",
-            startedOn: "2026-07-20",
-        })
-        .returning();
-
-    type PrescriptionState = {
-        prescribedExerciseId: string;
-        exerciseId: string;
-        seed: (typeof workoutSeeds)[number]["exercises"][number];
-        incrementKg: number;
-        loadKg: number;
-        reps: number;
-        durationSeconds: number;
-    };
-
-    const workoutIdByLabel = new Map<string, string>();
-    const stateByLabel = new Map<string, PrescriptionState[]>();
-
-    for (const [workoutIndex, workoutSeed] of workoutSeeds.entries()) {
-        const [workout] = await db
-            .insert(schema.workouts)
-            .values({
-                workspaceId: workspace.id,
-                programId: program.id,
-                label: workoutSeed.label,
-                position: workoutIndex,
-            })
-            .returning();
-        workoutIdByLabel.set(workoutSeed.label, workout.id);
-
-        const states: PrescriptionState[] = [];
-        for (const [position, seed] of workoutSeed.exercises.entries()) {
-            const exerciseSeed = required(
-                exerciseSeeds.find((candidate) => candidate.key === seed.exercise),
-                seed.exercise,
+    const workoutIdByLabel = new Map(program.map((workout) => [workout.label, workout.workoutId]));
+    const stateByLabel = new Map(
+        program.map((workout) => {
+            const plan = required(
+                STARTER_WORKOUTS.find((candidate) => candidate.label === workout.label),
+                workout.label,
             );
-            const [prescribed] = await db
-                .insert(schema.prescribedExercises)
-                .values({
-                    workspaceId: workspace.id,
-                    workoutId: workout.id,
-                    exerciseId: required(exerciseIdByKey.get(seed.exercise), seed.exercise),
-                    position,
-                    sets: 3,
-                    repMin: seed.repMin ?? null,
-                    repMax: seed.repMax ?? null,
-                    durationMinSeconds: seed.durationMin ?? null,
-                    durationMaxSeconds: seed.durationMax ?? null,
-                    restSeconds: seed.restSeconds,
-                    progressionRule: exerciseSeed.incrementKg > 0 ? "double_progression" : "none",
-                })
-                .returning();
-
-            states.push({
-                prescribedExerciseId: prescribed.id,
-                exerciseId: prescribed.exerciseId,
-                seed,
-                incrementKg: exerciseSeed.incrementKg,
-                loadKg: seed.startLoadKg,
-                reps: seed.repMin ?? 0,
-                durationSeconds: seed.durationMin ?? 0,
+            const states = workout.prescriptions.map((prescription, position) => {
+                const seed = {
+                    ...plan.exercises[position],
+                    stuck: MOCK_START[prescription.slug]?.stuck,
+                };
+                return {
+                    prescribedExerciseId: prescription.id,
+                    exerciseId: prescription.exerciseId,
+                    seed,
+                    incrementKg: required(exercises.get(prescription.slug), prescription.slug)
+                        .incrementKg,
+                    loadKg: required(MOCK_START[prescription.slug], prescription.slug).loadKg,
+                    reps: seed.repMin ?? 0,
+                    durationSeconds: seed.durationMin ?? 0,
+                };
             });
-        }
-        stateByLabel.set(workoutSeed.label, states);
-    }
+            return [workout.label, states];
+        }),
+    );
 
     let sessionCount = 0;
     let setCount = 0;
@@ -257,7 +189,7 @@ async function main() {
     await client.close();
 
     console.log(
-        `Local database ready at ${LOCAL_DATABASE_PATH}: 1 user, ${exerciseSeeds.length} exercises, ` +
+        `Local database ready at ${LOCAL_DATABASE_PATH}: 1 user, ${exercises.size} exercises, ` +
             `${sessionCount} sessions, ${setCount} sets, ${bodyMeasurementSeeds.length} weigh-ins.`,
     );
 }

@@ -8,6 +8,13 @@
       "when": 1794072662053,
       "tag": "0000_initial",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1794095437154,
+      "tag": "0001_exercise_slug",
+      "breakpoints": true
     }
   ]
 }

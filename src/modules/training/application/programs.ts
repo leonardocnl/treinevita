@@ -2,9 +2,10 @@ import "server-only";
 
 import { and, asc, eq, inArray } from "drizzle-orm";
 
-import { getExercisesByIds } from "@/modules/catalog";
-import { getDb } from "@/platform/db/client";
+import { getExercisesByIds, getGlobalExercisesBySlug } from "@/modules/catalog";
+import { getDb, type Database } from "@/platform/db/client";
 import { inTenant, type TenantContext } from "@/shared/db/tenant";
+import { toLocalDate } from "@/shared/time/local-date";
 
 import {
     prescribedExercises,
@@ -12,6 +13,7 @@ import {
     trainingPreferences,
     workouts,
 } from "../infrastructure/schema";
+import { insertStarterProgram, STARTER_WORKOUTS } from "../infrastructure/starter-program";
 
 export type PrescribedExercise = {
     readonly prescribedExerciseId: string;
@@ -149,4 +151,27 @@ export function nextWorkoutInRotation(
     }
     const index = program.workouts.findIndex((workout) => workout.label === lastLabel);
     return program.workouts[(index + 1) % program.workouts.length];
+}
+
+/**
+ * Creates the starter A/B/C program for a new workspace. Pass the transaction
+ * that created the workspace; does nothing when the person already has a program.
+ */
+export async function createStarterProgram(db: Database, context: TenantContext): Promise<void> {
+    const [existing] = await db
+        .select({ id: programs.id })
+        .from(programs)
+        .where(and(inTenant(programs, context), eq(programs.athleteUserId, context.userId)))
+        .limit(1);
+    if (existing) {
+        return;
+    }
+    const slugs = STARTER_WORKOUTS.flatMap((workout) => workout.exercises.map((e) => e.slug));
+    const exercises = await getGlobalExercisesBySlug(context, slugs, db);
+    await insertStarterProgram(
+        db,
+        context,
+        exercises,
+        toLocalDate(new Date(), "America/Sao_Paulo"),
+    );
 }

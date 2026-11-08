@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createHash, randomBytes } from "node:crypto";
+import { createHash } from "node:crypto";
 
 import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
@@ -17,9 +17,10 @@ function hashToken(token: string): string {
     return createHash("sha256").update(token).digest("hex");
 }
 
+/** A new token on every sign-in, so a planted cookie can never be fixated. */
 export async function createSession(userId: string): Promise<void> {
     const db = await getDb();
-    const token = randomBytes(32).toString("base64url");
+    const token = Buffer.from(crypto.getRandomValues(new Uint8Array(32))).toString("base64url");
     const now = new Date();
     const expiresAt = sessionExpiry(now);
 

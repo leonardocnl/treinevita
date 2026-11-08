@@ -3,6 +3,7 @@
  * Planning: programs (the "ficha"), workouts A/B/C, prescribed exercises and weekly goal.
  */
 export {
+    createStarterProgram,
     getActiveProgram,
     getWeeklyGoal,
     nextWorkoutInRotation,
