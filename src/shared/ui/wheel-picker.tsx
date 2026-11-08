@@ -1,5 +1,12 @@
 "use client";
 
+/*
+ * Selection wheel built on native scroll snapping: on the iPhone it gets the
+ * system's momentum and snap for free. Arrow keys and taps on a neighbour also
+ * work. Made for the dark panel; the selection band (QuietBand) is drawn by the
+ * parent so it can span several wheels.
+ */
+
 import { useCallback, useEffect, useRef } from "react";
 
 export const WHEEL_ITEM_HEIGHT = 64;
@@ -13,14 +20,10 @@ type WheelPickerProps = {
     label: string;
     unit: string;
     align?: "start" | "end" | "center";
+    /** Shown next to the selected value (the red "load went up" dot). */
     marker?: React.ReactNode;
 };
 
-/**
- * Selection wheel built on native scroll snapping: on the iPhone it gets the
- * system's momentum and snap for free. Arrow keys also work. The selection
- * band is drawn by the parent so it can span several wheels.
- */
 export function WheelPicker({
     values,
     value,
@@ -95,11 +98,10 @@ export function WheelPicker({
                         step(1);
                     }
                 }}
-                className="no-scrollbar relative w-full snap-y snap-mandatory overflow-y-scroll rounded-[20px] outline-none focus-visible:ring-1 focus-visible:ring-on-panel-dim"
+                className="no-scrollbar fade-y relative w-full snap-y snap-mandatory overflow-y-scroll rounded-inner outline-none focus-visible:ring-1 focus-visible:ring-on-panel-dim"
                 style={{
                     height: WHEEL_ITEM_HEIGHT * VISIBLE_ROWS,
                     paddingBlock: WHEEL_ITEM_HEIGHT,
-                    maskImage: "linear-gradient(transparent, #000 34%, #000 66%, transparent)",
                 }}
             >
                 {values.map((option, index) => {

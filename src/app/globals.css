@@ -1,6 +1,21 @@
 @import "tailwindcss";
 
 /*
+ * Dark theme: follows the system, unless an ancestor forces a theme with
+ * data-theme="dark" or data-theme="light" (Storybook, a future theme setting).
+ */
+@custom-variant dark {
+    &:where([data-theme="dark"], [data-theme="dark"] *) {
+        @slot;
+    }
+    @media (prefers-color-scheme: dark) {
+        &:not(:where([data-theme="light"], [data-theme="light"] *)) {
+            @slot;
+        }
+    }
+}
+
+/*
  * VITA design tokens — "Ponto e linha" (see docs/design/DESIGN.md).
  * Color rule 60/30/10: light = paper 60, ink 30, red 10; dark swaps paper and ink.
  */
@@ -18,6 +33,7 @@
 
     --vita-red: #ff1744;
     --vita-red-text: #c8102e;
+    --vita-on-red: #ffffff;
 
     /* dark surfaces (panel, smoke glass) keep the same values in both themes */
     --vita-panel: #0b0b0d;
@@ -25,10 +41,9 @@
     --vita-on-panel-secondary: #9a9a9f;
     --vita-on-panel-dim: #6e6e73;
     --vita-panel-track: #3a3a3f;
-}
+    --vita-panel-divider: rgb(255 255 255 / 0.08);
 
-@media (prefers-color-scheme: dark) {
-    :root {
+    @variant dark {
         --vita-canvas: #0b0b0d;
         --vita-paper: #161618;
         --vita-ink: #fcf8f7;
@@ -57,11 +72,18 @@
     --color-level-3: var(--vita-level-3);
     --color-red: var(--vita-red);
     --color-red-text: var(--vita-red-text);
+    --color-on-red: var(--vita-on-red);
     --color-panel: var(--vita-panel);
     --color-on-panel: var(--vita-on-panel);
     --color-on-panel-secondary: var(--vita-on-panel-secondary);
     --color-on-panel-dim: var(--vita-on-panel-dim);
     --color-panel-track: var(--vita-panel-track);
+    --color-panel-divider: var(--vita-panel-divider);
+
+    /* Radii outside Tailwind's scale: tiles, panels and sheets, and areas inside a panel. */
+    --radius-tile: 26px;
+    --radius-panel: 30px;
+    --radius-inner: 20px;
 
     --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     --font-dot: var(--font-doto), ui-monospace, monospace;
@@ -112,7 +134,7 @@
     -webkit-backdrop-filter: blur(28px) saturate(200%);
     backdrop-filter: blur(28px) saturate(200%);
     border: 1px solid rgb(11 11 13 / 0.06);
-    @media (prefers-color-scheme: dark) {
+    @variant dark {
         background-color: rgb(30 30 33 / 0.5);
         border-color: rgb(255 255 255 / 0.08);
     }
@@ -126,7 +148,7 @@
     border: 1px solid rgb(11 11 13 / 0.05);
     box-shadow: 0 8px 24px -16px rgb(11 11 13 / 0.45);
     color: var(--vita-ink);
-    @media (prefers-color-scheme: dark) {
+    @variant dark {
         background-color: rgb(28 28 30 / 0.72);
         border-color: rgb(255 255 255 / 0.08);
     }
@@ -190,6 +212,11 @@
 
 @utility pulse-once {
     animation: vita-pulse 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Fades the top and bottom rows of a scroller (the selection wheel). */
+@utility fade-y {
+    mask-image: linear-gradient(transparent, #000 34%, #000 66%, transparent);
 }
 
 @utility no-scrollbar {

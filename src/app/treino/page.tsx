@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-
-import { CheckIcon, ChevronLeftIcon } from "@/shared/ui/icons";
+import { DotNumber } from "@/shared/ui/dot-number";
+import { FloatBar } from "@/shared/ui/float-bar";
+import { GlassIconButton } from "@/shared/ui/glass-icon-button";
+import { Icon } from "@/shared/ui/icons";
+import { PillAction } from "@/shared/ui/pill-action";
+import { Label, Title } from "@/shared/ui/text";
+import { TextButton } from "@/shared/ui/text-button";
 
 import { discardWorkoutAction, finishWorkoutAction } from "../_components/actions";
-import { PillActionContent, pillActionClass } from "../_components/primary-action";
 
 import { ExerciseList } from "./_components/exercise-list";
 import { loadOpenWorkout } from "./_components/load-workout";
@@ -22,25 +25,21 @@ export default async function WorkoutPage() {
         <>
             <main className="px-6 pb-36 pt-[max(env(safe-area-inset-top),52px)] md:px-0 md:pt-16">
                 <div className="flex items-center justify-between md:hidden">
-                    <Link
-                        href="/"
-                        aria-label="Voltar ao Resumo"
-                        className="glass-light pressable -ml-2 flex size-11 items-center justify-center rounded-full"
-                    >
-                        <ChevronLeftIcon size={20} strokeWidth={1.8} />
-                    </Link>
-                    <span className="text-[15px] font-normal">
+                    <GlassIconButton href="/" aria-label="Voltar ao Resumo" className="-ml-2">
+                        <Icon name="chevron-left" size={20} strokeWidth={1.8} />
+                    </GlassIconButton>
+                    <Label as="span" weight="normal">
                         <span className="tabular-nums">{minutes}</span> min
-                    </span>
+                    </Label>
                 </div>
 
                 <header className="mt-6 md:hidden">
-                    <h1 className="text-[34px] font-normal leading-tight">
+                    <Title size={34} weight="normal" leading="tight">
                         Treino {workout.label}
-                    </h1>
-                    <p className="mt-1.5 text-[15px] text-ink-secondary">
+                    </Title>
+                    <Label tone="secondary" className="mt-1.5">
                         {doneExercises} de {workout.exercises.length} exercícios concluídos
-                    </p>
+                    </Label>
                 </header>
 
                 <div className="mt-6 md:hidden">
@@ -48,40 +47,32 @@ export default async function WorkoutPage() {
                 </div>
 
                 <div className="hidden min-h-[50vh] flex-col justify-center md:flex">
-                    <p className="num text-[96px] leading-[0.8]">
+                    <DotNumber as="p" size={96} leading="0.8" of={workout.exercises.length}>
                         {doneExercises}
-                        <span className="text-dot-off">/{workout.exercises.length}</span>
-                    </p>
-                    <p className="mt-5 text-[17px] text-ink-secondary">
+                    </DotNumber>
+                    <Label size={17} tone="secondary" className="mt-5">
                         Exercícios concluídos em {minutes} min. Escolha um exercício na lista.
-                    </p>
+                    </Label>
                 </div>
 
                 <form action={discardWorkoutAction} className="mt-10">
-                    <button
-                        type="submit"
-                        className="pressable text-[15px] font-normal text-red-text"
-                    >
+                    <TextButton type="submit" tone="accent">
                         Descartar treino
-                    </button>
+                    </TextButton>
                 </form>
             </main>
 
-            <div className="pointer-events-none fixed inset-x-0 bottom-0 z-20 flex justify-center px-3 pb-[max(env(safe-area-inset-bottom),20px)]">
-                <form
-                    action={finishWorkoutAction}
-                    className="float-bar pointer-events-auto w-full max-w-md rounded-full p-2"
-                >
-                    <button type="submit" className={pillActionClass}>
-                        <PillActionContent icon={<CheckIcon size={20} />}>
-                            Finalizar treino
-                            <span className="text-[13px] text-on-ink-secondary">
-                                {doneExercises} de {workout.exercises.length}
-                            </span>
-                        </PillActionContent>
-                    </button>
+            <FloatBar>
+                <form action={finishWorkoutAction} className="flex-1">
+                    <PillAction
+                        type="submit"
+                        icon={<Icon name="check" size={20} />}
+                        detail={`${doneExercises} de ${workout.exercises.length}`}
+                    >
+                        Finalizar treino
+                    </PillAction>
                 </form>
-            </div>
+            </FloatBar>
         </>
     );
 }
