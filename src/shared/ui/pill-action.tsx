@@ -1,11 +1,13 @@
 /*
  * The action pill: the screen's main action. A 48px ink pill (it inverts in
  * dark mode) with the label on the left, an optional secondary part, and a
- * red circle with a white icon at the right end.
+ * red circle with a white icon at the right end, the same 4px from the top,
+ * the bottom and the end (concentric corners, see concentric.ts).
  */
 import type { ReactNode } from "react";
 
 import { ActionElement, type ActionElementProps } from "./action-element";
+import { PILL } from "./concentric";
 import { AccentCircle } from "./round-action";
 import { cx } from "./cx";
 
@@ -24,12 +26,13 @@ export function PillAction({ children, icon, detail, grow = false, ...props }: P
     return (
         <ActionElement
             {...props}
+            style={{ height: PILL.height, padding: PILL.gap, paddingLeft: 20 }}
             className={cx(
-                "pressable flex h-12 w-full items-center justify-between rounded-full bg-ink pl-5 pr-1 text-canvas disabled:opacity-60",
+                "pressable flex w-full items-center justify-between gap-3 rounded-full bg-ink text-canvas disabled:opacity-60",
                 grow && "flex-1",
             )}
         >
-            <span className="flex items-baseline gap-2 text-[15px] font-normal">
+            <span className="flex min-w-0 items-baseline gap-2 truncate text-[15px] font-normal">
                 {children}
                 {detail !== undefined ? (
                     <span className="text-[13px] text-on-ink-secondary">{detail}</span>

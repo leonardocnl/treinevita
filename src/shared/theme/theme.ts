@@ -11,3 +11,30 @@ export const THEME_COOKIE = "vita_theme";
 export function parseTheme(value: string | null | undefined): Theme {
     return (THEMES as readonly string[]).includes(value ?? "") ? (value as Theme) : "system";
 }
+
+/**
+ * The theme the top toggle switches to. "system" is resolved first, so the
+ * toggle always flips what the person sees.
+ */
+export function toggledTheme(current: Theme, systemPrefersDark: boolean): "light" | "dark" {
+    const shown = current === "system" ? (systemPrefersDark ? "dark" : "light") : current;
+    return shown === "dark" ? "light" : "dark";
+}
+
+/**
+ * The cookie written by both the top toggle and Ajustes: httpOnly (only the
+ * server reads it, to render the right theme on the first paint), a year long.
+ */
+export function themeCookie(theme: Theme, secure: boolean) {
+    return {
+        name: THEME_COOKIE,
+        value: theme,
+        options: {
+            httpOnly: true,
+            secure,
+            sameSite: "lax" as const,
+            path: "/",
+            maxAge: 60 * 60 * 24 * 365,
+        },
+    };
+}

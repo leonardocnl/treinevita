@@ -23,6 +23,7 @@ export {
     programChoiceSchema,
     removeExercise,
     replaceExercise,
+    suggest,
     suggestTemplate,
     type ProgramChoice,
     type ProgramDraft,

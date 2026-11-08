@@ -9,7 +9,7 @@ import { getProfile, profileSchema, saveProfile } from "@/modules/identity";
 import { recordBodyWeight } from "@/modules/progress";
 import { requireAppContext, requireOnboardingContext } from "@/modules/tenancy";
 import { applyProgramChoice, programChoiceSchema, setWeeklyGoal } from "@/modules/training";
-import { THEMES, THEME_COOKIE } from "@/shared/theme/theme";
+import { THEMES, themeCookie } from "@/shared/theme/theme";
 import { toLocalDate } from "@/shared/time/local-date";
 
 /*
@@ -61,7 +61,7 @@ export async function completeOnboardingAction(input: unknown): Promise<ActionRe
     redirect("/");
 }
 
-/** Saves the profile edited in Ajustes; a new weight also becomes today's weigh-in. */
+/** Saves the profile edited in Perfil; a new weight also becomes today's weigh-in. */
 export async function updateProfileAction(input: unknown): Promise<ActionResult> {
     const context = await requireAppContext();
     const parsed = profileSchema.safeParse(input);
@@ -85,21 +85,36 @@ export async function updateProfileAction(input: unknown): Promise<ActionResult>
     return undefined;
 }
 
+const weightSchema = profileSchema.shape.weightKg;
+
+/** "Registrar peso" in Perfil: today's weigh-in, which also becomes the profile's weight. */
+export async function recordWeightAction(input: unknown): Promise<ActionResult> {
+    const context = await requireAppContext();
+    const parsed = weightSchema.safeParse(input);
+    if (!parsed.success) {
+        return { error: "Confira o peso e tente de novo." };
+    }
+    const profile = await getProfile(context);
+    if (!profile) {
+        return { error: "Termine o cadastro antes de registrar o peso." };
+    }
+    await saveProfile(context, { ...profile, weightKg: parsed.data }, async (db, tenant) => {
+        await recordBodyWeight(db, tenant, parsed.data, toLocalDate(new Date(), context.timezone));
+    });
+    revalidatePath("/", "layout");
+    return undefined;
+}
+
 const themeSchema = z.enum(THEMES);
 
-/** Stores the appearance in a cookie, read by the root layout on every render. */
+/** Stores the appearance in a cookie, read by the root layout on every render (top toggle and Ajustes). */
 export async function setThemeAction(input: unknown): Promise<void> {
     await requireAppContext();
     const parsed = themeSchema.safeParse(input);
     if (!parsed.success) {
         return;
     }
-    (await cookies()).set(THEME_COOKIE, parsed.data, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-        maxAge: 60 * 60 * 24 * 365,
-    });
+    const cookie = themeCookie(parsed.data, process.env.NODE_ENV === "production");
+    (await cookies()).set(cookie.name, cookie.value, cookie.options);
     revalidatePath("/", "layout");
 }

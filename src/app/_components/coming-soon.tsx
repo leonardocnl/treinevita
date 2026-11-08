@@ -1,11 +1,17 @@
 import { Label, Title } from "@/shared/ui/text";
 
-import { AppDock } from "./app-dock";
-
-type Tab = "treinos" | "evolucao" | "corpo";
+import { AppDock, type Tab } from "./app-dock";
 
 /** Placeholder for tabs that arrive in the next phases. */
-export function ComingSoon({ tab, title, text }: { tab: Tab; title: string; text: string }) {
+export function ComingSoon({
+    tab,
+    title,
+    text,
+}: {
+    tab: Exclude<Tab, "resumo" | "perfil">;
+    title: string;
+    text: string;
+}) {
     return (
         <>
             <main className="mx-auto w-full max-w-5xl px-6 pb-48 pt-[max(env(safe-area-inset-top),56px)] md:px-8">

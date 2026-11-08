@@ -3,6 +3,8 @@
 import { useState, useTransition, type ReactNode } from "react";
 
 import type { WidgetDefinition, WidgetKind, WidgetPlacement, WidgetSize } from "@/modules/progress";
+import { concentricGap } from "@/shared/ui/concentric";
+import { GlassIconButton } from "@/shared/ui/glass-icon-button";
 import { Icon } from "@/shared/ui/icons";
 import { List, ListRow } from "@/shared/ui/list";
 import { AccentCircle } from "@/shared/ui/round-action";
@@ -10,7 +12,6 @@ import { RoundButton } from "@/shared/ui/round-button";
 import { SegmentedControl, type SegmentedOption } from "@/shared/ui/segmented-control";
 import { Sheet } from "@/shared/ui/sheet";
 import { Caption, Label } from "@/shared/ui/text";
-import { TextButton } from "@/shared/ui/text-button";
 import { WidgetAddTile, WidgetTile } from "@/shared/ui/widget-tile";
 import { WidgetGrid } from "@/shared/ui/widget-grid";
 
@@ -18,13 +19,16 @@ import { saveLayoutAction } from "../../_components/actions";
 
 type DashboardProps = {
     header: ReactNode;
-    /** The round glass button to Ajustes, at the top right next to "Editar". */
-    settings: ReactNode;
+    /** The theme toggle, at the top right next to the edit button. */
+    themeToggle: ReactNode;
     initialLayout: WidgetPlacement[];
     catalog: Record<WidgetKind, WidgetDefinition>;
     /** Server-rendered content of each widget in each supported size. */
     renders: Record<string, Partial<Record<WidgetSize, ReactNode>>>;
 };
+
+/** The edit chips (32px, radius 16) sit concentric inside the 26px tile. */
+const TILE_INSET = concentricGap(26, 16);
 
 const sizeOptions: Record<WidgetSize, SegmentedOption<WidgetSize>> = {
     small: { value: "small", label: "Pequeno", content: <Icon name="tile-small" /> },
@@ -32,8 +36,14 @@ const sizeOptions: Record<WidgetSize, SegmentedOption<WidgetSize>> = {
     large: { value: "large", label: "Grande", content: <Icon name="tile-large" /> },
 };
 
-/** The Summary grid: widgets in three sizes, editable with the "Editar" button. */
-export function Dashboard({ header, settings, initialLayout, catalog, renders }: DashboardProps) {
+/** The Summary grid: widgets in three sizes, editable with the pencil button. */
+export function Dashboard({
+    header,
+    themeToggle,
+    initialLayout,
+    catalog,
+    renders,
+}: DashboardProps) {
     const [layout, setLayout] = useState(initialLayout);
     const [saved, setSaved] = useState(initialLayout);
     const [editing, setEditing] = useState(false);
@@ -88,18 +98,27 @@ export function Dashboard({ header, settings, initialLayout, catalog, renders }:
             <div className="flex items-baseline justify-between">
                 <div className="min-w-0">{header}</div>
                 {editing ? (
-                    <div className="flex gap-5">
-                        <TextButton tone="secondary" onClick={cancel}>
-                            Cancelar
-                        </TextButton>
-                        <TextButton tone="accent-strong" onClick={finish} disabled={pending}>
-                            {pending ? "Salvando" : "Concluir"}
-                        </TextButton>
+                    <div className="flex items-center gap-3 self-start">
+                        <GlassIconButton onClick={cancel} aria-label="Cancelar edição">
+                            <Icon name="close" size={20} />
+                        </GlassIconButton>
+                        <GlassIconButton
+                            onClick={finish}
+                            disabled={pending}
+                            aria-label={pending ? "Salvando o painel" : "Salvar o painel"}
+                        >
+                            <Icon name="check" size={20} />
+                        </GlassIconButton>
                     </div>
                 ) : (
-                    <div className="flex items-center gap-4 self-start">
-                        <TextButton onClick={() => setEditing(true)}>Editar</TextButton>
-                        {settings}
+                    <div className="flex items-center gap-3 self-start">
+                        <GlassIconButton
+                            onClick={() => setEditing(true)}
+                            aria-label="Editar o painel"
+                        >
+                            <Icon name="pencil" size={20} />
+                        </GlassIconButton>
+                        {themeToggle}
                     </div>
                 )}
             </div>
@@ -116,7 +135,11 @@ export function Dashboard({ header, settings, initialLayout, catalog, renders }:
                                 index={index}
                                 overlay={
                                     editing ? (
-                                        <div className="absolute inset-0 flex flex-col justify-between bg-paper/45 p-3 backdrop-blur-[2px]">
+                                        <div
+                                            className="fade-in absolute inset-0 flex flex-col justify-between bg-paper/45 backdrop-blur-[2px]"
+                                            // Concentric with the 26px tile: 16px chip radius + 10px gap.
+                                            style={{ padding: TILE_INSET }}
+                                        >
                                             <div className="flex justify-between">
                                                 <RoundButton
                                                     size={32}
@@ -126,18 +149,14 @@ export function Dashboard({ header, settings, initialLayout, catalog, renders }:
                                                 >
                                                     <Icon name="minus" size={14} />
                                                 </RoundButton>
-                                                <div className="flex gap-1">
+                                                <div className="flex gap-3">
                                                     <RoundButton
                                                         size={32}
                                                         onClick={() => move(index, -1)}
                                                         disabled={index === 0}
                                                         aria-label={`Mover ${definition.title} para antes`}
                                                     >
-                                                        <Icon
-                                                            name="chevron-left"
-                                                            size={14}
-                                                            strokeWidth={2.2}
-                                                        />
+                                                        <Icon name="chevron-left" size={14} />
                                                     </RoundButton>
                                                     <RoundButton
                                                         size={32}
@@ -145,11 +164,7 @@ export function Dashboard({ header, settings, initialLayout, catalog, renders }:
                                                         disabled={index === layout.length - 1}
                                                         aria-label={`Mover ${definition.title} para depois`}
                                                     >
-                                                        <Icon
-                                                            name="chevron-right"
-                                                            size={14}
-                                                            strokeWidth={2.2}
-                                                        />
+                                                        <Icon name="chevron-right" size={14} />
                                                     </RoundButton>
                                                 </div>
                                             </div>
@@ -214,7 +229,9 @@ export function Dashboard({ header, settings, initialLayout, catalog, renders }:
                                             {definition.description}
                                         </Caption>
                                     </span>
-                                    <AccentCircle size={32}>+</AccentCircle>
+                                    <AccentCircle size={32}>
+                                        <Icon name="plus" size={18} />
+                                    </AccentCircle>
                                 </button>
                             </ListRow>
                         );

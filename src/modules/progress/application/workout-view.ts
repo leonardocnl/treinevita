@@ -12,7 +12,8 @@ export type ExerciseView = {
     readonly position: number;
     readonly name: string;
     readonly measurement: "load_reps" | "duration";
-    readonly videoUrl: string | null;
+    /** The catalog's reference page, unchecked: the screen keeps only https links. */
+    readonly referenceUrl: string | null;
     readonly media: ExerciseMedia | null;
     readonly targetSets: number;
     readonly repMin: number | null;
@@ -103,7 +104,7 @@ export async function getWorkoutView(
             position: exercise.position,
             name: info?.name ?? "Exercício",
             measurement: info?.measurement ?? "load_reps",
-            videoUrl: info?.videoUrl ?? null,
+            referenceUrl: info?.referenceUrl ?? null,
             media: info?.media ?? null,
             targetSets: prescription?.sets ?? 3,
             repMin,

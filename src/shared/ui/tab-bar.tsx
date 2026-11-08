@@ -1,15 +1,21 @@
 /*
- * The bottom bar with tabs: text tabs in equal columns inside the floating bar
- * and, at the end, room for the screen's main action.
+ * The bottom bar with tabs: each tab is an icon with its name in 11px under it,
+ * in equal columns inside the floating bar and, at the end, room for the
+ * screen's main action. The active tab is ink, the others ink-secondary; both
+ * use the same weight, so switching never shifts the layout. Between tabs the
+ * floating bar crossfades (it has its own view transition name), so the icon
+ * state crossfades too; the active tab also fades in on its own.
  */
 import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { FloatBar } from "./float-bar";
+import { Icon, type IconName } from "./icons";
 
 export type TabBarItem = {
     href: string;
     label: string;
+    icon: IconName;
     current?: boolean;
 };
 
@@ -34,13 +40,18 @@ export function TabBar({ tabs, label, action }: TabBarProps) {
                             <Link
                                 href={tab.href}
                                 aria-current={tab.current ? "page" : undefined}
-                                className={`pressable flex flex-1 items-center justify-center text-[13px] transition-colors ${
-                                    tab.current
-                                        ? "font-medium text-ink"
-                                        : "text-ink-secondary hover:text-ink"
+                                className={`pressable flex flex-1 flex-col items-center justify-center gap-0.5 ${
+                                    tab.current ? "text-ink" : "text-ink-secondary"
                                 }`}
                             >
-                                {tab.label}
+                                <span className={tab.current ? "fade-in" : undefined}>
+                                    <Icon name={tab.icon} size={22} />
+                                </span>
+                                <span
+                                    className={`text-[11px] font-normal leading-none ${tab.current ? "fade-in" : ""}`}
+                                >
+                                    {tab.label}
+                                </span>
                             </Link>
                         </li>
                     ))}

@@ -1,6 +1,7 @@
 /*
  * Round secondary button with an icon: 48px and transparent in the bottom bar
- * (undo), 32px chips in ink or canvas on the widgets in edit mode.
+ * (undo), 32px chips in ink or canvas on the widgets in edit mode. The 32px
+ * chips keep a 44×44px hit area (tap-target).
  */
 import type { ReactNode } from "react";
 
@@ -8,8 +9,8 @@ import { ActionElement, type ActionElementProps } from "./action-element";
 
 const variantClass = {
     "48-transparent": "size-12 shrink-0 text-ink",
-    "32-ink": "size-8 bg-ink text-canvas",
-    "32-canvas": "size-8 bg-canvas disabled:opacity-30",
+    "32-ink": "tap-target size-8 bg-ink text-canvas",
+    "32-canvas": "tap-target size-8 bg-canvas text-ink disabled:opacity-30",
 } as const;
 
 type RoundButtonProps = ActionElementProps & {

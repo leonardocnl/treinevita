@@ -25,6 +25,7 @@ export {
 export {
     ACTIVITY_WEEKS,
     getSummary,
+    getWeightTrend,
     type ActivityDay,
     type CalendarDay,
     type Summary,

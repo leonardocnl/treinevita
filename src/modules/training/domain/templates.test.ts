@@ -10,6 +10,7 @@ import {
     removeExercise,
     replaceExercise,
     resolveDays,
+    suggest,
     suggestTemplate,
 } from "./templates";
 
@@ -39,6 +40,29 @@ describe("templates", () => {
         expect(suggestTemplate({ ...base, goal: "strength" })).toBe("upper_lower");
         expect(suggestTemplate({ ...base, experience: "advanced" })).toBe("push_pull_legs");
         expect(suggestTemplate({ ...base, experience: "beginner" })).toBe("full_body");
+    });
+
+    it("give a reason for every suggestion", () => {
+        const base = { goal: "hypertrophy", experience: "intermediate", trainingPlace: null };
+        for (const answers of [
+            base,
+            { ...base, trainingPlace: "home" },
+            { ...base, goal: "strength" },
+            { ...base, goal: "health" },
+            { ...base, experience: "advanced" },
+            { ...base, experience: "beginner" },
+        ]) {
+            const { templateId, reason } = suggest(answers);
+            expect(templateId).toBe(suggestTemplate(answers));
+            expect(reason.length).toBeGreaterThan(0);
+        }
+    });
+
+    it("say how many days a week and who each one is for", () => {
+        for (const template of Object.values(TEMPLATES)) {
+            expect(template.daysPerWeek).toBeGreaterThanOrEqual(template.days.length);
+            expect(template.audience).toMatch(/\.$/);
+        }
     });
 
     it("remove, swap and add exercises without touching other days", () => {

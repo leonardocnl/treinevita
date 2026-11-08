@@ -67,7 +67,7 @@ export function SegmentedControl<Value extends string>({
                         aria-label={option.label}
                         tabIndex={checked ? 0 : -1}
                         onClick={() => onChange(option.value)}
-                        className={`pressable flex size-8 items-center justify-center rounded-full ${
+                        className={`pressable tap-target flex size-8 items-center justify-center rounded-full ${
                             checked ? "bg-ink text-canvas" : "text-ink-secondary"
                         }`}
                     >
