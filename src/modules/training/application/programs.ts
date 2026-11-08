@@ -30,7 +30,8 @@ export type PrescribedExercise = {
     readonly restSeconds: number | null;
     readonly progressionRule: "double_progression" | "none";
     readonly incrementKg: number;
-    readonly videoUrl: string | null;
+    /** The prescription's own link, or else the catalog's reference page. */
+    readonly referenceUrl: string | null;
     readonly media: ExerciseMedia | null;
 };
 
@@ -121,7 +122,7 @@ export async function getActiveProgram(context: TenantContext): Promise<ActivePr
                         incrementKg: Number(
                             row.loadIncrementKg ?? exercise?.defaultIncrementKg ?? 2.5,
                         ),
-                        videoUrl: row.videoUrl ?? exercise?.videoUrl ?? null,
+                        referenceUrl: row.videoUrl ?? exercise?.referenceUrl ?? null,
                         media: exercise?.media ?? null,
                     };
                 }),

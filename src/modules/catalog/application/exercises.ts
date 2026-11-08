@@ -15,7 +15,8 @@ export type CatalogExercise = {
     readonly name: string;
     readonly measurement: "load_reps" | "duration";
     readonly defaultIncrementKg: number;
-    readonly videoUrl: string | null;
+    /** An https page that shows the exercise, or null (then the app searches YouTube). */
+    readonly referenceUrl: string | null;
     readonly media: ExerciseMedia | null;
     readonly muscles: readonly { slug: string; name: string; role: "primary" | "secondary" }[];
 };
@@ -63,7 +64,7 @@ export async function getExercisesByIds(
             name: exercises.name,
             measurement: exercises.measurement,
             defaultIncrementKg: exercises.defaultIncrementKg,
-            videoUrl: exercises.videoUrl,
+            referenceUrl: exercises.referenceUrl,
             ...mediaColumns,
         })
         .from(exercises)
@@ -92,7 +93,7 @@ export async function getExercisesByIds(
             name: row.name,
             measurement: row.measurement,
             defaultIncrementKg: Number(row.defaultIncrementKg),
-            videoUrl: row.videoUrl,
+            referenceUrl: row.referenceUrl,
             media: toMedia(row),
             muscles: muscleRows
                 .filter((muscle) => muscle.exerciseId === row.id)

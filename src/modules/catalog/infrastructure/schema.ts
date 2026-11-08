@@ -53,7 +53,8 @@ export const exercises = pgTable(
             .default("none"),
         mediaStartPath: text("media_start_path"),
         mediaEndPath: text("media_end_path"),
-        videoUrl: text("video_url"),
+        /** An external page that shows the exercise done; empty means a YouTube search. https only. */
+        referenceUrl: text("reference_url"),
         defaultIncrementKg: numeric("default_increment_kg", { precision: 5, scale: 2 })
             .notNull()
             .default("2.5"),
