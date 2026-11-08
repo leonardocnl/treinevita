@@ -4,8 +4,11 @@ import Link from "next/link";
 import { useSelectedLayoutSegment } from "next/navigation";
 
 import type { WorkoutView } from "@/modules/progress";
+import { setsLabel } from "@/shared/format/numbers";
 import { DotMeter } from "@/shared/ui/dot-meter";
+import { ExerciseThumb } from "@/shared/ui/exercise-demo";
 import { List, ListRow } from "@/shared/ui/list";
+import { NAV_FORWARD } from "@/shared/ui/screen-transition";
 import { Caption, Label } from "@/shared/ui/text";
 
 /** The workout's exercises with their progress; full screen on the phone, sidebar on desktop. */
@@ -28,11 +31,13 @@ export function ExerciseList({ workout }: { workout: WorkoutView }) {
                     >
                         <Link
                             href={`/treino/${index + 1}`}
+                            transitionTypes={NAV_FORWARD}
                             aria-current={isActive ? "step" : undefined}
                             className={`pressable -mx-3 my-1 flex min-h-16 items-center gap-4 rounded-2xl px-3 ${
                                 isActive ? "bg-paper" : ""
                             }`}
                         >
+                            <ExerciseThumb media={exercise.media} />
                             <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                                 <Label
                                     as="span"
@@ -48,14 +53,14 @@ export function ExerciseList({ workout }: { workout: WorkoutView }) {
                                         ? "Concluído"
                                         : goesUp
                                           ? "Sobe de carga hoje"
-                                          : `${exercise.targetSets} séries`}
+                                          : setsLabel(done, exercise.targetSets)}
                                 </Caption>
                             </span>
                             <DotMeter
                                 total={exercise.targetSets}
                                 done={done}
                                 highlight={goesUp ? 0 : undefined}
-                                label={`${done} de ${exercise.targetSets} séries feitas`}
+                                label={`${setsLabel(done, exercise.targetSets)} feitas`}
                             />
                         </Link>
                     </ListRow>

@@ -4,11 +4,12 @@ import { FloatBar } from "@/shared/ui/float-bar";
 import { GlassIconButton } from "@/shared/ui/glass-icon-button";
 import { Icon } from "@/shared/ui/icons";
 import { PillAction } from "@/shared/ui/pill-action";
+import { ScreenTransition } from "@/shared/ui/screen-transition";
 import { Label, Title } from "@/shared/ui/text";
-import { TextButton } from "@/shared/ui/text-button";
 
-import { discardWorkoutAction, finishWorkoutAction } from "../_components/actions";
+import { finishWorkoutAction } from "../_components/actions";
 
+import { DiscardWorkout } from "./_components/discard-workout";
 import { ExerciseList } from "./_components/exercise-list";
 import { loadOpenWorkout } from "./_components/load-workout";
 
@@ -22,15 +23,18 @@ export default async function WorkoutPage() {
     const minutes = Math.max(1, Math.round((Date.now() - workout.startedAt.getTime()) / 60000));
 
     return (
-        <>
+        <ScreenTransition>
             <main className="px-6 pb-36 pt-[max(env(safe-area-inset-top),52px)] md:px-0 md:pt-16">
                 <div className="flex items-center justify-between md:hidden">
                     <GlassIconButton href="/" aria-label="Voltar ao Resumo" className="-ml-2">
-                        <Icon name="chevron-left" size={20} strokeWidth={1.8} />
+                        <Icon name="chevron-left" size={20} />
                     </GlassIconButton>
-                    <Label as="span" weight="normal">
-                        <span className="tabular-nums">{minutes}</span> min
-                    </Label>
+                    <div className="flex items-center gap-4">
+                        <Label as="span" weight="normal">
+                            <span className="tabular-nums">{minutes}</span> min
+                        </Label>
+                        <DiscardWorkout />
+                    </div>
                 </div>
 
                 <header className="mt-6 md:hidden">
@@ -53,13 +57,10 @@ export default async function WorkoutPage() {
                     <Label size={17} tone="secondary" className="mt-5">
                         Exercícios concluídos em {minutes} min. Escolha um exercício na lista.
                     </Label>
+                    <div className="mt-8">
+                        <DiscardWorkout />
+                    </div>
                 </div>
-
-                <form action={discardWorkoutAction} className="mt-10">
-                    <TextButton type="submit" tone="accent">
-                        Descartar treino
-                    </TextButton>
-                </form>
             </main>
 
             <FloatBar>
@@ -73,6 +74,6 @@ export default async function WorkoutPage() {
                     </PillAction>
                 </form>
             </FloatBar>
-        </>
+        </ScreenTransition>
     );
 }

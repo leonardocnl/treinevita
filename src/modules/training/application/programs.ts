@@ -2,7 +2,7 @@ import "server-only";
 
 import { and, asc, eq, inArray } from "drizzle-orm";
 
-import { getExercisesByIds, getGlobalExercisesBySlug } from "@/modules/catalog";
+import { getExercisesByIds, getGlobalExercisesBySlug, type ExerciseMedia } from "@/modules/catalog";
 import { getDb, type Database } from "@/platform/db/client";
 import { inTenant, type TenantContext } from "@/shared/db/tenant";
 import { toLocalDate } from "@/shared/time/local-date";
@@ -13,7 +13,8 @@ import {
     trainingPreferences,
     workouts,
 } from "../infrastructure/schema";
-import { insertStarterProgram, STARTER_WORKOUTS } from "../infrastructure/starter-program";
+import { resolveDays, TEMPLATES, type ProgramChoice } from "../domain/templates";
+import { insertProgram } from "../infrastructure/starter-program";
 
 export type PrescribedExercise = {
     readonly prescribedExerciseId: string;
@@ -29,7 +30,9 @@ export type PrescribedExercise = {
     readonly restSeconds: number | null;
     readonly progressionRule: "double_progression" | "none";
     readonly incrementKg: number;
-    readonly videoUrl: string | null;
+    /** The prescription's own link, or else the catalog's reference page. */
+    readonly referenceUrl: string | null;
+    readonly media: ExerciseMedia | null;
 };
 
 export type Workout = {
@@ -119,7 +122,8 @@ export async function getActiveProgram(context: TenantContext): Promise<ActivePr
                         incrementKg: Number(
                             row.loadIncrementKg ?? exercise?.defaultIncrementKg ?? 2.5,
                         ),
-                        videoUrl: row.videoUrl ?? exercise?.videoUrl ?? null,
+                        referenceUrl: row.videoUrl ?? exercise?.referenceUrl ?? null,
+                        media: exercise?.media ?? null,
                     };
                 }),
         })),
@@ -153,25 +157,80 @@ export function nextWorkoutInRotation(
     return program.workouts[(index + 1) % program.workouts.length];
 }
 
+/** Sets the weekly goal (the one the Semana widget counts). Pass the caller's transaction. */
+export async function setWeeklyGoal(
+    db: Database,
+    context: TenantContext,
+    weeklyGoal: number,
+): Promise<void> {
+    await db
+        .insert(trainingPreferences)
+        .values({ workspaceId: context.workspaceId, userId: context.userId, weeklyGoal })
+        .onConflictDoUpdate({
+            target: [trainingPreferences.workspaceId, trainingPreferences.userId],
+            set: { weeklyGoal, updatedAt: new Date() },
+        });
+}
+
 /**
- * Creates the starter A/B/C program for a new workspace. Pass the transaction
- * that created the workspace; does nothing when the person already has a program.
+ * Applies the program chosen in the onboarding, inside the caller's
+ * transaction. "keep" leaves the active program as it is; a template archives
+ * the active program and creates the new one. Every slug is checked against
+ * the global catalog. Returns false when the choice is not valid.
  */
-export async function createStarterProgram(db: Database, context: TenantContext): Promise<void> {
-    const [existing] = await db
+export async function applyProgramChoice(
+    db: Database,
+    context: TenantContext & { timezone: string },
+    choice: ProgramChoice,
+): Promise<boolean> {
+    const [active] = await db
         .select({ id: programs.id })
         .from(programs)
-        .where(and(inTenant(programs, context), eq(programs.athleteUserId, context.userId)))
-        .limit(1);
-    if (existing) {
-        return;
+        .where(
+            and(
+                inTenant(programs, context),
+                eq(programs.athleteUserId, context.userId),
+                eq(programs.status, "active"),
+            ),
+        );
+
+    if (choice.kind === "keep") {
+        return active !== undefined;
     }
-    const slugs = STARTER_WORKOUTS.flatMap((workout) => workout.exercises.map((e) => e.slug));
-    const exercises = await getGlobalExercisesBySlug(context, slugs, db);
-    await insertStarterProgram(
+
+    const catalog = await getGlobalExercisesBySlug(context, choice.days.flat(), db);
+    if (choice.days.flat().some((slug) => !catalog.has(slug))) {
+        return false;
+    }
+    const days = resolveDays(
+        choice.templateId,
+        choice.days,
+        (slug) => catalog.get(slug)?.measurement === "duration",
+    );
+    if (!days) {
+        return false;
+    }
+
+    const now = new Date();
+    await db
+        .update(programs)
+        .set({ status: "archived", archivedAt: now })
+        .where(
+            and(
+                inTenant(programs, context),
+                eq(programs.athleteUserId, context.userId),
+                eq(programs.status, "active"),
+            ),
+        );
+    await insertProgram(
         db,
         context,
-        exercises,
-        toLocalDate(new Date(), "America/Sao_Paulo"),
+        {
+            name: TEMPLATES[choice.templateId].name,
+            days,
+            startedOn: toLocalDate(now, context.timezone),
+        },
+        catalog,
     );
+    return true;
 }

@@ -2,7 +2,8 @@
 
 /*
  * Dark theme: follows the system, unless an ancestor forces a theme with
- * data-theme="dark" or data-theme="light" (Storybook, a future theme setting).
+ * data-theme="dark" or data-theme="light" (the theme chosen in Ajustes, set on <html>
+ * by the root layout from the vita_theme cookie).
  */
 @custom-variant dark {
     &:where([data-theme="dark"], [data-theme="dark"] *) {
@@ -26,6 +27,8 @@
     --vita-ink-secondary: #5b5b60;
     --vita-hairline: #dedad9;
     --vita-dot-off: #d6d2d1;
+    /* unlit text that still has to be read (a fraction's goal, placeholders): 3:1 on canvas and paper */
+    --vita-ink-tertiary: #878384;
     --vita-on-ink-secondary: #a1a1a6;
     --vita-level-1: #bdb8b7;
     --vita-level-2: #7d797c;
@@ -39,9 +42,21 @@
     --vita-panel: #0b0b0d;
     --vita-on-panel: #fcf8f7;
     --vita-on-panel-secondary: #9a9a9f;
-    --vita-on-panel-dim: #6e6e73;
+    --vita-on-panel-dim: #8a8a8f;
     --vita-panel-track: #3a3a3f;
     --vita-panel-divider: rgb(255 255 255 / 0.08);
+    --vita-scrim: rgb(11 11 13 / 0.28);
+
+    /*
+     * Motion (docs/design/DESIGN.md, "Motion"). Only transform and opacity move.
+     * Enter: 250–350ms; leave: shorter than the entrance; page: 400ms at most.
+     */
+    --vita-ease-enter: cubic-bezier(0.2, 0, 0, 1);
+    --vita-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+    --vita-duration-press: 150ms;
+    --vita-duration-enter: 320ms;
+    --vita-duration-exit: 250ms;
+    --vita-duration-page: 360ms;
 
     @variant dark {
         --vita-canvas: #0b0b0d;
@@ -50,12 +65,14 @@
         --vita-ink-secondary: #a1a1a6;
         --vita-hairline: #26262a;
         --vita-dot-off: #2e2e33;
+        --vita-ink-tertiary: #727277;
         --vita-on-ink-secondary: #5b5b60;
         --vita-level-1: #4a4a50;
         --vita-level-2: #96969b;
         --vita-level-3: #fcf8f7;
         --vita-red-text: #ff4d6d;
         --vita-panel: #1a1a1d;
+        --vita-scrim: rgb(0 0 0 / 0.5);
     }
 }
 
@@ -66,6 +83,7 @@
     --color-ink-secondary: var(--vita-ink-secondary);
     --color-hairline: var(--vita-hairline);
     --color-dot-off: var(--vita-dot-off);
+    --color-ink-tertiary: var(--vita-ink-tertiary);
     --color-on-ink-secondary: var(--vita-on-ink-secondary);
     --color-level-1: var(--vita-level-1);
     --color-level-2: var(--vita-level-2);
@@ -79,11 +97,19 @@
     --color-on-panel-dim: var(--vita-on-panel-dim);
     --color-panel-track: var(--vita-panel-track);
     --color-panel-divider: var(--vita-panel-divider);
+    --color-scrim: var(--vita-scrim);
 
-    /* Radii outside Tailwind's scale: tiles, panels and sheets, and areas inside a panel. */
+    --ease-enter: var(--vita-ease-enter);
+    --ease-exit: var(--vita-ease-exit);
+
+    /*
+     * Radii outside Tailwind's scale. Nested radii follow the concentric rule
+     * (src/shared/ui/concentric.ts): inner = outer - gap.
+     */
     --radius-tile: 26px;
     --radius-panel: 30px;
-    --radius-inner: 20px;
+    /* inside the panel (30px) with its 20px padding */
+    --radius-inner: 10px;
 
     --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
     --font-dot: var(--font-doto), ui-monospace, monospace;
@@ -172,13 +198,47 @@
     }
 }
 
-/* Motion (docs/design/DESIGN.md) */
+/*
+ * Motion (docs/design/DESIGN.md, "Motion"). Every animation below moves only
+ * transform and opacity, and ends with no transform left on the element
+ * (`backwards` fill), so fixed children (the floating bar) are never trapped.
+ */
+
+/* Press: scale 0.97 and a little less opacity, 150ms, on every tappable control. */
 @utility pressable {
-    transition: transform 140ms cubic-bezier(0.2, 0.8, 0.2, 1);
     -webkit-tap-highlight-color: transparent;
-    &:active {
+    transition:
+        transform var(--vita-duration-press) var(--vita-ease-enter),
+        opacity var(--vita-duration-press) var(--vita-ease-enter);
+    &:active:not(:disabled) {
         transform: scale(0.97);
-        transition-duration: 0ms;
+        opacity: 0.85;
+    }
+}
+
+/* Grows the hit area of a small control to 44×44px without changing how it looks. */
+@utility tap-target {
+    position: relative;
+    &::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: max(100%, 44px);
+        height: max(100%, 44px);
+        transform: translate(-50%, -50%);
+    }
+}
+
+@keyframes vita-fade-in {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes vita-fade-out {
+    to {
+        opacity: 0;
     }
 }
 
@@ -187,31 +247,156 @@
         opacity: 0;
         transform: translateY(8px);
     }
+}
+
+@keyframes vita-slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(var(--vita-slide-from, 24px));
+    }
+}
+
+@keyframes vita-slide-out {
     to {
-        opacity: 1;
-        transform: translateY(0);
+        opacity: 0;
+        transform: translateX(var(--vita-slide-to, -24px));
     }
 }
 
-@keyframes vita-pulse {
-    0% {
-        transform: scale(1);
-    }
-    40% {
-        transform: scale(1.18);
-    }
-    100% {
-        transform: scale(1);
+@keyframes vita-roll {
+    from {
+        opacity: 0;
+        transform: translateY(0.45em);
     }
 }
 
+@keyframes vita-sheet-in {
+    from {
+        transform: translateY(100%);
+    }
+}
+
+@keyframes vita-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Elements enter, they never pop in: fade and rise 8px, lists staggered by 30ms. */
 @utility rise-in {
-    animation: vita-rise 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation: vita-rise var(--vita-duration-enter) var(--vita-ease-enter) backwards;
     animation-delay: calc(var(--stagger, 0) * 30ms);
 }
 
-@utility pulse-once {
-    animation: vita-pulse 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
+@utility fade-in {
+    animation: vita-fade-in var(--vita-duration-press) var(--vita-ease-enter) backwards;
+}
+
+/* A screen moving forward comes in from the right (content goes left); back, from the left. */
+@utility slide-forward {
+    --vita-slide-from: 24px;
+    animation: vita-slide-in var(--vita-duration-page) var(--vita-ease-enter) backwards;
+}
+
+@utility slide-back {
+    --vita-slide-from: -24px;
+    animation: vita-slide-in var(--vita-duration-page) var(--vita-ease-enter) backwards;
+}
+
+/* A number that changed rolls up into place (set values, set counts). */
+@utility roll-in {
+    display: inline-block;
+    animation: vita-roll 180ms var(--vita-ease-enter) backwards;
+}
+
+/* Sheets: the panel rises with translateY; leaving and the drag snap use transitions. */
+@utility sheet-in {
+    animation: vita-sheet-in var(--vita-duration-enter) var(--vita-ease-enter) backwards;
+    transition: transform var(--vita-duration-enter) var(--vita-ease-enter);
+}
+
+@utility leave {
+    transition:
+        transform var(--vita-duration-exit) var(--vita-ease-exit),
+        opacity var(--vita-duration-exit) var(--vita-ease-exit);
+}
+
+@utility spin-once {
+    animation: vita-spin var(--vita-duration-page) var(--vita-ease-enter);
+}
+
+/*
+ * Route transitions (React <ViewTransition>, see src/shared/ui/screen-transition.tsx):
+ * forward slides 24px to the left with a fade, back to the right. The floating
+ * bar has its own name, so it crossfades in place instead of sliding away.
+ */
+::view-transition {
+    pointer-events: none;
+}
+
+::view-transition-old(root) {
+    animation: vita-fade-out var(--vita-duration-press) var(--vita-ease-exit) both;
+}
+
+::view-transition-new(root) {
+    animation: vita-fade-in var(--vita-duration-enter) var(--vita-ease-enter) both;
+}
+
+::view-transition-old(.nav-forward) {
+    --vita-slide-to: -24px;
+    animation: vita-slide-out var(--vita-duration-exit) var(--vita-ease-exit) both;
+}
+
+::view-transition-new(.nav-forward) {
+    --vita-slide-from: 24px;
+    animation: vita-slide-in var(--vita-duration-page) var(--vita-ease-enter) both;
+}
+
+::view-transition-old(.nav-back) {
+    --vita-slide-to: 24px;
+    animation: vita-slide-out var(--vita-duration-exit) var(--vita-ease-exit) both;
+}
+
+::view-transition-new(.nav-back) {
+    --vita-slide-from: -24px;
+    animation: vita-slide-in var(--vita-duration-page) var(--vita-ease-enter) both;
+}
+
+::view-transition-group(vita-bar) {
+    z-index: 10;
+    animation-duration: var(--vita-duration-press);
+}
+
+/* An exercise drawing (an SVG file) used as a mask over the current text color,
+   so the line art follows the ink color and the theme. */
+@utility pose {
+    background-color: currentColor;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+}
+
+/* Start and end poses take turns, about 1.2s each, with a soft crossfade.
+   The end pose runs the same cycle half a turn later. */
+@keyframes vita-pose {
+    0%,
+    40% {
+        opacity: 1;
+    }
+    50%,
+    90% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@utility pose-cycle {
+    animation: vita-pose 2.4s ease-in-out infinite;
 }
 
 /* Fades the top and bottom rows of a scroller (the selection wheel). */
@@ -226,12 +411,20 @@
     }
 }
 
+/* Reduced motion: every animation becomes an instant change. */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
     *::after {
         animation-duration: 0.01ms !important;
+        animation-delay: 0ms !important;
         transition-duration: 0.01ms !important;
+    }
+    ::view-transition-old(*),
+    ::view-transition-new(*),
+    ::view-transition-group(*) {
+        animation-duration: 0s !important;
+        animation-delay: 0s !important;
     }
 }
 

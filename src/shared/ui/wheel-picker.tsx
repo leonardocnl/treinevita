@@ -43,6 +43,8 @@ export function WheelPicker({
             : align === "end"
               ? "justify-end pr-5"
               : "justify-center";
+    const origin =
+        align === "start" ? "origin-left" : align === "end" ? "origin-right" : "origin-center";
 
     useEffect(() => {
         const list = listRef.current;
@@ -110,15 +112,27 @@ export function WheelPicker({
                         <div
                             key={option}
                             onClick={() => step(index - selectedIndex)}
-                            className={`flex snap-center items-center gap-1.5 ${justify} transition-[font-size,color] duration-150 ease-out ${
-                                isSelected
-                                    ? "num text-[56px] text-on-panel"
-                                    : "text-[22px] font-light tabular-nums text-on-panel-dim"
-                            }`}
+                            className="relative snap-center"
                             style={{ height: WHEEL_ITEM_HEIGHT }}
                         >
-                            {format(option)}
-                            {isSelected ? marker : null}
+                            {/* Two states crossfade (opacity and scale), so the font size never animates. */}
+                            <span
+                                aria-hidden={!isSelected}
+                                className={`num absolute inset-0 flex items-center gap-1.5 text-[56px] text-on-panel transition-[opacity,transform] duration-150 ease-enter ${justify} ${origin} ${
+                                    isSelected ? "opacity-100" : "scale-[0.4] opacity-0"
+                                }`}
+                            >
+                                {format(option)}
+                                {isSelected ? marker : null}
+                            </span>
+                            <span
+                                aria-hidden
+                                className={`absolute inset-0 flex items-center text-[22px] font-light tabular-nums text-on-panel-dim transition-[opacity,transform] duration-150 ease-enter ${justify} ${origin} ${
+                                    isSelected ? "scale-[2.5] opacity-0" : "opacity-100"
+                                }`}
+                            >
+                                {format(option)}
+                            </span>
                         </div>
                     );
                 })}

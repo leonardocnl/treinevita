@@ -1,6 +1,6 @@
 /*
- * A button that is only text at 15px: "Editar", "Cancelar", "Fechar",
- * "Concluir", "Descartar treino".
+ * A button that is only text at 15px, with a 44×44px hit area. Text actions
+ * live only in Ajustes and Perfil, plus "Pular" and "Limpar ficha" (DESIGN.md, "Labels").
  */
 import type { ReactNode } from "react";
 
@@ -23,5 +23,10 @@ type TextButtonProps = ActionElementProps & {
 };
 
 export function TextButton({ tone = "primary", ...props }: TextButtonProps) {
-    return <ActionElement {...props} className={`pressable text-[15px] ${toneClass[tone]}`} />;
+    return (
+        <ActionElement
+            {...props}
+            className={`pressable tap-target text-[15px] ${toneClass[tone]}`}
+        />
+    );
 }

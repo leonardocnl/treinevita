@@ -43,3 +43,6 @@ next-env.d.ts
 
 # local development database (PGlite)
 /.data
+
+# Everkinetic dataset downloads (scripts/import-everkinetic.ts)
+/.cache

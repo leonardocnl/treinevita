@@ -8,7 +8,7 @@ import { cookies } from "next/headers";
 import { getDb } from "@/platform/db/client";
 
 import { isExpired, sessionExpiry, shouldRenew } from "../domain/session-token";
-import { sessions, users } from "../infrastructure/schema";
+import { sessions, userProfiles, users } from "../infrastructure/schema";
 
 const COOKIE_NAME = "vita_session";
 
@@ -40,6 +40,8 @@ export type CurrentUser = {
     readonly email: string;
     readonly displayName: string | null;
     readonly timezone: string;
+    /** The onboarding is done (a profile exists with its completion time). */
+    readonly onboarded: boolean;
 };
 
 /** Returns the signed-in user, or null. Never throws for a missing or expired session. */
@@ -58,9 +60,11 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
             email: users.email,
             displayName: users.displayName,
             timezone: users.timezone,
+            onboardingCompletedAt: userProfiles.onboardingCompletedAt,
         })
         .from(sessions)
         .innerJoin(users, eq(users.id, sessions.userId))
+        .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
         .where(eq(sessions.tokenHash, hashToken(token)))
         .limit(1);
 
@@ -76,7 +80,13 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
             .where(eq(sessions.id, row.sessionId));
     }
 
-    return { id: row.id, email: row.email, displayName: row.displayName, timezone: row.timezone };
+    return {
+        id: row.id,
+        email: row.email,
+        displayName: row.displayName,
+        timezone: row.timezone,
+        onboarded: row.onboardingCompletedAt !== null,
+    };
 }
 
 export async function destroySession(): Promise<void> {

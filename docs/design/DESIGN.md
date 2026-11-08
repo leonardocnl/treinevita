@@ -2,7 +2,7 @@
 
 ## Status
 
-Locked on 2026-11-07. Changes need the owner's approval.
+Locked on 2026-11-07. Changes need the owner's approval. Revised on 2026-11-08 at the owner's request (prompt 7: motion, corners, icons, labels, Perfil).
 
 "Ponto e linha" (dot and line) is the visual language of VITA: a calm, editorial workout tracker where data is the hero. Large numbers are drawn in a round dot matrix, in the spirit of Nothing; text is thin and small, and content is separated by thin lines and space, in the spirit of teenage engineering. Color follows a strict 60/30/10 rule with red as the only accent, and glass appears only on the few elements that float over content.
 
@@ -10,7 +10,7 @@ This file describes what is in the code today. The source of truth for every val
 
 ## Colors
 
-All colors are CSS custom properties on `:root` in `src/app/globals.css`, switched by `prefers-color-scheme: dark`, and exposed to Tailwind as `bg-*`, `text-*`, `border-*`, `ring-*`, `fill-*` and `stroke-*` through `@theme inline` (for example `--vita-ink` → `text-ink`).
+All colors are CSS custom properties on `:root` in `src/app/globals.css`, switched by `prefers-color-scheme: dark` unless the person forced a theme in Ajustes (a `vita_theme` cookie read by the root layout, which sets `data-theme="light"` or `"dark"` on `<html>`), and exposed to Tailwind as `bg-*`, `text-*`, `border-*`, `ring-*`, `fill-*` and `stroke-*` through `@theme inline` (for example `--vita-ink` → `text-ink`).
 
 | Role                    | Token                       | Light     | Dark      | Where to use                                                                                  |
 | ----------------------- | --------------------------- | --------- | --------- | --------------------------------------------------------------------------------------------- |
@@ -19,7 +19,8 @@ All colors are CSS custom properties on `:root` in `src/app/globals.css`, switch
 | Primary text            | `--vita-ink`                | `#0B0B0D` | `#FCF8F7` | text, done dots, trained days, sparkline, action pill fill                                    |
 | Secondary text          | `--vita-ink-secondary`      | `#5B5B60` | `#A1A1A6` | labels, captions, inactive tabs, pending rows                                                 |
 | Divider                 | `--vita-hairline`           | `#DEDAD9` | `#26262A` | 1px row and column dividers; future days; tile ring in edit mode                              |
-| Unlit dot               | `--vita-dot-off`            | `#D6D2D1` | `#2E2E33` | unlit dots, bar tracks, the goal part of a fraction (`/4`), dashed "Adicionar" edge           |
+| Unlit dot               | `--vita-dot-off`            | `#D6D2D1` | `#2E2E33` | unlit dots, bar tracks, the sheet handle, dashed "Adicionar" edge; never text                 |
+| Tertiary text           | `--vita-ink-tertiary`       | `#878384` | `#727277` | unlit text that must still be read: the goal of a fraction (`/4`), placeholders (3:1, large)  |
 | Secondary text on ink   | `--vita-on-ink-secondary`   | `#A1A1A6` | `#5B5B60` | secondary text inside the ink action pill                                                     |
 | Activity level 1        | `--vita-level-1`            | `#BDB8B7` | `#4A4A50` | defined, not used by any screen today                                                         |
 | Activity level 2        | `--vita-level-2`            | `#7D797C` | `#96969B` | defined, not used by any screen today                                                         |
@@ -29,8 +30,13 @@ All colors are CSS custom properties on `:root` in `src/app/globals.css`, switch
 | Dark panel              | `--vita-panel`              | `#0B0B0D` | `#1A1A1D` | the set logger panel                                                                          |
 | Text on panel           | `--vita-on-panel`           | `#FCF8F7` | `#FCF8F7` | selected wheel value, done set dots on the panel                                              |
 | Secondary text on panel | `--vita-on-panel-secondary` | `#9A9A9F` | `#9A9A9F` | panel labels, units, "last time" line                                                         |
-| Dim text on panel       | `--vita-on-panel-dim`       | `#6E6E73` | `#6E6E73` | unselected wheel values, wheel focus ring                                                     |
+| Dim text on panel       | `--vita-on-panel-dim`       | `#8A8A8F` | `#8A8A8F` | unselected wheel values, wheel focus ring (4.5:1 on both panels)                              |
 | Track on panel          | `--vita-panel-track`        | `#3A3A3F` | `#3A3A3F` | pending set dots on the panel                                                                 |
+| Scrim                   | `--vita-scrim`              | ink 28%   | black 50% | the backdrop behind a sheet                                                                   |
+
+### Contrast
+
+Every text meets WCAG AA against its background: 4.5:1 for text, 3:1 for icons and large text (24px and up). Checked pairs: `ink-secondary` 6.1–7.6:1 on canvas and paper; `red-text` 5.3–6.1:1; `on-panel-secondary` 6.2–7:1 and `on-panel-dim` 5–5.7:1 on the panels; `on-ink-secondary` 6.4–7.6:1 inside the pill; white on `red` 3.9:1 (icons only); `ink-tertiary` 3.3–4:1 (large text only). `dot-off` (1.3–1.5:1) is never used for text or for an icon that carries meaning on its own; dot rows always come with a text label.
 
 ### The 60/30/10 rule
 
@@ -60,7 +66,7 @@ Both fonts load with `display: swap` and no request to a third party at runtime.
 | ------ | ------------------------------- | ------------------------------------------------------------------------------- |
 | 300    | default on `body`, `font-light` | all body text, captions, large display titles (32–40px, 28–34px inside widgets) |
 | 400    | `font-normal`                   | page titles (28/34px), emphasis inside rows, button labels, set values          |
-| 500    | `font-medium`                   | the active tab in the bottom bar, and the "Concluir" button in edit mode        |
+| 500    | `font-medium`                   | only the `accent-strong` text button tone, unused by any screen today           |
 
 No other weights are used. Doto is always 900 through `num`.
 
@@ -68,8 +74,8 @@ No other weights are used. Doto is always 900 through `num`.
 
 | Size (px) | Family | Where                                                                                    |
 | --------- | ------ | ---------------------------------------------------------------------------------------- |
-| 11        | Inter  | chart axis labels inside large widgets (Peso min/max, Volume reference)                  |
-| 13        | Inter  | tabs, widget titles, captions, status lines, secondary row text, units                   |
+| 11        | Inter  | tab names in the bottom bar; chart axis labels inside large widgets (Peso, Volume)       |
+| 13        | Inter  | widget titles, captions, status lines, secondary row text, units                         |
 | 15        | Inter  | default body size: subtitles, header buttons, action pill label, set rows, panel heading |
 | 17        | Inter  | list item names, done set values, lead paragraphs                                        |
 | 20        | Doto   | the `vita` wordmark (Resumo, Entrar)                                                     |
@@ -113,12 +119,20 @@ Display numbers use tight leading (`leading-[0.8]` or `leading-[0.85]`); titles 
 | Radius | Where                                                                                                                   |
 | ------ | ----------------------------------------------------------------------------------------------------------------------- |
 | 999px  | everything that floats and is tappable: bottom bar, action pill, round buttons, size switch, wheel band; also every dot |
-| 30px   | panels: the set logger panel, the "Adicionar widget" sheet                                                              |
-| 26px   | widget tiles and the "Adicionar" tile                                                                                   |
-| 20px   | inner areas: the wheel scroller inside the panel                                                                        |
+| 30px   | panels: the set logger panel; the top corners of every sheet                                                            |
+| 26px   | widget tiles, the "Adicionar" tile and the program cards in the onboarding                                              |
+| 10px   | inner areas: the wheel scroller inside the panel (30 − 20)                                                              |
 | 16px   | the highlight of the active row in the exercise list                                                                    |
 
-Concentric radii: a shape nested inside another uses the outer radius minus the gap between them, so the curves stay parallel. Example: the 48px action pill holds a 44px circle 4px from its end.
+### Concentric corners
+
+Whenever a rounded element sits inside a rounded container, **outer radius = inner radius + gap**, and the gap is the same on every side. Never work the numbers out by hand: use `src/shared/ui/concentric.ts` (`outerRadius`, `innerRadius`, `concentricGap`, `insetCircle`), which is unit tested.
+
+- Action pill: 48px tall with its red circle 4px from the top, the bottom and the end, so the circle is `insetCircle(48, 4)` = 40px (`PILL`, `PILL_CIRCLE`).
+- Floating bar: 8px of padding around 48px controls, so its radius is 24 + 8 = 32 (a full pill).
+- Edit chips on a widget: 32px chips (radius 16) sit `concentricGap(26, 16)` = 10px from the tile's edges.
+- Wheel inside the panel: `innerRadius(30, 20)` = 10px.
+- Size switch: 32px options in a pill with 4px padding (16 + 4 = 20, a full pill).
 
 ### Elevation
 
@@ -128,28 +142,28 @@ Elevation comes from translucency, blur and contrast, not from shadows. The bott
 - `glass-light`: `0 8px 24px -16px rgb(11 11 13 / 0.45)`.
 - `smoke` (defined, not used by any screen): `0 22px 50px -24px rgb(11 11 13 / 0.6)`.
 
-Stacking: bottom bars at `z-20`, the "Adicionar widget" sheet at `z-40` over a scrim of `ink` at 20%.
+Stacking: bottom bars at `z-20`, sheets at `z-40` over the `scrim`.
 
 ## Surfaces
 
-| Surface       | Recipe                                                                                                                                                                                                                    | Where                                                                     |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `float-bar`   | light: `rgb(252 248 247 / 0.46)`, `backdrop-filter: blur(28px) saturate(200%)`, `1px solid rgb(11 11 13 / 0.06)`. Dark: `rgb(30 30 33 / 0.5)`, edge `rgb(255 255 255 / 0.08)`. No shadow                                  | bottom bar (Resumo, workout list, exercise), the "Adicionar widget" sheet |
-| `glass-light` | light: `rgb(252 248 247 / 0.72)`, `blur(20px) saturate(165%)`, `1px solid rgb(11 11 13 / 0.05)`, shadow `0 8px 24px -16px rgb(11 11 13 / 0.45)`, text `ink`. Dark: `rgb(28 28 30 / 0.72)`, edge `rgb(255 255 255 / 0.08)` | round buttons at the top (back, video)                                    |
-| `panel`       | `--vita-panel` fill, sheen `linear-gradient(to bottom, rgb(255 255 255 / 0.06), transparent 45%)`, `1px solid rgb(255 255 255 / 0.06)`, shadows listed above, text `on-panel`                                             | set logger                                                                |
-| `quiet`       | `rgb(255 255 255 / 0.07)` with `1px solid rgb(255 255 255 / 0.08)`                                                                                                                                                        | the selection band across the wheels, inside the panel                    |
-| Widget tile   | `bg-paper`, radius 26, no border, no shadow, 16px padding                                                                                                                                                                 | every Resumo widget                                                       |
-| Edit overlay  | `bg-paper/45` with `backdrop-blur-[2px]`, over the tile content at 40% opacity; the tile gets `ring-1 ring-hairline`                                                                                                      | widget tiles in edit mode                                                 |
+| Surface       | Recipe                                                                                                                                                                                                                    | Where                                                         |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `float-bar`   | light: `rgb(252 248 247 / 0.46)`, `backdrop-filter: blur(28px) saturate(200%)`, `1px solid rgb(11 11 13 / 0.06)`. Dark: `rgb(30 30 33 / 0.5)`, edge `rgb(255 255 255 / 0.08)`. No shadow                                  | the bottom bar on every screen                                |
+| `glass-light` | light: `rgb(252 248 247 / 0.72)`, `blur(20px) saturate(165%)`, `1px solid rgb(11 11 13 / 0.05)`, shadow `0 8px 24px -16px rgb(11 11 13 / 0.45)`, text `ink`. Dark: `rgb(28 28 30 / 0.72)`, edge `rgb(255 255 255 / 0.08)` | round icon buttons: back, theme, edit, external link, discard |
+| `panel`       | `--vita-panel` fill, sheen `linear-gradient(to bottom, rgb(255 255 255 / 0.06), transparent 45%)`, `1px solid rgb(255 255 255 / 0.06)`, shadows listed above, text `on-panel`                                             | set logger                                                    |
+| `quiet`       | `rgb(255 255 255 / 0.07)` with `1px solid rgb(255 255 255 / 0.08)`                                                                                                                                                        | the selection band across the wheels, inside the panel        |
+| Widget tile   | `bg-paper`, radius 26, no border, no shadow, 16px padding                                                                                                                                                                 | every Resumo widget                                           |
+| Edit overlay  | `bg-paper/45` with `backdrop-blur-[2px]`, over the tile content at 40% opacity; the tile gets `ring-1 ring-hairline`                                                                                                      | widget tiles in edit mode                                     |
 
-Glass appears only in four places: the bottom bar, the round buttons at the top, the edit layer of the widgets and the sheets that rise from the bottom. Content on the canvas has no container: it is separated by space and, when needed, a hairline. `smoke` and `limelight` are defined in `globals.css` and not used by any screen.
+Glass appears only in three places: the bottom bar, the round icon buttons and the edit layer of the widgets. Sheets are opaque `paper`. Content on the canvas has no container: it is separated by space and, when needed, a hairline. `smoke` and `limelight` are defined in `globals.css` and not used by any screen.
 
 ## Components
 
 ### Bottom bar
 
-- Anatomy: a `float-bar` pill (`rounded-full`, 8px padding, 4px gap, up to 448px wide), centered and fixed at the bottom. On Resumo: four text tabs in equal columns (Resumo, Treinos, Evolução, Corpo) and, at the end, the screen's main action. On the workout list: the action pill "Finalizar treino". On the exercise screen: the round undo button (after the first set) and the action pill.
+- Anatomy: a `float-bar` pill (`rounded-full`, 8px padding, 4px gap, up to 448px wide), centered and fixed at the bottom. On the tabs: four tabs in equal columns (Resumo, Treinos, Evolução, Perfil) and, on Resumo, the screen's main action at the end. On the workout list: the action pill "Finalizar treino". On the exercise screen: the round undo button (after the first set) and the action pill.
 - Sizes: 48px controls and 8px padding, so the bar is 66px tall with its 1px edge.
-- Tabs: 13px; active in `ink` at weight 500 with `aria-current="page"`; inactive in `ink-secondary`, `ink` on hover.
+- Tabs: a 22px icon (summary, dumbbell, chart, person) with the name under it in Inter 11px weight 400. The active tab is `ink` with `aria-current="page"`; the others are `ink-secondary`. Same weight for both, so nothing shifts. Switching tabs crossfades: the bar has its own view transition name (`vita-bar`), and the active tab fades in.
 - Desktop: on the exercise screen the bar becomes static under the content and takes the full width.
 
 ### Red action circle (`roundActionClass`)
@@ -158,11 +172,11 @@ Glass appears only in four places: the bottom bar, the round buttons at the top,
 
 ### Action pill (`pillActionClass` + `PillActionContent`)
 
-- 48px tall, full width, `bg-ink` with `text-canvas` (inverts in dark), 20px left padding and 4px right padding.
-- Label at 15px weight 400 on the left, with an optional secondary part in `on-ink-secondary` at 13px ("Finalizar treino 3 de 8") or a tabular value ("Confirmar 40 × 10").
-- A 44px red circle at the right end holds a white icon at 20px (check or arrow).
+- 48px tall, full width, `bg-ink` with `text-canvas` (inverts in dark), 20px left padding and 4px on the other sides.
+- Label at 15px weight 400 on the left, with an optional secondary part in `on-ink-secondary` at 13px ("Finalizar treino 3 de 8") or a tabular value ("Confirmar 40 × 10", which rolls when it changes).
+- A 40px red circle at the right end, 4px from the top, the bottom and the end (concentric), holds a white icon at 20px (check, arrow or trash).
 - States: pressed (`pressable`), disabled at 60% opacity (sign in with Google, a set being saved).
-- Where: "Finalizar treino", "Confirmar …", "Próximo exercício" / "Voltar à lista", "Entrar como Leonardo" / "Entrar com Google".
+- Where: "Finalizar treino", "Confirmar …", "Próximo exercício" / "Voltar à lista", "Começar treino", the onboarding's "Começar" / "Continuar", the single action of a sheet ("Salvar", "Limpar ficha", "Descartar treino"), "Entrar como Leonardo" / "Entrar com Google".
 
 ### Round secondary button (`roundSecondaryClass`)
 
@@ -170,12 +184,38 @@ Glass appears only in four places: the bottom bar, the round buttons at the top,
 
 ### Round light glass button
 
-44px `glass-light` circle at the top of the workout screens: back (chevron at 20px, stroke 1.8) and the exercise video (play at 15px). On desktop the exercise screen hides its back button but keeps its space.
+44px `glass-light` circle with a 20px icon:
+
+- Back (chevron) at the top left of the workout screens, the onboarding, Ajustes and Créditos. On desktop the exercise screen hides it but keeps its space.
+- The theme toggle (sun in light, moon in dark) at the top right of Resumo and the welcome screen; on Resumo it follows the edit button (pencil; in edit mode a close and a check).
+- External link (an arrow leaving a box, up and to the right) in the exercise header, away from back and next.
+- Discard (trash) next to the minutes on the workout list; it asks first in a sheet.
+
+### Theme toggle (`src/app/_components/theme-toggle.tsx`)
+
+Copied from the owner's notfolio and rebuilt with VITA's tokens. A tap spins the icon once (360°, 360ms, enter easing) while the sun and the moon crossfade; on a mouse it leans 20° and grows to 1.15 on hover (300ms, a slight overshoot). It flips the theme on `<html>` at once and writes the same `vita_theme` cookie as Ajustes (`themeCookie`, unit tested). From "Sistema" it flips what the system shows.
+
+### Choice list (`src/shared/ui/choice-list.tsx`)
+
+A radio group as a list: one row is chosen. Rows at least 64px with hairlines between them; the name at 17px weight 400, an optional detail at 13px in `ink-secondary`, and a 20px `ink` check at the right of the chosen row (the other rows keep its space). Arrow keys move the choice; only the chosen row (or the first, when none is) is in the Tab order. Used for every choice in the onboarding, Perfil and Ajustes (goal, experience, session length, place, theme).
+
+With `variant="cards"` each option is a `paper` tile (radius 26, 16px padding, 12px apart) with room for more lines; the chosen tile gets a 1.5px `ink` ring and the check. Used for the program models.
+
+### Text field (`src/shared/ui/text-field.tsx`)
+
+No box: a 13px `ink-secondary` label over a 28px weight 300 input on a 1px `hairline` line; while focused an `ink` line draws over it from the left (`scaleX`, 200ms). The placeholder is `ink-tertiary`. Used for the name.
+
+### Exercise demo (`src/shared/ui/exercise-demo.tsx`)
+
+- `ExerciseDemo`: the start and end drawings, 176px tall and full width, taking turns with a soft crossfade (`pose-cycle`, 2.4s per cycle, about 1.2s per pose; the end pose runs half a cycle later). Without drawings, nothing. With reduced motion, both poses sit side by side, still.
+- Seeing it done: an external-link glass button at the right of the exercise title opens, in a new tab with `rel="noopener noreferrer"`, the catalog's `reference_url` when it is a valid https link (`safeExternalUrl`), otherwise a YouTube search for the name in Portuguese. Nothing from other sites is embedded or hotlinked.
+- `ExerciseThumb`: the start pose, 40px and still, in `ink-secondary`, at the left of rows in exercise lists (workout list, welcome, the onboarding review and its sheets). An empty 40px space keeps rows aligned when there is no drawing.
+- The drawings are SVG files used as CSS masks (`pose` utility) over `currentColor`, so the line art takes the ink color of either theme. They come from Everkinetic (CC BY-SA 4.0), sanitized and recolored by `scripts/import-everkinetic.ts`; credits live at `/creditos`.
 
 ### Selection wheel
 
-- Inside the set logger `panel` (radius 30, 20px padding), under the heading "Série N" (15px, `on-panel-secondary`) and the set dots (7px: done `on-panel`, current `red`, pending `panel-track`).
-- Native scroll snap, three visible rows of 64px, with a mask that fades the top and bottom. Selected value in `num` at 56px in `on-panel`; neighbours in Inter 300 at 22px in `on-panel-dim`; the change animates font size and color over 150ms ease out.
+- Inside the set logger `panel` (radius 30, 20px padding), under the heading "Série N" (15px, `on-panel-secondary`; the number rolls when it changes) and, on the right, the sets label ("1 de 4 séries", 13px, `on-panel-secondary`) next to the set dots (7px: done `on-panel`, the set being done now a 14×7px `red` pill, pending `panel-track`). The group carries the same text as its `aria-label`.
+- Native scroll snap, three visible rows of 64px, with a mask that fades the top and bottom. Selected value in `num` at 56px in `on-panel`; neighbours in Inter 300 at 22px in `on-panel-dim`. Each row holds both states stacked and crossfades them (opacity and scale, 150ms), so the font size never animates.
 - One `quiet` band (999px radius, 60px tall) spans every wheel on the panel.
 - Load on the left (aligned start), reps on the right (aligned end); exercises by time show one centered wheel in seconds. Unit label under each wheel at 13px.
 - When the app raised the load, a 7px red dot sits next to the selected load on the first set.
@@ -184,12 +224,12 @@ Glass appears only in four places: the bottom bar, the round buttons at the top,
 
 ### Set list
 
-Under the panel: one 48px row per target set, 15px, with hairlines between rows. Label "Série N" on the left; on the right the value in Inter 17px weight 400 with tabular figures (`40 × 10` or a duration), or `·` in `ink-secondary` while pending. The newest set pulses once when logged.
+Under the panel: one 48px row per target set, 15px, with hairlines between rows. Label "Série N" on the left; on the right the value in Inter 17px weight 400 with tabular figures (`40 × 10` or a duration), or `·` in `ink-secondary` while pending. The newest value rolls up into place when logged.
 
 ### Exercise list
 
 - An ordered list with hairlines between rows; rows rise in with a 30ms stagger.
-- Each row is at least 64px: name at 17px (weight 400 while pending, 300 in `ink-secondary` when complete) and a status line at 13px ("Concluído", "Sobe de carga hoje" or "4 séries").
+- Each row is at least 64px: name at 17px (weight 400 while pending, 300 in `ink-secondary` when complete) and a status line at 13px ("Concluído", "Sobe de carga hoje" or the sets label, "2 de 4 séries").
 - On the right, one 6px dot per target set: `ink` when done, `red` for the first dot when the load goes up today, `dot-off` otherwise.
 - The active row (desktop sidebar) gets a `paper` highlight with a 16px radius.
 
@@ -215,13 +255,52 @@ A 2px `ink` polyline with round caps and joins, 4px inner padding, and the last 
 
 ### Edit mode
 
-- "Editar" (15px, weight 400) at the top right of Resumo turns on editing; it becomes "Cancelar" (15px, `ink-secondary`) and "Concluir" (15px, weight 500, `red-text`; "Salvando" while saving). "Cancelar" restores the saved layout.
-- Each tile shows its content at 40% opacity under the edit overlay and gets a hairline ring. On the overlay (12px padding): top left, a 32px `ink` circle with a minus to remove; top right, two 32px `canvas` circles to move earlier or later (30% opacity when not possible); bottom left, the title at 15px and, when the widget has more than one size, a size switch (a `canvas` pill with 4px padding and 32px options; the selected one in `ink` with `canvas` glyph, the rest in `ink-secondary`).
-- A 1×1 "Adicionar" tile with a dashed `dot-off` edge, a "+" at 28px and the label at 15px opens the sheet. It is shown only while there are widgets left to add.
+- A pencil glass button at the top right of Resumo turns on editing; it becomes a close button ("Cancelar edição", restores the saved layout) and a check ("Salvar o painel").
+- Each tile shows its content at 40% opacity under the edit overlay (which fades in) and gets a hairline ring. On the overlay (10px padding, concentric with the tile): top left, a 32px `ink` circle with a minus to remove; top right, two 32px `canvas` circles 12px apart to move earlier or later (30% opacity when not possible); bottom left, the title at 15px and, when the widget has more than one size, a size switch (a `canvas` pill with 4px padding and 32px options; the selected one in `ink` with `canvas` glyph, the rest in `ink-secondary`). Every 32px control has a 44×44px hit area (`tap-target`).
+- A 1×1 "Adicionar" tile with a dashed `dot-off` edge, a plus icon at 28px and the label at 15px opens the sheet. It is shown only while there are widgets left to add.
 
-### "Adicionar widget" sheet
+### Sheet (`src/shared/ui/sheet.tsx`)
 
-A `float-bar` sheet with radius 30 (12px from the screen edges, up to 448px wide, 20px padding) that rises in over a 20% `ink` scrim; tapping the scrim or "Fechar" closes it. Title at 22px weight 400. One row per widget not on screen, with hairlines between: the title at 17px weight 400, the description at 13px, and a 32px red circle with a white "+". A new widget comes in the medium size when it supports it, otherwise its first size.
+- Anatomy: an opaque `paper` panel attached to the bottom, up to 448px wide, with 30px top corners and 20px side padding. On top, a drag handle (36×5px, `dot-off`) and the title at 22px weight 400 with a 32px close button ("Fechar"). Text inside is `ink` (or `ink-secondary` for secondary lines), never translucent; body text is 17px. One primary action, usually the action pill.
+- It slides up with `translateY` (320ms, enter easing) while the `scrim` fades in. It closes by dragging the handle or the title down (past 96px or with a flick), by tapping the backdrop, with Esc or with the close button, sliding back down in 250ms (exit easing).
+- While open, Tab stays inside it, and on closing the focus returns to whatever opened it.
+- "Adicionar widget": one row per widget not on screen, with hairlines between: the title at 17px weight 400, the description at 13px, and a 32px red circle with a white plus. A new widget comes in the medium size when it supports it, otherwise its first size.
+
+### Onboarding (Começar, `/comecar`)
+
+- One short question per screen, up to 448px wide with 24px margins: Boas-vindas, Nome, Objetivo, Experiência, Meta semanal, Peso e altura, Tempo por treino, Onde treina, Escolha da ficha, Revisão da ficha.
+- Top: on the first screen the `vita` wordmark; afterwards the back glass button at the top left, then a quiet row of nine 6px dots (done `ink`, current a short `red` pill, pending `dot-off`) with the progress as text next to it ("3 de 9", 13px, rolls on each step), never a percentage bar. "Pular" (15px, `ink-secondary`) at the top right, only on the two optional questions.
+- The question is a title at 34px weight 300 (40px on Boas-vindas), always followed by one 17px `ink-secondary` line saying why it is asked ("Para te chamar pelo nome no app.", "Define qual modelo de ficha vamos sugerir.", "Ajusta as cargas iniciais e o ritmo de progressão.", "Quantos dias por semana você quer treinar. Dá para mudar depois.", "Usados só nos seus gráficos de corpo. Ficam só com você.", "Ajuda a sugerir fichas do tamanho certo.", "Mostra modelos que fazem sentido para o seu espaço."). Numbers use the selection wheels on the dark panel; choices use the choice list; the name uses the text field. Each step slides in: from the right going forward, from the left going back.
+- The floating bar holds only the action pill: "Começar", then "Continuar" on every step, the last one included ("Salvando" while saving). It is disabled until the step is valid.
+- Escolha um modelo: one card per model (choice list cards). "Manter minha ficha atual" comes first and preselected when the person already has a program, with each day's exercise count. Each template card shows its name, "N dias por semana", one sentence on who it is for and its days ("A: peito, costas, ombro", from the exercises' primary muscles). The model that fits the answers shows "Sugerido para você" with a red status dot and a one-line reason (`suggest` in the training module).
+- Revisão da ficha: "Revise os exercícios. Toque para trocar, deslize para remover." at the top, one section per day ("Treino A", 22px weight 400, with the day's focus at 13px on the right) and the exercises with their prescription at 13px tabular ("3 × 10–12"). Tapping a row opens a sheet listing catalog exercises with the same primary muscle, with "Remover do treino" at the end; swiping a row left reveals a red trash and, past 96px, slides it out; Delete removes it from the keyboard. A 32px plus under each day adds an exercise. "Limpar ficha" (`red-text`) sits at the bottom and asks first in a sheet with the action pill. Never a browser dialog.
+
+### Welcome (Resumo before the first workout)
+
+Up to 448px with 20px margins: the wordmark and the theme toggle on top; "Olá, Nome" at 40px weight 300; "O painel aparece depois do seu primeiro treino." at 17px in `ink-secondary`; then "Próximo treino" (13px), "Treino A" (34px weight 400), the exercises as 64px rows with their thumb, and the action pill "Começar treino" (or "Continuar treino" while one is open). The bottom bar has the tabs and no red circle, so only one action competes.
+
+### Perfil (`/perfil`)
+
+The fourth tab. Up to 448px with 24px margins: "Perfil" at 34px weight 400, then groups, each a 13px `ink-secondary` heading over 64px rows with hairlines:
+
+- Você: name, goal, experience, weekly goal, time per workout and place. Each row shows the name at 17px, the value at 15px `ink-secondary` and an 18px pencil; the row opens a sheet with the same control as the onboarding and the action pill "Salvar".
+- Corpo: the current weight with a 96×32 sparkline of the latest weigh-ins, the height (pencil, height wheel), and "Registrar peso" (plus icon), which opens the weight wheel and saves today's weigh-in. The old Corpo tab (`/corpo`) redirects here.
+- A row "Ajustes" with a chevron, which opens `/ajustes`.
+
+### Ajustes (`/ajustes`)
+
+Up to 448px with 24px margins: the back button (to Perfil), "Ajustes" at 34px weight 400, then two groups:
+
+- Conta: the email (read only), "Créditos" (opens `/creditos`) and "Sair" in `red-text`.
+- Aparência: a choice list with "Sistema", "Claro" and "Escuro", the same cookie as the theme toggle.
+
+### Créditos (`/creditos`)
+
+The back button, "Créditos" at 34px weight 400 and two 17px paragraphs with the attribution; links are weight 400 `ink` with a `hairline` underline.
+
+### Desktop notice
+
+From 1024px (`lg`) every app route shows a calm notice instead of the app: the wordmark at the top left and, at the bottom, "A versão para computador está em construção." at 40px weight 300, "Por enquanto, use o VITA no celular." at 17px in `ink-secondary` and the site address at 17px weight 400, with 64px of padding. Phones and tablets below 1024px are untouched; Entrar and Créditos are not gated.
 
 ### Sign in (Entrar)
 
@@ -255,37 +334,52 @@ With no data, Estagnados shows `0` and "Tudo progredindo" in every size; the oth
 
 ## Iconography
 
-- Source: `src/shared/ui/icons.tsx`. 24×24 view box, line icons in `currentColor`, no fill, round caps and joins.
-- Stroke: 1.9 by default; ArrowRight 2.4, ArrowUp 2.8, Check 2.6, ChevronLeft 2 (called with 1.8 on the top buttons). Play is the only filled icon.
-- Size: 22px by default; used at 20px (arrow, check, chevron, undo) and at 18 and 15px (play).
-- Color: inherits the text color: white inside red circles, `ink` on glass and transparent buttons.
-- Defined but not used today: SummaryIcon, DumbbellIcon, ChartIcon, ScaleIcon, ArrowUpIcon.
-- The edit mode draws its own small glyphs inline in `dashboard.tsx` (minus, chevrons, size shapes, 14–16px) and uses a text "+" for adding.
+- Source: `src/shared/ui/icons.tsx`, drawn to match "Ponto e linha": a 24×24 grid, a 1.5px line in `currentColor`, round caps and joins, no fill. Play and the three tile shapes of the size switch are the only solid icons.
+- Size: 24px by default; 22px in the tabs, 20px in buttons, 16–18px in 32px chips.
+- Color: inherits the text color: white inside red circles, `ink` on glass and transparent buttons, `ink-secondary` for trailing row marks (chevron, pencil, plus).
+- Set: summary, dumbbell, chart, person (tabs); arrow-right, check, chevron-left, chevron-right, close, minus, plus, pencil, external-link, trash, undo, sun, moon (actions); play; tile-small, tile-medium, tile-large.
+- Every icon-only button has an `aria-label` in Portuguese ("Voltar", "Fechar", "Editar o painel", "Alternar tema claro e escuro", "Descartar treino", "Buscar … no YouTube, abre em nova aba").
+
+## Labels
+
+- Text labels only inside Ajustes and Perfil: their rows and actions show text.
+- Everywhere else, actions are icons. The exceptions that keep text:
+    - the main pill actions (Confirmar, Começar treino, Finalizar treino, Próximo exercício) and the onboarding's "Começar" and "Continuar";
+    - the single action pill of a sheet, which confirms or saves ("Salvar", "Limpar ficha", "Descartar treino");
+    - "Pular" in the onboarding, and the secondary destructive links "Limpar ficha" and "Remover do treino".
+- Tap targets are at least 44×44px; small chips and text buttons get the `tap-target` hit area.
 
 ## Motion
 
 ### Rules
 
-- Ease out for entrances; ease in out for moves along the screen.
-- Dropdowns and popovers: 150 to 250ms; popovers start at scale 0.95.
-- Stagger list rows by 30ms; stagger details as they settle.
-- Press: scale to 0.97. Do not animate while a control is held.
-- Stretch moving knobs by about 12%. Use arcs for object movement.
-- Pulse to confirm success (for example, a confirmed set).
-- Enter from the trigger and exit back to it; exits are 20% shorter than entrances.
-- Overlap the old and the new state; crossfade icons with a little blur; use masks for reveals and color changes.
-- No bounce on everyday UI. Rubber band past scroll bounds.
-- Shared elements keep the same `layoutId` (Motion) across screens.
-- Respect `prefers-reduced-motion`.
+- **Animate only `transform` and `opacity`.** Never width, height, top/left, margin, padding, border, box-shadow, font size or color.
+    - For a size change, scale plus a counter-scale on children, or crossfade two states (the wheel values).
+    - For a sheet, `translateY`.
+    - For an accordion, `grid-template-rows` 0fr→1fr only if a transform cannot do it, documented here as an exception. There is none today.
+- **Durations:** 150–200ms for micro feedback (press, toggle), 250–350ms for elements that enter or leave, 400ms at most for page-level transitions.
+- **Easing:** `cubic-bezier(0.2, 0, 0, 1)` when entering, `cubic-bezier(0.4, 0, 1, 1)` when leaving. Defined once in `globals.css` (`--vita-ease-enter`, `--vita-ease-exit`, also `ease-enter` and `ease-exit` in Tailwind) with the durations (`--vita-duration-press` 150ms, `-enter` 320ms, `-exit` 250ms, `-page` 360ms).
+- **Every interactive element has a press state:** scale 0.97 and opacity 0.85, 150ms (`pressable`).
+- **Elements enter, they never pop in:** fade and rise 8px, lists staggered by 30ms. Leaving elements fade out faster than they came in.
+- **Sheets:** slide up from the bottom with `translateY` while the backdrop fades in; close by dragging down, tapping the backdrop or Esc.
+- **Screens:** between the workout list and the exercise focus screen, and between onboarding steps, a horizontal slide of 24px with a fade. Forward goes left, back goes right. The floating bar does not slide: it crossfades in place.
+- **Numbers that change** (the set number, sets done, the confirmed value, the onboarding step) roll up a short way; the wheel values crossfade. Never a hard swap.
+- **No bounce on everyday UI.** The theme toggle's hover lean is the only overshoot, and only on a mouse.
+- **`prefers-reduced-motion`:** every animation and transition becomes an instant change; view transitions do not run; the exercise drawings sit still, side by side.
+- Every keyframe animation uses a `backwards` fill, so no transform stays on the element after it ends (a leftover transform would trap the fixed floating bar inside it).
 
-### What the code does today
+### Utilities (`src/app/globals.css`)
 
-- `pressable`: on press, scale to 0.97 at once (0ms, no animation while held); release returns over 140ms with `cubic-bezier(0.2, 0.8, 0.2, 1)`. Also removes the tap highlight. On every tappable control.
-- `rise-in`: fade in and rise 8px over 360ms with the same curve, delayed by `--stagger` × 30ms. On widget tiles, exercise rows and the "Adicionar widget" sheet.
-- `pulse-once`: scale 1 → 1.18 → 1 over 380ms. On the value of the set that was just logged.
-- The selection wheel animates size and color of the values over 150ms ease out; the tabs change color with a transition.
-- `prefers-reduced-motion: reduce` cuts every animation and transition to 0.01ms.
-- The `motion` package is installed but not imported yet, so no shared `layoutId` transitions exist.
+- `pressable`: the press state above. Also removes the tap highlight.
+- `tap-target`: grows the hit area to 44×44px without changing the look.
+- `rise-in`: fade and rise 8px, 320ms, delayed by `--stagger` × 30ms. On widget tiles, exercise rows and the welcome list.
+- `fade-in`: 150ms fade. The active tab, the edit overlay, the sheet backdrop.
+- `slide-forward` / `slide-back`: 24px from the right or the left with a fade, 360ms. The onboarding steps.
+- `roll-in`: rise 0.45em with a fade, 180ms. Numbers that change.
+- `sheet-in` and `leave`: the sheet's entrance and every exit (250ms, exit easing; also the swiped-away row).
+- `spin-once`: one 360° turn, 360ms. The theme toggle.
+- `pose-cycle`: the exercise drawings take turns, 2.4s per cycle with 0.24s fades.
+- Route slides use React's `<ViewTransition>` (`src/shared/ui/screen-transition.tsx`): links carry `transitionTypes={["nav-forward"]}` or `["nav-back"]`, and `::view-transition-old/new(.nav-forward | .nav-back)` play the slide. Untyped navigations (tabs, the browser's back button) only crossfade.
 
 ## Writing
 
@@ -298,9 +392,9 @@ With no data, Estagnados shows `0` and "Tudo progredindo" in every size; the oth
 Examples from the screens:
 
 - Titles and labels: "Resumo", "Treino A", "Próximo treino", "Série 2", "Adicionar widget".
-- Actions: "Finalizar treino", "Confirmar 40 × 10", "Próximo exercício", "Voltar à lista", "Descartar treino", "Editar", "Concluir".
+- Actions: "Finalizar treino", "Confirmar 40 × 10", "Próximo exercício", "Voltar à lista", "Continuar", "Registrar peso", "Limpar ficha".
 - Status: "Sobe de carga hoje", "Concluído", "3 de 8 exercícios concluídos", "Meta batida", "Tudo progredindo".
-- Empty states: "Monte sua ficha em Treinos.", "Registre seu peso em Corpo.", "Seu primeiro treino aparece aqui.", "Nenhum recorde nos últimos 30 dias."
+- Empty states: "Monte sua ficha em Treinos.", "Registre seu peso em Perfil.", "Seu primeiro treino aparece aqui.", "Nenhum recorde nos últimos 30 dias."
 - Explanations: "Registre cada série em segundos e veja o quanto você evoluiu.", "Vale conversar com o instrutor sobre ajustar a faixa de repetições ou trocar o exercício."
 
 ## Do and don't
@@ -332,14 +426,14 @@ Also: no cards around everything, no bold text, no grain textures, no shadows to
 2. **Period in a title**: the Entrar hero "Seus treinos, sua evolução." ends with a period.
 3. **Captions with and without a period**: Semana small says "Falta 1" / "Meta batida"; medium says "Falta 1 treino." / "Meta da semana batida."; Estagnados says "Tudo progredindo" with no period.
 4. **Widget titles that change with size**: Recordes is titled "Recorde" in the small size and Volume por músculo is titled "Mais treinado"; the catalog and the sheet use the catalog names.
-5. **Weight 500 in two places**: the active tab and the "Concluir" button; the earlier draft allowed 500 only for the active tab.
+5. **Weight 500**: no longer used by the tabs or the edit mode (both are icons now); the `accent-strong` text button tone remains defined.
 6. **Screen margins differ**: 20px on Resumo, 24px on the workout list, Entrar and placeholder tabs, 16px (+8px) on the exercise screen. Top padding differs too: 52, 56 and 64px.
 7. **Radius outside the scale**: the active exercise row uses 16px (`rounded-2xl`).
-8. **Radii not concentric in the panel**: the panel is 30px with 20px padding, but the wheel scroller inside is 20px (concentric would be 10px).
+8. **Radii not concentric in the panel**: fixed; the wheel scroller is 10px (`innerRadius(30, 20)`).
 9. **Red as an outline**: today's day in Semana (large) is a red 1.5px ring, while the red rule allows red only as a fill.
-10. **Colors outside the tokens**: white inside red circles (`text-white`), the "last time" divider on the panel (`border-white/[0.08]`), the edit overlay (`bg-paper/45`, `backdrop-blur-[2px]`), the sheet scrim (`bg-ink/20`), and the theme colors repeated as hex in `src/app/layout.tsx`.
+10. **Colors outside the tokens**: the edit overlay (`bg-paper/45`, `backdrop-blur-[2px]`) and the theme colors repeated as hex in `src/app/layout.tsx`. The sheet scrim is now the `scrim` token.
 11. **Text at 11px** (Peso and Volume por músculo, large), below the 13px used everywhere else.
 12. **Letter spacing on numbers**: `num` sets `letter-spacing: 0.01em`, while the rules forbid letter spacing.
-13. **Unused code**: the `smoke` and `limelight` utilities, the `level-1` to `level-3` tokens and five icons (Summary, Dumbbell, Chart, Scale, ArrowUp) are not used by any screen. `panel` is still described as "Panel glass" in a CSS comment, though it has no blur.
-14. **Icons outside `icons.tsx`**: the edit mode draws its minus, chevrons and size glyphs inline (strokes 2.4 and 2.2), and the add buttons use a text "+".
+13. **Unused code**: the `smoke` and `limelight` utilities and the `level-1` to `level-3` tokens are not used by any screen. `panel` is still described as "Panel glass" in a CSS comment, though it has no blur.
+14. **Icons outside `icons.tsx`**: fixed; every glyph, including the plus, comes from the icon set.
 15. **Shadows left**: `panel` and `glass-light` still have shadows (listed under "Elevation"); the bottom bar no longer does.

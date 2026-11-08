@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { cookies } from "next/headers";
+
+import { THEME_COOKIE, parseTheme } from "@/shared/theme/theme";
 
 import "./globals.css";
 
@@ -37,17 +40,35 @@ export const metadata: Metadata = {
     },
 };
 
-export const viewport: Viewport = {
-    themeColor: [
-        { media: "(prefers-color-scheme: light)", color: "#f4f2f1" },
-        { media: "(prefers-color-scheme: dark)", color: "#0b0b0d" },
-    ],
-    viewportFit: "cover",
-};
+const CANVAS = { light: "#f4f2f1", dark: "#0b0b0d" };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+async function readTheme() {
+    return parseTheme((await cookies()).get(THEME_COOKIE)?.value);
+}
+
+export async function generateViewport(): Promise<Viewport> {
+    const theme = await readTheme();
+    return {
+        themeColor:
+            theme === "system"
+                ? [
+                      { media: "(prefers-color-scheme: light)", color: CANVAS.light },
+                      { media: "(prefers-color-scheme: dark)", color: CANVAS.dark },
+                  ]
+                : CANVAS[theme],
+        viewportFit: "cover",
+    };
+}
+
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+    const theme = await readTheme();
     return (
-        <html lang="pt-BR" className={`${inter.variable} ${doto.variable} h-full`}>
+        <html
+            lang="pt-BR"
+            // The setting from Ajustes; without it, globals.css follows the system.
+            data-theme={theme === "system" ? undefined : theme}
+            className={`${inter.variable} ${doto.variable} h-full`}
+        >
             <body className="min-h-full">{children}</body>
         </html>
     );

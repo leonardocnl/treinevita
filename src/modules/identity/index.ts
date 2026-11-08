@@ -14,3 +14,21 @@ export {
     getCurrentUser,
     type CurrentUser,
 } from "./application/sessions";
+export { getProfile, saveProfile, type Profile } from "./application/profile";
+export {
+    EXPERIENCES,
+    GOALS,
+    HEIGHT_CM,
+    NAME_MAX,
+    SESSION_MINUTES,
+    TRAINING_PLACES,
+    WEEKLY_GOAL,
+    WEIGHT_KG,
+    onboardingRedirect,
+    profileSchema,
+    type Experience,
+    type Goal,
+    type ProfileInput,
+    type SessionMinutes,
+    type TrainingPlace,
+} from "./domain/profile";

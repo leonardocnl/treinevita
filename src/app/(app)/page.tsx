@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
-import { getOpenSession } from "@/modules/logging";
+import { getLastFinishedSession, getOpenSession } from "@/modules/logging";
 import {
     WIDGET_CATALOG,
     getDashboardExtras,
@@ -19,15 +19,23 @@ import { Wordmark } from "@/shared/ui/wordmark";
 
 import { startWorkoutAction } from "../_components/actions";
 import { AppDock } from "../_components/app-dock";
+import { ThemeToggle } from "../_components/theme-toggle";
 
 import { Dashboard } from "./_widgets/dashboard";
 import { WIDGET_RENDERERS } from "./_widgets/widgets";
+import { Welcome } from "./welcome";
 
 export const metadata: Metadata = { title: "Resumo · VITA" };
 
 export default async function SummaryPage() {
     const context = await requireAppContext();
-    const openSession = await getOpenSession(context);
+    const [openSession, lastSession] = await Promise.all([
+        getOpenSession(context),
+        getLastFinishedSession(context),
+    ]);
+    if (!lastSession) {
+        return <Welcome context={context} hasOpenSession={openSession !== null} />;
+    }
     const [summary, extras, layout] = await Promise.all([
         getSummary(context, openSession !== null),
         getDashboardExtras(context),
@@ -71,6 +79,7 @@ export default async function SummaryPage() {
                             </Label>
                         </div>
                     }
+                    themeToggle={<ThemeToggle />}
                     initialLayout={layout}
                     catalog={WIDGET_CATALOG}
                     renders={renders}
