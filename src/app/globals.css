@@ -214,6 +214,38 @@
     animation: vita-pulse 380ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+/* An exercise drawing (an SVG file) used as a mask over the current text color,
+   so the line art follows the ink color and the theme. */
+@utility pose {
+    background-color: currentColor;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+}
+
+/* Start and end poses take turns, about 1.2s each, with a soft crossfade.
+   The end pose runs the same cycle half a turn later. */
+@keyframes vita-pose {
+    0%,
+    40% {
+        opacity: 1;
+    }
+    50%,
+    90% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@utility pose-cycle {
+    animation: vita-pose 2.4s ease-in-out infinite;
+}
+
 /* Fades the top and bottom rows of a scroller (the selection wheel). */
 @utility fade-y {
     mask-image: linear-gradient(transparent, #000 34%, #000 66%, transparent);
