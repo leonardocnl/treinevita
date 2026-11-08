@@ -6,6 +6,7 @@
  */
 import type { CSSProperties, ReactNode } from "react";
 import { cx } from "./cx";
+import { Icon } from "./icons";
 
 export type WidgetTileSize = "small" | "medium" | "large";
 
@@ -53,7 +54,9 @@ export function WidgetAddTile({ onClick, label }: { onClick: () => void; label: 
             onClick={onClick}
             className="pressable col-span-1 row-span-1 flex flex-col items-center justify-center gap-2 rounded-tile border border-dashed border-dot-off text-[15px] text-ink-secondary"
         >
-            <span className="text-[28px] font-light leading-none text-ink">+</span>
+            <span className="text-ink">
+                <Icon name="plus" size={28} />
+            </span>
             {label}
         </button>
     );

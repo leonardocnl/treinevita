@@ -13,7 +13,7 @@ export default function CreditsPage() {
     return (
         <main className="mx-auto w-full max-w-md px-6 pb-24 pt-[max(env(safe-area-inset-top),52px)]">
             <GlassIconButton href="/ajustes" aria-label="Voltar aos Ajustes" className="-ml-2">
-                <Icon name="chevron-left" size={20} strokeWidth={1.8} />
+                <Icon name="chevron-left" size={20} />
             </GlassIconButton>
             <Title size={34} weight="normal" leading="tight" className="mt-6">
                 Créditos
