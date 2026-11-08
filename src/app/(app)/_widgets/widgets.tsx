@@ -314,7 +314,7 @@ const bodyWeight: Render = ({ summary }, size) => {
     if (!weight) {
         return (
             <Frame title="Peso">
-                <EmptyState>Registre seu peso em Corpo.</EmptyState>
+                <EmptyState>Registre seu peso em Perfil.</EmptyState>
             </Frame>
         );
     }

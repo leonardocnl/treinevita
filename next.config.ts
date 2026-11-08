@@ -13,6 +13,11 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
     headers: async () => [{ source: "/:path*", headers: securityHeaders }],
+    // Corpo became part of Perfil; old links and home-screen bookmarks land there.
+    redirects: async () => [
+        { source: "/corpo", destination: "/perfil", permanent: true },
+        { source: "/corpo/:path*", destination: "/perfil", permanent: true },
+    ],
     // Every screen depends on who is signed in, so pages render per request.
     // Cache Components stay off until there is public, cacheable content (ADR 0009).
     cacheComponents: false,

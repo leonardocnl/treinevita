@@ -173,7 +173,8 @@ export async function getSummary(context: Context, hasOpenSession: boolean): Pro
     };
 }
 
-async function getWeightTrend(context: Context): Promise<Summary["weight"]> {
+/** The latest weigh-ins (up to 8, oldest first) with the change over the last 4 weeks. */
+export async function getWeightTrend(context: TenantContext): Promise<Summary["weight"]> {
     const db = await getDb();
     const rows = await db
         .select({ measuredOn: bodyMeasurements.measuredOn, weightKg: bodyMeasurements.weightKg })
