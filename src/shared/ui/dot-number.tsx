@@ -46,7 +46,7 @@ export function DotNumber({
     return (
         <Tag className={classes}>
             {children}
-            {of !== undefined ? <span className="text-dot-off">/{of}</span> : null}
+            {of !== undefined ? <span className="text-ink-tertiary">/{of}</span> : null}
         </Tag>
     );
 }

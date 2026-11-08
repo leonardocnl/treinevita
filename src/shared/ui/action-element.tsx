@@ -9,6 +9,8 @@ import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "reac
 type LinkActionProps = {
     href: string;
     children?: ReactNode;
+    /** "nav-forward" or "nav-back": the direction of the screen slide (screen-transition.tsx). */
+    transitionTypes?: string[];
 } & Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "href" | "className" | "children">;
 
 type ButtonActionProps = {
