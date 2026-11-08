@@ -1,7 +1,7 @@
 /*
  * A row of dots counting progress: sets of an exercise, workouts of a week.
- * Done dots are lit, one dot can be red (the current set, a load going up),
- * and the rest are unlit or, with `hollow`, outlined.
+ * Done dots are lit, the item being done now is a short red pill, one dot can
+ * be red (a load going up), and the rest are unlit or, with `hollow`, outlined.
  */
 import { Dot, type DotFill } from "./dot";
 
@@ -14,6 +14,8 @@ type DotMeterProps = {
     size?: 6 | 7 | 8 | 11;
     /** Index of a pending dot drawn in red. */
     highlight?: number;
+    /** Index of the item being done now: a red dot stretched into a short pill. */
+    current?: number;
     /** "panel" for the dark set logger panel. */
     surface?: "canvas" | "panel";
     /** Pending dots as an outline instead of a fill (the week still running). */
@@ -26,16 +28,28 @@ export function DotMeter({
     label,
     size = 6,
     highlight,
+    current,
     surface = "canvas",
     hollow = false,
 }: DotMeterProps) {
     const lit: DotFill = surface === "panel" ? "on-panel" : "ink";
     const unlit: DotFill = surface === "panel" ? "panel-track" : "off";
     return (
-        <span role="img" aria-label={label} className={`flex ${size === 6 ? "gap-1" : "gap-1.5"}`}>
+        <span
+            role="img"
+            aria-label={label}
+            className={`flex items-center ${size === 6 ? "gap-1" : "gap-1.5"}`}
+        >
             {Array.from({ length: total }, (_, index) =>
                 index < done ? (
                     <Dot key={index} size={size} fill={lit} />
+                ) : index === current ? (
+                    <span
+                        key={index}
+                        aria-hidden
+                        className="rounded-full bg-red"
+                        style={{ width: size * 2, height: size }}
+                    />
                 ) : index === highlight ? (
                     <Dot key={index} size={size} fill="red" />
                 ) : hollow ? (

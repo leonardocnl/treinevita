@@ -15,3 +15,8 @@ export function formatDuration(seconds: number): string {
     const rest = seconds % 60;
     return `${minutes}:${String(rest).padStart(2, "0")}`;
 }
+
+/** "1 de 1 série", "2 de 4 séries": how many sets of the target are done. */
+export function setsLabel(done: number, total: number): string {
+    return `${done} de ${total} ${total === 1 ? "série" : "séries"}`;
+}

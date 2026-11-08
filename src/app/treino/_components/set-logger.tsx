@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { useFormStatus } from "react-dom";
 
-import { formatDuration, formatNumber } from "@/shared/format/numbers";
+import { formatDuration, formatNumber, setsLabel } from "@/shared/format/numbers";
 import { StatusDot } from "@/shared/ui/dot";
 import { DotMeter } from "@/shared/ui/dot-meter";
 import { FloatBar } from "@/shared/ui/float-bar";
@@ -13,6 +13,7 @@ import { Panel, PanelNote } from "@/shared/ui/panel";
 import { PillAction } from "@/shared/ui/pill-action";
 import { QuietBand } from "@/shared/ui/quiet-band";
 import { RoundButton } from "@/shared/ui/round-button";
+import { NAV_BACK, NAV_FORWARD } from "@/shared/ui/screen-transition";
 import { Label } from "@/shared/ui/text";
 import { WHEEL_ITEM_HEIGHT, WheelPicker } from "@/shared/ui/wheel-picker";
 
@@ -64,22 +65,46 @@ export function SetLogger(props: SetLoggerProps) {
     return (
         <>
             <Panel aria-label="Registro da série">
-                <div className="flex items-center justify-between px-1">
+                <div className="flex items-center justify-between gap-3 px-1">
                     <h2 className="text-[15px] text-on-panel-secondary">
-                        {finished ? "Exercício concluído" : `Série ${currentIndex + 1}`}
+                        {finished ? (
+                            "Exercício concluído"
+                        ) : (
+                            <>
+                                Série{" "}
+                                <span key={currentIndex} className="roll-in tabular-nums">
+                                    {currentIndex + 1}
+                                </span>
+                            </>
+                        )}
                     </h2>
-                    <DotMeter
-                        total={targetSets}
-                        done={currentIndex}
-                        highlight={currentIndex}
-                        size={7}
-                        surface="panel"
-                        label={`${currentIndex} de ${targetSets} séries feitas`}
-                    />
+                    <div
+                        role="group"
+                        aria-label={`${setsLabel(currentIndex, targetSets)} feitas`}
+                        className="flex items-center gap-2.5"
+                    >
+                        <span
+                            aria-hidden
+                            key={currentIndex}
+                            className="roll-in text-[13px] tabular-nums text-on-panel-secondary"
+                        >
+                            {setsLabel(currentIndex, targetSets)}
+                        </span>
+                        <span aria-hidden>
+                            <DotMeter
+                                total={targetSets}
+                                done={currentIndex}
+                                current={finished ? undefined : currentIndex}
+                                size={7}
+                                surface="panel"
+                                label={setsLabel(currentIndex, targetSets)}
+                            />
+                        </span>
+                    </div>
                 </div>
 
                 {finished ? (
-                    <p className="px-1 pb-3 pt-8 text-[17px] text-on-panel-secondary">
+                    <p className="fade-in px-1 pb-3 pt-8 text-[17px] text-on-panel-secondary">
                         {targetSets} séries registradas.
                     </p>
                 ) : (
@@ -162,10 +187,7 @@ export function SetLogger(props: SetLoggerProps) {
                                         size={17}
                                         weight="normal"
                                         key={isLast ? `last-${doneSets.length}` : index}
-                                        className={cx(
-                                            "tabular-nums",
-                                            isLast && "pulse-once inline-block",
-                                        )}
+                                        className={cx("tabular-nums", isLast && "roll-in")}
                                     >
                                         {set.durationSeconds !== null
                                             ? formatDuration(set.durationSeconds)
@@ -197,6 +219,7 @@ export function SetLogger(props: SetLoggerProps) {
                 {finished ? (
                     <PillAction
                         href={props.nextHref ?? "/treino"}
+                        transitionTypes={props.nextHref ? NAV_FORWARD : NAV_BACK}
                         grow
                         icon={<Icon name="arrow-right" size={20} />}
                     >
@@ -230,7 +253,10 @@ function ConfirmButton({ summary }: { summary: string }) {
     const { pending } = useFormStatus();
     return (
         <PillAction type="submit" disabled={pending} icon={<Icon name="check" size={20} />}>
-            Confirmar <span className="tabular-nums">{summary}</span>
+            Confirmar{" "}
+            <span key={summary} className="roll-in tabular-nums">
+                {summary}
+            </span>
         </PillAction>
     );
 }

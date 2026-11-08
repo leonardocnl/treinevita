@@ -1,8 +1,8 @@
 /*
  * How an exercise is done: the start and end drawings taking turns with a soft
- * crossfade, and a "Ver no YouTube" link. With reduced motion both poses sit
- * side by side, still. Without drawings, only the link. The drawings are files
- * used as masks over the ink color, so they follow the theme.
+ * crossfade. With reduced motion both poses sit side by side, still. The
+ * drawings are files used as masks over the ink color, so they follow the
+ * theme. The link to see it done lives in the screen's header (external-link icon).
  */
 import type { CSSProperties } from "react";
 
@@ -19,39 +19,30 @@ export function youtubeSearchUrl(name: string): string {
 }
 
 type ExerciseDemoProps = {
-    /** The exercise name in Portuguese: labels the drawing and feeds the search. */
+    /** The exercise name in Portuguese: labels the drawing. */
     name: string;
     media: Media | null;
 };
 
 export function ExerciseDemo({ name, media }: ExerciseDemoProps) {
+    if (!media) {
+        return null;
+    }
     return (
-        <figure className="flex flex-col items-center gap-3">
-            {media ? (
-                <div
-                    role="img"
-                    aria-label={`${name}: posição inicial e final`}
-                    className="relative h-44 w-full text-ink motion-reduce:grid motion-reduce:grid-cols-2 motion-reduce:gap-4"
-                >
-                    <span
-                        className="pose pose-cycle absolute inset-0 motion-reduce:static motion-reduce:animate-none"
-                        style={maskStyle(media.start)}
-                    />
-                    <span
-                        className="pose pose-cycle absolute inset-0 [animation-delay:-1.2s] motion-reduce:static motion-reduce:animate-none"
-                        style={maskStyle(media.end)}
-                    />
-                </div>
-            ) : null}
-            <a
-                href={youtubeSearchUrl(name)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="pressable text-[15px] font-normal text-ink-secondary"
-            >
-                Ver no YouTube
-            </a>
-        </figure>
+        <div
+            role="img"
+            aria-label={`${name}: posição inicial e final`}
+            className="relative h-44 w-full text-ink motion-reduce:grid motion-reduce:grid-cols-2 motion-reduce:gap-4"
+        >
+            <span
+                className="pose pose-cycle absolute inset-0 motion-reduce:static motion-reduce:animate-none"
+                style={maskStyle(media.start)}
+            />
+            <span
+                className="pose pose-cycle absolute inset-0 [animation-delay:-1.2s] motion-reduce:static motion-reduce:animate-none"
+                style={maskStyle(media.end)}
+            />
+        </div>
     );
 }
 
