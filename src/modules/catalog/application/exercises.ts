@@ -58,34 +58,38 @@ export async function getExercisesByIds(
     }
 
     const db = await getDb();
-    const rows = await db
-        .select({
-            id: exercises.id,
-            name: exercises.name,
-            measurement: exercises.measurement,
-            defaultIncrementKg: exercises.defaultIncrementKg,
-            referenceUrl: exercises.referenceUrl,
-            ...mediaColumns,
-        })
-        .from(exercises)
-        .where(
-            and(
-                inArray(exercises.id, [...ids]),
-                isNull(exercises.deletedAt),
-                or(isNull(exercises.workspaceId), eq(exercises.workspaceId, context.workspaceId)),
+    const [rows, muscleRows] = await Promise.all([
+        db
+            .select({
+                id: exercises.id,
+                name: exercises.name,
+                measurement: exercises.measurement,
+                defaultIncrementKg: exercises.defaultIncrementKg,
+                referenceUrl: exercises.referenceUrl,
+                ...mediaColumns,
+            })
+            .from(exercises)
+            .where(
+                and(
+                    inArray(exercises.id, [...ids]),
+                    isNull(exercises.deletedAt),
+                    or(
+                        isNull(exercises.workspaceId),
+                        eq(exercises.workspaceId, context.workspaceId),
+                    ),
+                ),
             ),
-        );
-
-    const muscleRows = await db
-        .select({
-            exerciseId: exerciseMuscleGroups.exerciseId,
-            role: exerciseMuscleGroups.role,
-            slug: muscleGroups.slug,
-            name: muscleGroups.name,
-        })
-        .from(exerciseMuscleGroups)
-        .innerJoin(muscleGroups, eq(muscleGroups.id, exerciseMuscleGroups.muscleGroupId))
-        .where(inArray(exerciseMuscleGroups.exerciseId, [...ids]));
+        db
+            .select({
+                exerciseId: exerciseMuscleGroups.exerciseId,
+                role: exerciseMuscleGroups.role,
+                slug: muscleGroups.slug,
+                name: muscleGroups.name,
+            })
+            .from(exerciseMuscleGroups)
+            .innerJoin(muscleGroups, eq(muscleGroups.id, exerciseMuscleGroups.muscleGroupId))
+            .where(inArray(exerciseMuscleGroups.exerciseId, [...ids])),
+    ]);
 
     for (const row of rows) {
         result.set(row.id, {
