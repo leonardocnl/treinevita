@@ -212,7 +212,7 @@ export function ProgramReview({ draft, onChange, template, catalog }: ProgramRev
 /** Dragged this far to the left (px), the row is removed. */
 const REMOVE_DISTANCE = 96;
 /** Matches --vita-duration-exit in globals.css. */
-const LEAVE_MS = 250;
+const LEAVE_MS = 200;
 
 type SwipeRowProps = {
     name: string;

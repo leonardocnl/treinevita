@@ -2,7 +2,7 @@
 
 ## Status
 
-Locked on 2026-11-07. Changes need the owner's approval. Revised on 2026-11-08 at the owner's request (prompt 7: motion, corners, icons, labels, Perfil).
+Locked on 2026-11-07. Changes need the owner's approval. Revised on 2026-11-08 at the owner's request (prompt 7: motion, corners, icons, labels, Perfil) and on 2026-11-09 (prompt 9: springs, instant feedback, wheel sizing and tick, toast, loading skeletons).
 
 "Ponto e linha" (dot and line) is the visual language of VITA: a calm, editorial workout tracker where data is the hero. Large numbers are drawn in a round dot matrix, in the spirit of Nothing; text is thin and small, and content is separated by thin lines and space, in the spirit of teenage engineering. Color follows a strict 60/30/10 rule with red as the only accent, and glass appears only on the few elements that float over content.
 
@@ -175,7 +175,7 @@ Glass appears only in three places: the bottom bar, the round icon buttons and t
 - 48px tall, full width, `bg-ink` with `text-canvas` (inverts in dark), 20px left padding and 4px on the other sides.
 - Label at 15px weight 400 on the left, with an optional secondary part in `on-ink-secondary` at 13px ("Finalizar treino 3 de 8") or a tabular value ("Confirmar 40 × 10", which rolls when it changes).
 - A 40px red circle at the right end, 4px from the top, the bottom and the end (concentric), holds a white icon at 20px (check, arrow or trash).
-- States: pressed (`pressable`), disabled at 60% opacity (sign in with Google, a set being saved).
+- States: pressed (`pressable`), disabled at 60% opacity (sign in with Google). "Confirmar" is never disabled while saving: the set shows as done at once (optimistic).
 - Where: "Finalizar treino", "Confirmar …", "Próximo exercício" / "Voltar à lista", "Começar treino", the onboarding's "Começar" / "Continuar", the single action of a sheet ("Salvar", "Limpar ficha", "Descartar treino"), "Entrar como Leonardo" / "Entrar com Google".
 
 ### Round secondary button (`roundSecondaryClass`)
@@ -215,7 +215,8 @@ No box: a 13px `ink-secondary` label over a 28px weight 300 input on a 1px `hair
 ### Selection wheel
 
 - Inside the set logger `panel` (radius 30, 20px padding), under the heading "Série N" (15px, `on-panel-secondary`; the number rolls when it changes) and, on the right, the sets label ("1 de 4 séries", 13px, `on-panel-secondary`) next to the set dots (7px: done `on-panel`, the set being done now a 14×7px `red` pill, pending `panel-track`). The group carries the same text as its `aria-label`.
-- Native scroll snap, three visible rows of 64px, with a mask that fades the top and bottom. Selected value in `num` at 56px in `on-panel`; neighbours in Inter 300 at 22px in `on-panel-dim`. Each row holds both states stacked and crossfades them (opacity and scale, 150ms), so the font size never animates.
+- Native scroll snap (mandatory, `scroll-snap-stop: normal` so a flick can cross many values), three visible rows of 64px, with a mask that fades the top and bottom. It scrolls only vertically. Selected value in `num` at 56px in `on-panel`, or smaller for a value that would not fit the column ("102,5" in the kg column of a phone; "7,5" stays at 56px). Each value's size comes from its length and the container width, so it never animates. Neighbours in Inter 300 at 22px in `on-panel-dim`. Each row holds both states stacked and crossfades them (opacity and scale, `snappy`), so the font size never animates.
+- The value under the center follows the finger on every frame; each value reaching the center ticks (a 2% scale pulse, 80ms, `wheel-tick`). The new value is committed when scrolling ends. Nothing in the wheel changes while a set is being saved.
 - One `quiet` band (999px radius, 60px tall) spans every wheel on the panel.
 - Load on the left (aligned start), reps on the right (aligned end); exercises by time show one centered wheel in seconds. Unit label under each wheel at 13px.
 - When the app raised the load, a 7px red dot sits next to the selected load on the first set.
@@ -262,9 +263,18 @@ A 2px `ink` polyline with round caps and joins, 4px inner padding, and the last 
 ### Sheet (`src/shared/ui/sheet.tsx`)
 
 - Anatomy: an opaque `paper` panel attached to the bottom, up to 448px wide, with 30px top corners and 20px side padding. On top, a drag handle (36×5px, `dot-off`) and the title at 22px weight 400 with a 32px close button ("Fechar"). Text inside is `ink` (or `ink-secondary` for secondary lines), never translucent; body text is 17px. One primary action, usually the action pill.
-- It slides up with `translateY` (320ms, enter easing) while the `scrim` fades in. It closes by dragging the handle or the title down (past 96px or with a flick), by tapping the backdrop, with Esc or with the close button, sliding back down in 250ms (exit easing).
+- It slides up with `translateY` (`settle`) while the `scrim` fades in. Dragged by the handle or the title, it follows the finger; it closes past 96px or with a flick, otherwise it springs back (`settle`). It also closes by tapping the backdrop, with Esc or with the close button, sliding back down in 200ms (exit easing).
 - While open, Tab stays inside it, and on closing the focus returns to whatever opened it.
 - "Adicionar widget": one row per widget not on screen, with hairlines between: the title at 17px weight 400, the description at 13px, and a 32px red circle with a white plus. A new widget comes in the medium size when it supports it, otherwise its first size.
+
+### Toast (`src/shared/ui/toast.tsx`)
+
+- A `smoke` glass pill above the floating bar (on desktop, 32px from the bottom), up to 448px wide: the message at 15px in `on-panel` and one text action at 15px weight 400 with a 44px hit area.
+- Only for a change that could not be saved: "Não foi possível salvar. Tente de novo." with "Tentar de novo". It rises in (`rise-in`), is announced (`role="alert"`) and leaves by itself after 6 seconds.
+
+### Loading skeletons (`src/shared/ui/skeleton.tsx`)
+
+- Each screen that loads data on navigation has a `loading.tsx`: flat `hairline` blocks in the screen's own layout (title, rows, tiles), with the screen's radii. No shimmer; they fade in after 150ms, so a fast load never shows them. The frame is announced as busy ("Carregando").
 
 ### Onboarding (Começar, `/comecar`)
 
@@ -347,39 +357,45 @@ With no data, Estagnados shows `0` and "Tudo progredindo" in every size; the oth
     - the main pill actions (Confirmar, Começar treino, Finalizar treino, Próximo exercício) and the onboarding's "Começar" and "Continuar";
     - the single action pill of a sheet, which confirms or saves ("Salvar", "Limpar ficha", "Descartar treino");
     - "Pular" in the onboarding, and the secondary destructive links "Limpar ficha" and "Remover do treino".
+- The toast's single action ("Tentar de novo") is text too.
 - Tap targets are at least 44×44px; small chips and text buttons get the `tap-target` hit area.
 
 ## Motion
 
 ### Rules
 
+- **Motion starts on input, never after the network.** A tap changes the screen in the same frame: the press scales on pointer down, a logged set shows as done, the next exercise slides in; the save runs in the background. A screen whose data is not on the client yet shows its skeleton at once (`loading.tsx`).
 - **Animate only `transform` and `opacity`.** Never width, height, top/left, margin, padding, border, box-shadow, font size or color.
     - For a size change, scale plus a counter-scale on children, or crossfade two states (the wheel values).
     - For a sheet, `translateY`.
     - For an accordion, `grid-template-rows` 0fr→1fr only if a transform cannot do it, documented here as an exception. There is none today.
-- **Durations:** 150–200ms for micro feedback (press, toggle), 250–350ms for elements that enter or leave, 400ms at most for page-level transitions.
-- **Easing:** `cubic-bezier(0.2, 0, 0, 1)` when entering, `cubic-bezier(0.4, 0, 1, 1)` when leaving. Defined once in `globals.css` (`--vita-ease-enter`, `--vita-ease-exit`, also `ease-enter` and `ease-exit` in Tailwind) with the durations (`--vita-duration-press` 150ms, `-enter` 320ms, `-exit` 250ms, `-page` 360ms).
-- **Every interactive element has a press state:** scale 0.97 and opacity 0.85, 150ms (`pressable`).
+- **Two springs, used everywhere** (CSS `linear()` curves sampled from a damped spring, in `globals.css`; Tailwind `ease-snappy` and `ease-settle`):
+    - **`snappy`**: critically damped, 180ms, no overshoot (`--vita-spring-snappy`, `--vita-duration-snappy`). Press release, toggles, chips, the wheel's crossfade, numbers that roll.
+    - **`settle`**: damping 0.8, 280ms, 1.5% overshoot (`--vita-spring-settle`, `--vita-duration-settle`). Sheets, screen slides, cards and rows entering, a dragged sheet snapping back.
+    - Leaving uses `cubic-bezier(0.4, 0, 1, 1)` (`--vita-ease-exit`): 200ms for a sheet or a swiped row (`--vita-duration-exit`), 180ms for the screen that slides out. Fades keep `cubic-bezier(0.2, 0, 0, 1)` at 150ms (`--vita-ease-enter`, `--vita-duration-press`).
+- **Every interactive element has a press state:** scale 0.96 and opacity 0.85 in 80ms on pointer down (`--vita-duration-press-in`), back with `snappy` on release (`pressable`).
 - **Elements enter, they never pop in:** fade and rise 8px, lists staggered by 30ms. Leaving elements fade out faster than they came in.
-- **Sheets:** slide up from the bottom with `translateY` while the backdrop fades in; close by dragging down, tapping the backdrop or Esc.
-- **Screens:** between the workout list and the exercise focus screen, and between onboarding steps, a horizontal slide of 24px with a fade. Forward goes left, back goes right. The floating bar does not slide: it crossfades in place.
+- **Sheets:** slide up from the bottom with `translateY` (`settle`) while the backdrop fades in. While dragged they follow the finger; past 96px, or flicked faster than 0.5px/ms, they close; otherwise they spring back with `settle`. Tapping the backdrop or Esc also closes.
+- **Screens:** between the workout list and the exercise focus screen, and between onboarding steps, a horizontal slide of 24px with a fade, done within 280ms (`settle`). Forward goes left, back goes right. In the workout it starts on the tap, since the data is already on the client. The floating bar does not slide: it crossfades in place.
 - **Numbers that change** (the set number, sets done, the confirmed value, the onboarding step) roll up a short way; the wheel values crossfade. Never a hard swap.
-- **No bounce on everyday UI.** The theme toggle's hover lean is the only overshoot, and only on a mouse.
+- **No visible bounce on everyday UI.** `settle` overshoots 1.5% at most, which reads as weight, not bounce. The theme toggle's hover lean is the only real overshoot, and only on a mouse.
 - **`prefers-reduced-motion`:** every animation and transition becomes an instant change; view transitions do not run; the exercise drawings sit still, side by side.
 - Every keyframe animation uses a `backwards` fill, so no transform stays on the element after it ends (a leftover transform would trap the fixed floating bar inside it).
 
 ### Utilities (`src/app/globals.css`)
 
-- `pressable`: the press state above. Also removes the tap highlight.
+- `pressable`: the press state above (0.96 in 80ms, release with `snappy`). Also removes the tap highlight.
 - `tap-target`: grows the hit area to 44×44px without changing the look.
-- `rise-in`: fade and rise 8px, 320ms, delayed by `--stagger` × 30ms. On widget tiles, exercise rows and the welcome list.
+- `rise-in`: fade and rise 8px with `settle`, delayed by `--stagger` × 30ms. On widget tiles, exercise rows, the welcome list and the toast.
 - `fade-in`: 150ms fade. The active tab, the edit overlay, the sheet backdrop.
-- `slide-forward` / `slide-back`: 24px from the right or the left with a fade, 360ms. The onboarding steps.
-- `roll-in`: rise 0.45em with a fade, 180ms. Numbers that change.
-- `sheet-in` and `leave`: the sheet's entrance and every exit (250ms, exit easing; also the swiped-away row).
-- `spin-once`: one 360° turn, 360ms. The theme toggle.
+- `slide-forward` / `slide-back`: 24px from the right or the left with a fade, `settle`. The onboarding steps.
+- `roll-in`: rise 0.45em with a fade, `snappy`. Numbers that change.
+- `sheet-in`, `sheet-snap` and `leave`: the sheet's entrance (`settle`), its spring back after a drag (`settle`) and every exit (200ms, exit easing; also the swiped-away row).
+- `wheel-tick`: the 2% scale pulse, 80ms, of the value reaching the wheel's center.
+- `skeleton`: loading placeholders fade in after 150ms, so a fast load never flashes them.
+- `spin-once`: one 360° turn, 280ms, `snappy`. The theme toggle.
 - `pose-cycle`: the exercise drawings take turns, 2.4s per cycle with 0.24s fades.
-- Route slides use React's `<ViewTransition>` (`src/shared/ui/screen-transition.tsx`): links carry `transitionTypes={["nav-forward"]}` or `["nav-back"]`, and `::view-transition-old/new(.nav-forward | .nav-back)` play the slide. Untyped navigations (tabs, the browser's back button) only crossfade.
+- Route slides use React's `<ViewTransition>` (`src/shared/ui/screen-transition.tsx`): links carry `transitionTypes={["nav-forward"]}` or `["nav-back"]` (inside the workout, the client update carries the same type with `addTransitionType`), and `::view-transition-old/new(.nav-forward | .nav-back)` play the slide: the new screen with `settle` in 280ms, the old one out in 180ms. Untyped navigations (tabs, the browser's back button) only crossfade.
 
 ## Writing
 

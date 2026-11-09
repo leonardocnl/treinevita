@@ -33,7 +33,7 @@ const FOCUSABLE =
     'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /** Matches --vita-duration-exit in globals.css. */
-const LEAVE_MS = 250;
+const LEAVE_MS = 200;
 /** Dragged this far (px), or flicked this fast (px/ms), the sheet closes. */
 const CLOSE_DISTANCE = 96;
 const CLOSE_VELOCITY = 0.5;
@@ -175,7 +175,8 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
                 style={{ transform: leaving ? "translateY(100%)" : `translateY(${dragY}px)` }}
                 className={cx(
                     "relative flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-panel bg-paper text-ink outline-none",
-                    leaving ? "leave" : dragging ? undefined : "sheet-in",
+                    // Rises once on open; follows the finger while dragged; springs back (settle) on release.
+                    leaving ? "leave" : cx("sheet-in", !dragging && "sheet-snap"),
                 )}
             >
                 <div
