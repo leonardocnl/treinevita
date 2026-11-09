@@ -3,7 +3,7 @@
  * Done dots are lit, the item being done now is a short red pill, one dot can
  * be red (a load going up), and the rest are unlit or, with `hollow`, outlined.
  */
-import { Dot, type DotFill } from "./dot";
+import { Dot, type DotTone } from "./dot";
 
 type DotMeterProps = {
     total: number;
@@ -32,8 +32,8 @@ export function DotMeter({
     surface = "canvas",
     hollow = false,
 }: DotMeterProps) {
-    const lit: DotFill = surface === "panel" ? "on-panel" : "ink";
-    const unlit: DotFill = surface === "panel" ? "panel-track" : "off";
+    const lit: DotTone = surface === "panel" ? "secondary" : "ink";
+    const unlit: DotTone = "off";
     return (
         <span
             role="img"
@@ -42,20 +42,20 @@ export function DotMeter({
         >
             {Array.from({ length: total }, (_, index) =>
                 index < done ? (
-                    <Dot key={index} size={size} fill={lit} />
+                    <Dot key={index} size={size} tone={lit} />
                 ) : index === current ? (
                     <span
                         key={index}
                         aria-hidden
-                        className="rounded-full bg-red"
+                        className="rounded-full bg-accent"
                         style={{ width: size * 2, height: size }}
                     />
                 ) : index === highlight ? (
-                    <Dot key={index} size={size} fill="red" />
+                    <Dot key={index} size={size} tone="accent" />
                 ) : hollow ? (
-                    <Dot key={index} size={size} ring="off" />
+                    <Dot key={index} size={size} tone="off" />
                 ) : (
-                    <Dot key={index} size={size} fill={unlit} />
+                    <Dot key={index} size={size} tone={unlit} />
                 ),
             )}
         </span>
