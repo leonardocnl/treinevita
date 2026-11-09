@@ -85,15 +85,19 @@ export async function getSummary(context: Context, hasOpenSession: boolean): Pro
     const historyStart = weekStart < monthStart ? weekStart : monthStart;
     const since = new Date(`${addDays(historyStart, -1)}T00:00:00Z`);
 
-    const [sessions, goal, program, lastSession, weight, waistCm, record] = await Promise.all([
-        listSessionsSince(context, since),
-        getWeeklyGoal(context),
-        getActiveProgram(context),
-        getLastFinishedSession(context),
-        getWeightTrend(context),
-        getLatestWaist(context),
-        getWeeklyRecord(context, weekStart),
-    ]);
+    // The activity graph only needs the goal, so it loads alongside everything else.
+    const goalQuery = getWeeklyGoal(context);
+    const [sessions, goal, program, lastSession, weight, waistCm, record, activity] =
+        await Promise.all([
+            listSessionsSince(context, since),
+            goalQuery,
+            getActiveProgram(context),
+            getLastFinishedSession(context),
+            getWeightTrend(context),
+            getLatestWaist(context),
+            getWeeklyRecord(context, weekStart),
+            goalQuery.then((weeklyGoal) => getActivity(context, today, weeklyGoal)),
+        ]);
 
     const trainedDates = new Set(
         sessions
@@ -157,8 +161,6 @@ export async function getSummary(context: Context, hasOpenSession: boolean): Pro
             };
         }
     }
-
-    const activity = await getActivity(context, today, goal);
 
     return {
         today,

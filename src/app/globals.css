@@ -48,15 +48,60 @@
     --vita-scrim: rgb(11 11 13 / 0.28);
 
     /*
-     * Motion (docs/design/DESIGN.md, "Motion"). Only transform and opacity move.
-     * Enter: 250–350ms; leave: shorter than the entrance; page: 400ms at most.
+     * Motion (docs/design/DESIGN.md, "Motion"). Only transform and opacity move,
+     * and motion starts on input, never after the network.
+     *
+     * Two springs, sampled from a damped spring into linear():
+     * - snappy (critically damped, 180ms, no overshoot): press, toggles, chips, the wheel;
+     * - settle (damping 0.8, 280ms, 1.5% overshoot): sheets, screen slides, cards entering.
      */
-    --vita-ease-enter: cubic-bezier(0.2, 0, 0, 1);
+    --vita-spring-snappy: linear(
+        0,
+        0.1,
+        0.287,
+        0.473,
+        0.627,
+        0.743,
+        0.827,
+        0.885,
+        0.925,
+        0.951,
+        0.969,
+        0.98,
+        0.987,
+        0.992,
+        1
+    );
+    --vita-duration-snappy: 180ms;
+    --vita-spring-settle: linear(
+        0,
+        0.097,
+        0.294,
+        0.503,
+        0.681,
+        0.815,
+        0.906,
+        0.963,
+        0.995,
+        1.01,
+        1.015,
+        1.015,
+        1.012,
+        1.009,
+        1.006,
+        1.004,
+        1.002,
+        1.001,
+        1
+    );
+    --vita-duration-settle: 280ms;
+    /* Press-in: fast and plain, so the control reacts under the finger. */
+    --vita-duration-press-in: 80ms;
     --vita-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+    --vita-duration-exit: 200ms;
+    /* Kept for fades and the pose drawings. */
+    --vita-ease-enter: cubic-bezier(0.2, 0, 0, 1);
     --vita-duration-press: 150ms;
-    --vita-duration-enter: 320ms;
-    --vita-duration-exit: 250ms;
-    --vita-duration-page: 360ms;
 
     @variant dark {
         --vita-canvas: #0b0b0d;
@@ -101,6 +146,8 @@
 
     --ease-enter: var(--vita-ease-enter);
     --ease-exit: var(--vita-ease-exit);
+    --ease-snappy: var(--vita-spring-snappy);
+    --ease-settle: var(--vita-spring-settle);
 
     /*
      * Radii outside Tailwind's scale. Nested radii follow the concentric rule
@@ -204,15 +251,17 @@
  * (`backwards` fill), so fixed children (the floating bar) are never trapped.
  */
 
-/* Press: scale 0.97 and a little less opacity, 150ms, on every tappable control. */
+/* Press: down to 0.96 in 80ms under the finger, back with the snappy spring on release. */
 @utility pressable {
     -webkit-tap-highlight-color: transparent;
     transition:
-        transform var(--vita-duration-press) var(--vita-ease-enter),
-        opacity var(--vita-duration-press) var(--vita-ease-enter);
+        transform var(--vita-duration-snappy) var(--vita-spring-snappy),
+        opacity var(--vita-duration-snappy) var(--vita-spring-snappy);
     &:active:not(:disabled) {
-        transform: scale(0.97);
+        transform: scale(0.96);
         opacity: 0.85;
+        transition-duration: var(--vita-duration-press-in);
+        transition-timing-function: ease-out;
     }
 }
 
@@ -276,6 +325,13 @@
     }
 }
 
+/* The wheel's tick: the value reaching the center pulses 2%. */
+@keyframes vita-tick {
+    50% {
+        transform: scale(1.02);
+    }
+}
+
 @keyframes vita-spin {
     to {
         transform: rotate(360deg);
@@ -284,7 +340,7 @@
 
 /* Elements enter, they never pop in: fade and rise 8px, lists staggered by 30ms. */
 @utility rise-in {
-    animation: vita-rise var(--vita-duration-enter) var(--vita-ease-enter) backwards;
+    animation: vita-rise var(--vita-duration-settle) var(--vita-spring-settle) backwards;
     animation-delay: calc(var(--stagger, 0) * 30ms);
 }
 
@@ -295,24 +351,32 @@
 /* A screen moving forward comes in from the right (content goes left); back, from the left. */
 @utility slide-forward {
     --vita-slide-from: 24px;
-    animation: vita-slide-in var(--vita-duration-page) var(--vita-ease-enter) backwards;
+    animation: vita-slide-in var(--vita-duration-settle) var(--vita-spring-settle) backwards;
 }
 
 @utility slide-back {
     --vita-slide-from: -24px;
-    animation: vita-slide-in var(--vita-duration-page) var(--vita-ease-enter) backwards;
+    animation: vita-slide-in var(--vita-duration-settle) var(--vita-spring-settle) backwards;
 }
 
 /* A number that changed rolls up into place (set values, set counts). */
 @utility roll-in {
     display: inline-block;
-    animation: vita-roll 180ms var(--vita-ease-enter) backwards;
+    animation: vita-roll var(--vita-duration-snappy) var(--vita-spring-snappy) backwards;
 }
 
-/* Sheets: the panel rises with translateY; leaving and the drag snap use transitions. */
+/* Sheets: the panel rises with translateY; after a drag that does not close it, it snaps back. */
 @utility sheet-in {
-    animation: vita-sheet-in var(--vita-duration-enter) var(--vita-ease-enter) backwards;
-    transition: transform var(--vita-duration-enter) var(--vita-ease-enter);
+    animation: vita-sheet-in var(--vita-duration-settle) var(--vita-spring-settle) backwards;
+}
+
+@utility sheet-snap {
+    transition: transform var(--vita-duration-settle) var(--vita-spring-settle);
+}
+
+@utility wheel-tick {
+    display: inline-block;
+    animation: vita-tick 80ms ease-out;
 }
 
 @utility leave {
@@ -321,8 +385,13 @@
         opacity var(--vita-duration-exit) var(--vita-ease-exit);
 }
 
+/* Loading placeholders appear only if the wait is noticeable (150ms). */
+@utility skeleton {
+    animation: vita-fade-in var(--vita-duration-press) var(--vita-ease-enter) 150ms backwards;
+}
+
 @utility spin-once {
-    animation: vita-spin var(--vita-duration-page) var(--vita-ease-enter);
+    animation: vita-spin var(--vita-duration-settle) var(--vita-spring-snappy);
 }
 
 /*
@@ -339,27 +408,27 @@
 }
 
 ::view-transition-new(root) {
-    animation: vita-fade-in var(--vita-duration-enter) var(--vita-ease-enter) both;
+    animation: vita-fade-in var(--vita-duration-snappy) var(--vita-ease-enter) both;
 }
 
 ::view-transition-old(.nav-forward) {
     --vita-slide-to: -24px;
-    animation: vita-slide-out var(--vita-duration-exit) var(--vita-ease-exit) both;
+    animation: vita-slide-out var(--vita-duration-snappy) var(--vita-ease-exit) both;
 }
 
 ::view-transition-new(.nav-forward) {
     --vita-slide-from: 24px;
-    animation: vita-slide-in var(--vita-duration-page) var(--vita-ease-enter) both;
+    animation: vita-slide-in var(--vita-duration-settle) var(--vita-spring-settle) both;
 }
 
 ::view-transition-old(.nav-back) {
     --vita-slide-to: 24px;
-    animation: vita-slide-out var(--vita-duration-exit) var(--vita-ease-exit) both;
+    animation: vita-slide-out var(--vita-duration-snappy) var(--vita-ease-exit) both;
 }
 
 ::view-transition-new(.nav-back) {
     --vita-slide-from: -24px;
-    animation: vita-slide-in var(--vita-duration-page) var(--vita-ease-enter) both;
+    animation: vita-slide-in var(--vita-duration-settle) var(--vita-spring-settle) both;
 }
 
 ::view-transition-group(vita-bar) {

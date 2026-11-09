@@ -1,6 +1,7 @@
 import type { PgDatabase, PgQueryResultHKT } from "drizzle-orm/pg-core";
 
 import { schema } from "./schema";
+import { countQueries } from "./timing";
 
 /** The database type every repository uses, whatever the driver behind it. */
 export type Database = PgDatabase<PgQueryResultHKT, typeof schema>;
@@ -17,14 +18,30 @@ export async function createLocalDatabase(path = LOCAL_DATABASE_PATH): Promise<D
     await mkdir(path, { recursive: true });
     const { PGlite } = await import("@electric-sql/pglite");
     const { drizzle } = await import("drizzle-orm/pglite");
-    return drizzle(new PGlite(path), { schema }) as unknown as Database;
+    return drizzle(countQueries(new PGlite(path)), { schema }) as unknown as Database;
 }
 
-/** Neon (production and preview). */
+/**
+ * Neon (production and preview). Every one-shot query goes over HTTP: one round
+ * trip, no connection to set up. HTTP has no interactive transactions, so
+ * `transaction()` (first sign-in, saving the profile or the dashboard layout)
+ * runs on a single WebSocket pool, opened on first use and shared afterwards.
+ */
 export async function createNeonDatabase(connectionString: string): Promise<Database> {
-    const { Pool } = await import("@neondatabase/serverless");
-    const { drizzle } = await import("drizzle-orm/neon-serverless");
-    return drizzle(new Pool({ connectionString }), { schema }) as unknown as Database;
+    const { neon, Pool } = await import("@neondatabase/serverless");
+    const http = await import("drizzle-orm/neon-http");
+    const ws = await import("drizzle-orm/neon-serverless");
+    const db = http.drizzle(countQueries(neon(connectionString)), {
+        schema,
+    }) as unknown as Database;
+    let pooled: Database | undefined;
+    db.transaction = ((...args: Parameters<Database["transaction"]>) => {
+        pooled ??= ws.drizzle(countQueries(new Pool({ connectionString })), {
+            schema,
+        }) as unknown as Database;
+        return pooled.transaction(...args);
+    }) as Database["transaction"];
+    return db;
 }
 
 /**
