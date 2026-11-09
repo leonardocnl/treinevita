@@ -9,7 +9,7 @@ import { useState, useTransition, type ReactNode } from "react";
 
 import type { Theme } from "@/shared/theme/theme";
 import { ChoiceList, type Choice } from "@/shared/ui/choice-list";
-import { GlassIconButton } from "@/shared/ui/glass-icon-button";
+import { IconButton } from "@/shared/ui/icon-button";
 import { Icon } from "@/shared/ui/icons";
 import { NAV_BACK } from "@/shared/ui/screen-transition";
 import { Caption, Label, Title } from "@/shared/ui/text";
@@ -37,14 +37,12 @@ export function Settings({ theme: initialTheme, email }: SettingsProps) {
 
     return (
         <main className="mx-auto w-full max-w-md px-6 pb-24 pt-[max(env(safe-area-inset-top),52px)]">
-            <GlassIconButton
+            <IconButton
+                icon="chevron-left"
                 href="/perfil"
                 transitionTypes={NAV_BACK}
                 aria-label="Voltar ao Perfil"
-                className="-ml-2"
-            >
-                <Icon name="chevron-left" size={20} />
-            </GlassIconButton>
+            />
             <Title size={34} weight="normal" leading="tight" className="mt-6">
                 Ajustes
             </Title>
@@ -54,7 +52,7 @@ export function Settings({ theme: initialTheme, email }: SettingsProps) {
                     <Label as="span" size={17}>
                         Email
                     </Label>
-                    <Label as="span" tone="secondary" className="truncate">
+                    <Label as="span" className="truncate">
                         {email}
                     </Label>
                 </div>
@@ -70,9 +68,7 @@ export function Settings({ theme: initialTheme, email }: SettingsProps) {
                     </span>
                 </Link>
                 <form action={signOutAction} className="flex min-h-16 items-center">
-                    <TextButton type="submit" tone="accent">
-                        Sair
-                    </TextButton>
+                    <TextButton type="submit">Sair</TextButton>
                 </form>
             </Group>
 

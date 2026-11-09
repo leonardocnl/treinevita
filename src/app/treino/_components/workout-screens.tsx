@@ -20,10 +20,9 @@ import { usePathname } from "next/navigation";
 import type { WorkoutView } from "@/modules/progress";
 import { DotNumber } from "@/shared/ui/dot-number";
 import { ExerciseDemo, youtubeSearchUrl } from "@/shared/ui/exercise-demo";
-import { FloatBar } from "@/shared/ui/float-bar";
-import { GlassIconButton } from "@/shared/ui/glass-icon-button";
-import { Icon } from "@/shared/ui/icons";
-import { PillAction } from "@/shared/ui/pill-action";
+import { BottomBar } from "@/shared/ui/bottom-bar";
+import { IconButton } from "@/shared/ui/icon-button";
+import { PrimaryAction } from "@/shared/ui/primary-action";
 import { NAV_BACK, NAV_FORWARD, ScreenTransition } from "@/shared/ui/screen-transition";
 import { Label, Title } from "@/shared/ui/text";
 import { Toast } from "@/shared/ui/toast";
@@ -181,9 +180,7 @@ function WorkoutOverview({
         <>
             <main className="px-6 pb-36 pt-[max(env(safe-area-inset-top),52px)] md:px-0 md:pt-16">
                 <div className="flex items-center justify-between md:hidden">
-                    <GlassIconButton href="/" aria-label="Voltar ao Resumo" className="-ml-2">
-                        <Icon name="chevron-left" size={20} />
-                    </GlassIconButton>
+                    <IconButton icon="chevron-left" href="/" aria-label="Voltar ao Resumo" />
                     <div className="flex items-center gap-4">
                         <Label as="span" weight="normal">
                             <span className="tabular-nums" suppressHydrationWarning>
@@ -209,7 +206,7 @@ function WorkoutOverview({
                 </div>
 
                 <div className="hidden min-h-[50vh] flex-col justify-center md:flex">
-                    <DotNumber as="p" size={96} leading="0.8" of={exercises.length}>
+                    <DotNumber as="p" size={64} of={exercises.length}>
                         {doneExercises}
                     </DotNumber>
                     <Label size={17} tone="secondary" className="mt-5">
@@ -222,17 +219,16 @@ function WorkoutOverview({
                 </div>
             </main>
 
-            <FloatBar>
+            <BottomBar>
                 <form action={finishWorkoutAction} className="flex-1">
-                    <PillAction
+                    <PrimaryAction
                         type="submit"
-                        icon={<Icon name="check" size={20} />}
-                        detail={`${doneExercises} de ${exercises.length}`}
-                    >
-                        Finalizar treino
-                    </PillAction>
+                        meta={`${doneExercises} de ${exercises.length}`}
+                        glyph="check"
+                        label="Finalizar treino"
+                    />
                 </form>
-            </FloatBar>
+            </BottomBar>
         </>
     );
 }
@@ -260,13 +256,12 @@ function ExerciseFocus({
     return (
         <main className="px-4 pb-36 pt-[max(env(safe-area-inset-top),52px)] md:px-0 md:pb-16 md:pt-16">
             <div className="grid grid-cols-[44px_1fr_44px] items-center">
-                <GlassIconButton
+                <IconButton
+                    icon="chevron-left"
                     onClick={() => onGo(null)}
                     aria-label="Voltar à lista de exercícios"
                     className="md:invisible"
-                >
-                    <Icon name="chevron-left" size={20} />
-                </GlassIconButton>
+                />
                 <Label as="span" weight="normal" className="text-center tabular-nums">
                     {position} de {total}
                 </Label>
@@ -280,7 +275,8 @@ function ExerciseFocus({
                     <Label tone="secondary">{prescriptionText(exercise)}</Label>
                 </div>
                 {/* Apart from back and next, so it cannot be read as "próximo". */}
-                <GlassIconButton
+                <IconButton
+                    icon="external-link"
                     href={reference ?? youtubeSearchUrl(exercise.name)}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -289,10 +285,7 @@ function ExerciseFocus({
                             ? `Ver ${exercise.name} em outro site, abre em nova aba`
                             : `Buscar ${exercise.name} no YouTube, abre em nova aba`
                     }
-                    className="mt-1 shrink-0"
-                >
-                    <Icon name="external-link" size={20} />
-                </GlassIconButton>
+                />
             </header>
 
             {exercise.media ? (

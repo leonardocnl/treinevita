@@ -2,14 +2,13 @@ import type { AppContext } from "@/modules/tenancy";
 import { getProfile } from "@/modules/identity";
 import { getActiveProgram, nextWorkoutInRotation } from "@/modules/training";
 import { ExerciseThumb } from "@/shared/ui/exercise-demo";
-import { Icon } from "@/shared/ui/icons";
 import { List, ListRow } from "@/shared/ui/list";
-import { PillAction } from "@/shared/ui/pill-action";
+import { PrimaryAction } from "@/shared/ui/primary-action";
 import { Caption, Label, Title } from "@/shared/ui/text";
 import { Wordmark } from "@/shared/ui/wordmark";
 
 import { startWorkoutAction } from "../_components/actions";
-import { AppDock } from "../_components/app-dock";
+import { AppNav } from "../_components/app-nav";
 import { ThemeToggle } from "../_components/theme-toggle";
 
 /**
@@ -73,14 +72,18 @@ export async function Welcome({
                         </div>
                         <div className="mt-8">
                             {hasOpenSession ? (
-                                <PillAction href="/treino" icon={<Icon name="play" />}>
-                                    Continuar treino
-                                </PillAction>
+                                <PrimaryAction
+                                    href="/treino"
+                                    glyph="arrow"
+                                    label="Continuar treino"
+                                />
                             ) : (
                                 <form action={startWorkoutAction}>
-                                    <PillAction type="submit" icon={<Icon name="play" />}>
-                                        Começar treino
-                                    </PillAction>
+                                    <PrimaryAction
+                                        type="submit"
+                                        glyph="arrow"
+                                        label="Começar treino"
+                                    />
                                 </form>
                             )}
                         </div>
@@ -91,7 +94,7 @@ export async function Welcome({
                     </Label>
                 )}
             </main>
-            <AppDock active="resumo" />
+            <AppNav active="resumo" />
         </>
     );
 }

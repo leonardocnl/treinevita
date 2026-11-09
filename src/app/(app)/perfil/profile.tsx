@@ -12,7 +12,7 @@ import type { ProfileInput } from "@/modules/identity";
 import { formatNumber } from "@/shared/format/numbers";
 import { ChoiceList } from "@/shared/ui/choice-list";
 import { Icon } from "@/shared/ui/icons";
-import { PillAction } from "@/shared/ui/pill-action";
+import { PrimaryAction } from "@/shared/ui/primary-action";
 import { Sheet } from "@/shared/ui/sheet";
 import { Sparkline } from "@/shared/ui/sparkline";
 import { Caption, Label, Title } from "@/shared/ui/text";
@@ -237,13 +237,12 @@ export function Profile({ profile, weightTrend }: ProfileProps) {
                     </Label>
                 ) : null}
                 <div className="mt-6">
-                    <PillAction
+                    <PrimaryAction
                         onClick={save}
                         disabled={pending || draft.displayName.trim().length === 0}
-                        icon={<Icon name="check" size={20} />}
-                    >
-                        {pending ? "Salvando" : "Salvar"}
-                    </PillAction>
+                        glyph="check"
+                        label={pending ? "Salvando" : "Salvar"}
+                    />
                 </div>
             </Sheet>
         </main>

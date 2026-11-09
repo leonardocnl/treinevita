@@ -11,14 +11,11 @@ import {
     type WidgetSize,
 } from "@/modules/progress";
 import { requireAppContext } from "@/modules/tenancy";
-import { formatLongDate } from "@/shared/time/local-date";
-import { Icon } from "@/shared/ui/icons";
-import { RoundAction } from "@/shared/ui/round-action";
-import { Label } from "@/shared/ui/text";
+import { PrimaryAction } from "@/shared/ui/primary-action";
 import { Wordmark } from "@/shared/ui/wordmark";
 
 import { startWorkoutAction } from "../_components/actions";
-import { AppDock } from "../_components/app-dock";
+import { AppNav, NAV_CLEARANCE } from "../_components/app-nav";
 import { ThemeToggle } from "../_components/theme-toggle";
 
 import { Dashboard } from "./_widgets/dashboard";
@@ -52,40 +49,37 @@ export default async function SummaryPage() {
         }
     }
 
-    const action = openSession ? (
-        <RoundAction
+    const hero = openSession ? (
+        <PrimaryAction
             href="/treino"
-            aria-label={`Continuar treino ${openSession.workoutLabel ?? ""}`}
-        >
-            <Icon name="play" />
-        </RoundAction>
+            glyph="arrow"
+            label="Continuar"
+            meta={`Treino ${openSession.workoutLabel ?? ""}`}
+        />
     ) : summary.nextWorkout ? (
         <form action={startWorkoutAction}>
-            <RoundAction type="submit" aria-label={`Começar treino ${summary.nextWorkout.label}`}>
-                <Icon name="play" />
-            </RoundAction>
+            <PrimaryAction
+                type="submit"
+                glyph="arrow"
+                label="Começar"
+                meta={`Treino ${summary.nextWorkout.label} · ${summary.nextWorkout.exerciseCount} exercícios`}
+            />
         </form>
     ) : null;
 
     return (
         <>
-            <main className="mx-auto w-full max-w-5xl px-5 pb-32 pt-[max(env(safe-area-inset-top),52px)] md:px-10 md:pt-16">
+            <main className={`pt-top mx-auto w-full max-w-md px-margin ${NAV_CLEARANCE}`}>
                 <Dashboard
-                    header={
-                        <div>
-                            <Wordmark label="VITA" />
-                            <Label weight="normal" className="mt-3">
-                                {formatLongDate(summary.today)}
-                            </Label>
-                        </div>
-                    }
+                    header={<Wordmark />}
                     themeToggle={<ThemeToggle />}
                     initialLayout={layout}
                     catalog={WIDGET_CATALOG}
                     renders={renders}
+                    hero={hero}
                 />
             </main>
-            <AppDock active="resumo" action={action} />
+            <AppNav active="resumo" />
         </>
     );
 }
