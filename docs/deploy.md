@@ -9,6 +9,32 @@ VITA runs on Vercel at `https://treinevita.vercel.app`, with Neon as the databas
 - Install the **Neon integration**. It sets `DATABASE_URL` and `DATABASE_URL_UNPOOLED`, and gives
   every preview deployment its own Neon branch, so migrating during the build is safe.
 
+## Region
+
+- Functions run in **`gru1` (São Paulo)**, set in `vercel.json` (`"regions": ["gru1"]`). The Neon
+  database is in **AWS `sa-east-1` (São Paulo)** and the people using the app are in Brazil, so the
+  server sits next to both.
+- Why it matters: Vercel's default is `iad1` (Washington). From there every query to São Paulo costs
+  about 100–150 ms of round trip, and a page that runs a few queries one after another loses most of a
+  second to distance alone. From `gru1` a query round trip to Neon is a few milliseconds.
+- If the database ever moves, move the functions with it: pick the Vercel region closest to the Neon
+  region.
+
+## Performance notes
+
+- **Driver:** one-shot queries use Neon's HTTP driver (`drizzle-orm/neon-http`): one round trip, no
+  connection to open. Transactions (first sign-in, saving the profile or the dashboard layout) use one
+  WebSocket pool, opened on first use and shared by the function instance. Local development keeps
+  PGlite. See `src/platform/db/drivers.ts`.
+- **Timing logs:** the workout pages and the set actions log one line per request with the route, the
+  number of queries, the summed database time and the total time, e.g.
+  `[timing] /treino queries=7 db=12ms total=18ms`. No user data. See them in the Vercel function logs.
+  App Router pages stream and server actions have no response headers to set, so there is no
+  `Server-Timing` header; the log line is the measurement.
+- **Neon cold start:** the free plan suspends the database after a few idle minutes. The first request
+  after a pause waits for it to wake up, often half a second or more. That is expected; there are no
+  cron pings to keep it awake.
+
 ## Environment variables
 
 | Variable                | Where                     | Purpose                                                |

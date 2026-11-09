@@ -30,7 +30,7 @@ export function TextField({ label, value, onChange, ...rest }: TextFieldProps) {
                 />
                 <span
                     aria-hidden
-                    className="absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 bg-ink transition-transform duration-200 ease-enter group-focus-within:scale-x-100"
+                    className="absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 bg-ink transition-transform duration-(--vita-duration-snappy) ease-snappy group-focus-within:scale-x-100"
                 />
             </div>
         </div>

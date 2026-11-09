@@ -2,6 +2,7 @@ import "server-only";
 
 import { and, eq, isNull, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 
 import { getCurrentUser, onboardingRedirect } from "@/modules/identity";
 import { getDb, type Database } from "@/platform/db/client";
@@ -63,10 +64,9 @@ export async function ensurePersonalWorkspace(user: {
 /**
  * The entry point of every app screen and action. Sends to the sign-in screen
  * without a valid session, and to the onboarding (/comecar) until it is done.
+ * Resolved once per request (React cache), however many components ask for it.
  */
-export async function requireAppContext(): Promise<AppContext> {
-    return resolveContext(false);
-}
+export const requireAppContext = cache((): Promise<AppContext> => resolveContext(false));
 
 /** Like requireAppContext, for the onboarding itself: sends home once it is done. */
 export async function requireOnboardingContext(): Promise<AppContext> {

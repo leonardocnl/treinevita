@@ -39,10 +39,10 @@ export function ThemeToggle() {
             {/* The key restarts the spin on every tap. */}
             <span key={spins} className={spins > 0 ? "spin-once block" : "block"}>
                 <span className="relative block size-5 transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:rotate-[20deg] group-hover:scale-115">
-                    <span className="absolute inset-0 opacity-100 transition-opacity duration-150 ease-enter dark:opacity-0">
+                    <span className="absolute inset-0 opacity-100 transition-opacity duration-(--vita-duration-snappy) ease-snappy dark:opacity-0">
                         <Icon name="sun" size={20} />
                     </span>
-                    <span className="absolute inset-0 opacity-0 transition-opacity duration-150 ease-enter dark:opacity-100">
+                    <span className="absolute inset-0 opacity-0 transition-opacity duration-(--vita-duration-snappy) ease-snappy dark:opacity-100">
                         <Icon name="moon" size={20} />
                     </span>
                 </span>
