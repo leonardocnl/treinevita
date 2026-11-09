@@ -8,6 +8,7 @@ import { devSignIn, destroySession } from "@/modules/identity";
 import { discardOpenSession, finishSession, logSet, undoLastSet } from "@/modules/logging";
 import { saveDashboardLayout, startNextWorkout, type WidgetPlacement } from "@/modules/progress";
 import { requireAppContext } from "@/modules/tenancy";
+import { timed } from "@/platform/db/timing";
 
 /*
  * Server actions are public endpoints: every one of them resolves the session
@@ -39,45 +40,40 @@ export async function startWorkoutAction(): Promise<void> {
 
 const setSchema = z.object({
     performedExerciseId: z.uuid(),
-    position: z.coerce.number().int().min(0).max(30),
-    loadKg: z.coerce.number().min(0).max(1000).optional(),
-    reps: z.coerce.number().int().min(0).max(100).optional(),
-    durationSeconds: z.coerce.number().int().min(0).max(3600).optional(),
+    loadKg: z.number().min(0).max(1000).nullable(),
+    reps: z.number().int().min(0).max(100).nullable(),
+    durationSeconds: z.number().int().min(0).max(3600).nullable(),
 });
 
-export async function logSetAction(formData: FormData): Promise<void> {
-    const context = await requireAppContext();
-    const parsed = setSchema.safeParse({
-        performedExerciseId: formData.get("performedExerciseId"),
-        position: formData.get("position"),
-        loadKg: formData.get("loadKg") ?? undefined,
-        reps: formData.get("reps") ?? undefined,
-        durationSeconds: formData.get("durationSeconds") ?? undefined,
+/*
+ * Logging and undoing a set are optimistic: the workout screens already show the
+ * change and only need to know whether it was saved. Nothing is revalidated, so
+ * no page renders again; the Summary is revalidated when the workout ends.
+ */
+
+export async function logSetAction(input: unknown): Promise<boolean> {
+    return timed("logSetAction", async () => {
+        const context = await requireAppContext();
+        const parsed = setSchema.safeParse(input);
+        if (!parsed.success) {
+            return false;
+        }
+        const { performedExerciseId, ...set } = parsed.data;
+        return logSet(context, performedExerciseId, set);
     });
-    if (!parsed.success) {
-        return;
-    }
-    const { performedExerciseId, loadKg, reps, durationSeconds } = parsed.data;
-    await logSet(context, performedExerciseId, {
-        loadKg: loadKg ?? null,
-        reps: reps ?? null,
-        durationSeconds: durationSeconds ?? null,
-    });
-    revalidatePath("/treino", "layout");
 }
 
 const exerciseSchema = z.object({ performedExerciseId: z.uuid() });
 
-export async function undoSetAction(formData: FormData): Promise<void> {
-    const context = await requireAppContext();
-    const parsed = exerciseSchema.safeParse({
-        performedExerciseId: formData.get("performedExerciseId"),
+export async function undoSetAction(input: unknown): Promise<boolean> {
+    return timed("undoSetAction", async () => {
+        const context = await requireAppContext();
+        const parsed = exerciseSchema.safeParse(input);
+        if (!parsed.success) {
+            return false;
+        }
+        return undoLastSet(context, parsed.data.performedExerciseId);
     });
-    if (!parsed.success) {
-        return;
-    }
-    await undoLastSet(context, parsed.data.performedExerciseId);
-    revalidatePath("/treino", "layout");
 }
 
 export async function finishWorkoutAction(): Promise<void> {

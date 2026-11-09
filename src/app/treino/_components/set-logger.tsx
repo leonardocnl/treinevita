@@ -1,7 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useFormStatus } from "react-dom";
+import { useState } from "react";
 
 import { formatDuration, formatNumber, setsLabel } from "@/shared/format/numbers";
 import { StatusDot } from "@/shared/ui/dot";
@@ -13,48 +12,42 @@ import { Panel, PanelNote } from "@/shared/ui/panel";
 import { PillAction } from "@/shared/ui/pill-action";
 import { QuietBand } from "@/shared/ui/quiet-band";
 import { RoundButton } from "@/shared/ui/round-button";
-import { NAV_BACK, NAV_FORWARD } from "@/shared/ui/screen-transition";
 import { Label } from "@/shared/ui/text";
 import { WHEEL_ITEM_HEIGHT, WheelPicker } from "@/shared/ui/wheel-picker";
-
-import { logSetAction, undoSetAction } from "../../_components/actions";
 import { cx } from "@/shared/ui/cx";
 
+import type { LoggedSet } from "./workout-state";
+
 export type SetLoggerProps = {
-    performedExerciseId: string;
     measurement: "load_reps" | "duration";
     targetSets: number;
-    doneSets: { loadKg: number | null; reps: number | null; durationSeconds: number | null }[];
+    doneSets: readonly LoggedSet[];
     incrementKg: number;
+    /** Where the wheels open; read once, so nothing in them moves while a set is saving. */
     suggested: { loadKg: number; reps: number; durationSeconds: number };
     increasedTo: number | null;
     askText: string | null;
     lastTimeText: string | null;
-    nextHref: string | null;
+    hasNext: boolean;
+    onLog: (set: LoggedSet) => void;
+    onUndo: () => void;
+    onNext: () => void;
 };
 
 export function SetLogger(props: SetLoggerProps) {
-    const { performedExerciseId, measurement, targetSets, doneSets, suggested } = props;
+    const { measurement, targetSets, doneSets } = props;
     const isDuration = measurement === "duration";
     const currentIndex = doneSets.length;
     const finished = currentIndex >= targetSets;
 
-    const [loadKg, setLoadKg] = useState(suggested.loadKg);
-    const [reps, setReps] = useState(suggested.reps);
-    const [durationSeconds, setDurationSeconds] = useState(suggested.durationSeconds);
+    const [loadKg, setLoadKg] = useState(props.suggested.loadKg);
+    const [reps, setReps] = useState(props.suggested.reps);
+    const [durationSeconds, setDurationSeconds] = useState(props.suggested.durationSeconds);
 
-    const loadValues = useMemo(
-        () => buildLoadValues(props.incrementKg, suggested.loadKg),
-        [props.incrementKg, suggested.loadKg],
-    );
-    const repValues = useMemo(
-        () => range(1, Math.max(30, suggested.reps + 5), 1),
-        [suggested.reps],
-    );
-    const durationValues = useMemo(
-        () => range(5, Math.max(180, suggested.durationSeconds + 30), 5),
-        [suggested.durationSeconds],
-    );
+    // The value lists are built once per exercise screen and never change under the wheel.
+    const [loadValues] = useState(() => buildLoadValues(props.incrementKg, loadKg));
+    const [repValues] = useState(() => range(1, Math.max(30, reps + 5), 1));
+    const [durationValues] = useState(() => range(5, Math.max(180, durationSeconds + 30), 5));
 
     const showIncrease =
         props.increasedTo !== null && currentIndex === 0 && loadKg === props.increasedTo;
@@ -204,60 +197,39 @@ export function SetLogger(props: SetLoggerProps) {
 
             <FloatBar inlineOnDesktop>
                 {doneSets.length > 0 ? (
-                    <form action={undoSetAction}>
-                        <input
-                            type="hidden"
-                            name="performedExerciseId"
-                            value={performedExerciseId}
-                        />
-                        <RoundButton type="submit" aria-label="Desfazer a última série">
-                            <Icon name="undo" size={20} />
-                        </RoundButton>
-                    </form>
+                    <RoundButton onClick={props.onUndo} aria-label="Desfazer a última série">
+                        <Icon name="undo" size={20} />
+                    </RoundButton>
                 ) : null}
 
                 {finished ? (
                     <PillAction
-                        href={props.nextHref ?? "/treino"}
-                        transitionTypes={props.nextHref ? NAV_FORWARD : NAV_BACK}
+                        onClick={props.onNext}
                         grow
                         icon={<Icon name="arrow-right" size={20} />}
                     >
-                        {props.nextHref ? "Próximo exercício" : "Voltar à lista"}
+                        {props.hasNext ? "Próximo exercício" : "Voltar à lista"}
                     </PillAction>
                 ) : (
-                    <form action={logSetAction} className="flex-1">
-                        <input
-                            type="hidden"
-                            name="performedExerciseId"
-                            value={performedExerciseId}
-                        />
-                        <input type="hidden" name="position" value={currentIndex} />
-                        {isDuration ? (
-                            <input type="hidden" name="durationSeconds" value={durationSeconds} />
-                        ) : (
-                            <>
-                                <input type="hidden" name="loadKg" value={loadKg} />
-                                <input type="hidden" name="reps" value={reps} />
-                            </>
-                        )}
-                        <ConfirmButton summary={summaryText} />
-                    </form>
+                    <PillAction
+                        grow
+                        onClick={() =>
+                            props.onLog(
+                                isDuration
+                                    ? { loadKg: null, reps: null, durationSeconds }
+                                    : { loadKg, reps, durationSeconds: null },
+                            )
+                        }
+                        icon={<Icon name="check" size={20} />}
+                    >
+                        Confirmar{" "}
+                        <span key={summaryText} className="roll-in tabular-nums">
+                            {summaryText}
+                        </span>
+                    </PillAction>
                 )}
             </FloatBar>
         </>
-    );
-}
-
-function ConfirmButton({ summary }: { summary: string }) {
-    const { pending } = useFormStatus();
-    return (
-        <PillAction type="submit" disabled={pending} icon={<Icon name="check" size={20} />}>
-            Confirmar{" "}
-            <span key={summary} className="roll-in tabular-nums">
-                {summary}
-            </span>
-        </PillAction>
     );
 }
 
@@ -269,10 +241,10 @@ function range(start: number, end: number, step: number): number[] {
     return values;
 }
 
-/** Loads from zero in steps of the exercise increment, always including the suggested load. */
+/** Loads from zero to at least 150 kg in steps of the exercise increment, always including the suggested load. */
 function buildLoadValues(incrementKg: number, suggestedKg: number): number[] {
     const step = incrementKg > 0 ? incrementKg : 2.5;
-    const top = Math.max(suggestedKg * 2, suggestedKg + step * 20, step * 20);
+    const top = Math.max(suggestedKg * 2, suggestedKg + step * 20, 150);
     const values = range(0, top, step);
     if (!values.includes(suggestedKg)) {
         values.push(suggestedKg);

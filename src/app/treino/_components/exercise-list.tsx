@@ -1,27 +1,33 @@
 "use client";
 
-import Link from "next/link";
-import { useSelectedLayoutSegment } from "next/navigation";
-
-import type { WorkoutView } from "@/modules/progress";
 import { setsLabel } from "@/shared/format/numbers";
 import { DotMeter } from "@/shared/ui/dot-meter";
 import { ExerciseThumb } from "@/shared/ui/exercise-demo";
 import { List, ListRow } from "@/shared/ui/list";
-import { NAV_FORWARD } from "@/shared/ui/screen-transition";
 import { Caption, Label } from "@/shared/ui/text";
 
-/** The workout's exercises with their progress; full screen on the phone, sidebar on desktop. */
-export function ExerciseList({ workout }: { workout: WorkoutView }) {
-    const segment = useSelectedLayoutSegment();
-    const activePosition = segment ? Number(segment) : undefined;
+import type { WorkoutExercise } from "./workout-state";
 
+/**
+ * The workout's exercises with their progress; full screen on the phone, sidebar
+ * on desktop. Rows are real links (open in a new tab works), but a tap opens the
+ * exercise on the client at once, without a server round trip.
+ */
+export function ExerciseList({
+    exercises,
+    active,
+    onOpen,
+}: {
+    exercises: readonly WorkoutExercise[];
+    active: number | null;
+    onOpen: (position: number) => void;
+}) {
     return (
         <List>
-            {workout.exercises.map((exercise, index) => {
+            {exercises.map((exercise, index) => {
                 const done = exercise.doneSets.length;
                 const complete = done >= exercise.targetSets;
-                const isActive = activePosition === index + 1;
+                const isActive = active === index + 1;
                 const goesUp = exercise.decision?.kind === "increase" && done === 0;
                 return (
                     <ListRow
@@ -29,9 +35,15 @@ export function ExerciseList({ workout }: { workout: WorkoutView }) {
                         style={{ "--stagger": index } as React.CSSProperties}
                         className="rise-in"
                     >
-                        <Link
+                        <a
                             href={`/treino/${index + 1}`}
-                            transitionTypes={NAV_FORWARD}
+                            onClick={(event) => {
+                                if (event.metaKey || event.ctrlKey || event.shiftKey) {
+                                    return;
+                                }
+                                event.preventDefault();
+                                onOpen(index + 1);
+                            }}
                             aria-current={isActive ? "step" : undefined}
                             className={`pressable -mx-3 my-1 flex min-h-16 items-center gap-4 rounded-2xl px-3 ${
                                 isActive ? "bg-paper" : ""
@@ -62,7 +74,7 @@ export function ExerciseList({ workout }: { workout: WorkoutView }) {
                                 highlight={goesUp ? 0 : undefined}
                                 label={`${setsLabel(done, exercise.targetSets)} feitas`}
                             />
-                        </Link>
+                        </a>
                     </ListRow>
                 );
             })}
