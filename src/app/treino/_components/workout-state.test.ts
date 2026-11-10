@@ -100,3 +100,22 @@ describe("optimistic set log", () => {
         expect(changes).toBe(2);
     });
 });
+
+describe("editing a set", () => {
+    it("replaces only that set, at once, and rolls back when the save fails", async () => {
+        const store = createWorkoutStore("s", [exercise("a", [40, 42.5])]);
+        const server = deferredServer();
+        const edit: SetOperation = {
+            id: 9,
+            kind: "edit",
+            performedExerciseId: "a",
+            index: 0,
+            set: { loadKg: 45, reps: 8, durationSeconds: null },
+        };
+        const running = runOperation(edit, store.dispatch, server.send);
+        expect(loadsOf(visibleExercises(store.getState()))).toEqual([[45, 42.5]]);
+        server.calls[0].answer(false);
+        await running;
+        expect(loadsOf(visibleExercises(store.getState()))).toEqual([[40, 42.5]]);
+    });
+});

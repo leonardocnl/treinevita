@@ -9,7 +9,6 @@ import { useState } from "react";
 import { IconButton } from "@/shared/ui/icon-button";
 import { PrimaryAction } from "@/shared/ui/primary-action";
 import { Sheet } from "@/shared/ui/sheet";
-import { Label } from "@/shared/ui/text";
 
 import { discardWorkoutAction } from "../../_components/actions";
 
@@ -19,11 +18,11 @@ export function DiscardWorkout() {
         <>
             <IconButton icon="trash" onClick={() => setOpen(true)} aria-label="Descartar treino" />
             <Sheet open={open} onClose={() => setOpen(false)} title="Descartar treino">
-                <Label size={17} className="mt-2">
+                <p className="text-17">
                     O treino em andamento e as séries registradas nele são apagados.
-                </Label>
-                <form action={discardWorkoutAction} className="mt-6">
-                    <PrimaryAction type="submit" glyph="check" label="Descartar treino" />
+                </p>
+                <form action={discardWorkoutAction} className="mt-block">
+                    <PrimaryAction type="submit" glyph="check" label="Descartar" />
                 </form>
             </Sheet>
         </>
