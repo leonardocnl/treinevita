@@ -14,7 +14,7 @@ describe("concentricRadius", () => {
     });
 
     it("sizes the red cell of PrimaryAction and the size selector cells", () => {
-        expect(CTA_CELL).toEqual({ size: 52, radius: 14 });
-        expect(SELECTOR_CELL_RADIUS).toBe(8);
+        expect(CTA_CELL).toEqual({ size: 52 });
+        expect(SELECTOR_CELL_RADIUS).toBe(0);
     });
 });

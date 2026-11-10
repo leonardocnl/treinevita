@@ -32,10 +32,10 @@
     --vita-on-accent: #ffffff;
     --vita-scrim: rgb(11 11 13 / 0.28);
 
-    /* PrimaryAction: the inverse surface of the screen. */
-    --vita-cta-bg: var(--vita-ink);
-    --vita-cta-fg: var(--vita-bg);
-    --vita-cta-meta: #8c8c92;
+    /* PrimaryAction: a paper surface in both themes, ink label, secondary meta. */
+    --vita-cta-bg: var(--vita-paper);
+    --vita-cta-fg: var(--vita-ink);
+    --vita-cta-meta: var(--vita-secondary);
 
     /*
      * Motion (DESIGN.md, "Motion"). Only transform and opacity move, and motion
@@ -90,16 +90,14 @@
     --vita-duration-fade: 150ms;
 
     @variant dark {
-        --vita-bg: #0b0b0d;
-        --vita-paper: #161618;
+        --vita-bg: #000000;
+        --vita-paper: #0e0e10;
         --vita-ink: #f4f2f1;
         --vita-secondary: #8c8c92;
         --vita-off: #2a2a2e;
-        --vita-accent-text: #ff4d6d;
-        --vita-tint: rgb(244 242 241 / 0.06);
+        /* Dark surfaces are one black (paper) over the black background. */
+        --vita-tint: var(--vita-paper);
         --vita-scrim: rgb(0 0 0 / 0.5);
-        --vita-cta-bg: var(--vita-paper);
-        --vita-cta-fg: var(--vita-ink);
     }
 }
 
@@ -154,10 +152,10 @@
     --spacing-margin: 20px;
 
     /* Radii. Nested radii follow concentricRadius() in src/shared/ui/concentric.ts. */
-    --radius-cta: 20px;
-    --radius-button: 14px;
-    --radius-selector: 10px;
-    --radius-sheet: 32px;
+    --radius-cta: 0px;
+    --radius-button: 0px;
+    --radius-selector: 0px;
+    --radius-sheet: 0px;
 }
 
 /* Headlines: Mona 900, width 125, uppercase, tight (34px and up). */
@@ -203,11 +201,18 @@
     line-height: 0.8;
 }
 
-/* The glass navbar: paper at 60% with a 24px background blur. No border, no shadow. */
+/* Glass: paper at 50% with a 32px blur and a saturation lift, so it reads as frosted. No border, no shadow. */
 @utility glass {
-    background-color: color-mix(in srgb, var(--vita-paper) 60%, transparent);
-    -webkit-backdrop-filter: blur(24px);
-    backdrop-filter: blur(24px);
+    background-color: color-mix(in srgb, var(--vita-paper) 50%, transparent);
+    -webkit-backdrop-filter: blur(32px) saturate(160%);
+    backdrop-filter: blur(32px) saturate(160%);
+}
+
+/* Clear glass (navbar): thinner and less blurred, so the content behind stays legible as it scrolls. */
+@utility glass-clear {
+    background-color: color-mix(in srgb, var(--vita-paper) 35%, transparent);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    backdrop-filter: blur(12px) saturate(180%);
 }
 
 /* Keyboard focus: an accessibility signal, never shown for a tap. */

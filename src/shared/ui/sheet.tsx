@@ -173,7 +173,7 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
                 onKeyDown={trapTab}
                 style={{ transform: leaving ? "translateY(100%)" : `translateY(${dragY}px)` }}
                 className={cx(
-                    "relative flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-sheet bg-paper text-ink outline-none",
+                    "relative flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-sheet bg-bg text-ink outline-none",
                     // Rises once on open; follows the finger while dragged; springs back (settle) on release.
                     leaving ? "leave" : cx("sheet-in", !dragging && "sheet-snap"),
                 )}

@@ -193,7 +193,7 @@ function WorkoutOverview({
 
     return (
         <>
-            <main className="pt-top mx-auto w-full max-w-md px-margin pb-[calc(max(34px,env(safe-area-inset-bottom))+96px)]">
+            <main className="pt-top mx-auto w-full max-w-md px-margin pb-[calc(max(34px,env(safe-area-inset-bottom))+112px)]">
                 <div className="flex h-10 items-center justify-between">
                     <IconButton icon="chevron-left" href="/" aria-label="Voltar ao Resumo" />
                     <DiscardWorkout />

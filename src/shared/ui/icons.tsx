@@ -16,35 +16,6 @@ type IconDefinition = {
 };
 
 const icons = {
-    /* Tabs */
-    summary: {
-        shape: (
-            <>
-                <rect x="4" y="4" width="6.5" height="6.5" rx="2" />
-                <rect x="13.5" y="4" width="6.5" height="6.5" rx="2" />
-                <rect x="4" y="13.5" width="6.5" height="6.5" rx="2" />
-                <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="2" />
-            </>
-        ),
-    },
-    dumbbell: { shape: <path d="M6.5 7.5v9M3.5 10v4M17.5 7.5v9M20.5 10v4M6.5 12h11" /> },
-    /** A rising line with an arrow (Evolução). */
-    chart: {
-        shape: (
-            <>
-                <path d="M3.5 17.5l5.5-5.5 4 4 7-7.5" />
-                <path d="M15 8.5h5v5" />
-            </>
-        ),
-    },
-    person: {
-        shape: (
-            <>
-                <circle cx="12" cy="8.5" r="3.5" />
-                <path d="M5 20a7 7 0 0 1 14 0" />
-            </>
-        ),
-    },
     /* Actions */
     "arrow-right": { shape: <path d="M5 12h14M13 6l6 6-6 6" /> },
     check: { shape: <path d="M5 12.5l4.5 4.5L19 7.5" /> },

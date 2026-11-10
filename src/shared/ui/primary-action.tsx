@@ -93,7 +93,7 @@ export function PrimaryAction({ label, meta, glyph, grow = false, ...props }: Pr
             {...({ ...props, ...handlers } as ActionElementProps)}
             style={{ height: CTA.height, padding: CTA.padding, paddingLeft: 20 }}
             className={cx(
-                "pressable focus-ring flex w-full min-w-0 items-center justify-between gap-gutter rounded-cta bg-cta-bg text-left text-cta-fg disabled:opacity-40",
+                "pressable focus-ring flex w-full min-w-0 items-center justify-between gap-gutter rounded-full bg-cta-bg text-left text-cta-fg disabled:opacity-40",
                 grow && "flex-1",
             )}
         >
@@ -106,12 +106,8 @@ export function PrimaryAction({ label, meta, glyph, grow = false, ...props }: Pr
                 ) : null}
             </span>
             <span
-                className="flex shrink-0 items-center justify-center bg-accent"
-                style={{
-                    width: CTA_CELL.size,
-                    height: CTA_CELL.size,
-                    borderRadius: CTA_CELL.radius,
-                }}
+                className="flex shrink-0 items-center justify-center rounded-full bg-accent"
+                style={{ width: CTA_CELL.size, height: CTA_CELL.size }}
             >
                 <DotGlyph name={glyph} sweep={sweep} />
             </span>
