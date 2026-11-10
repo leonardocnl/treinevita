@@ -9,11 +9,13 @@ import {
     uuid,
 } from "drizzle-orm/pg-core";
 
+import { exercises } from "@/modules/catalog/infrastructure/schema";
 import { users } from "@/modules/identity/infrastructure/schema";
 import { workspaces } from "@/modules/tenancy/infrastructure/schema";
 import { auditColumns, id } from "@/shared/db/columns";
 
-import { WIDGET_KINDS, WIDGET_SIZES } from "../domain/widgets";
+import { GOAL_KINDS } from "../domain/goals";
+import { WIDGET_SIZES } from "../domain/widgets";
 
 /**
  * Weight and body measurements. Under the LGPD these can be health data
@@ -72,7 +74,11 @@ export const dataConsents = pgTable("data_consents", {
     ...auditColumns(),
 });
 
-/** The customizable widgets on the Summary screen, per person. */
+/**
+ * The widgets on the home, per person. `kind` is plain text: rows saved by the
+ * v1 catalog are migrated when read (sanitizeLayout). `ref` is the custom tracker
+ * of a "Personalizado" widget.
+ */
 export const dashboardWidgets = pgTable(
     "dashboard_widgets",
     {
@@ -83,10 +89,35 @@ export const dashboardWidgets = pgTable(
         userId: uuid("user_id")
             .notNull()
             .references(() => users.id, { onDelete: "cascade" }),
-        kind: text("kind", { enum: WIDGET_KINDS }).notNull(),
+        kind: text("kind").notNull(),
         size: text("size", { enum: WIDGET_SIZES }).notNull(),
+        ref: uuid("ref"),
         position: smallint("position").notNull(),
         ...auditColumns(),
     },
     (table) => [index("dashboard_widgets_workspace_user_idx").on(table.workspaceId, table.userId)],
+);
+
+/**
+ * A personal goal with a deadline: a load on an exercise, or a body weight.
+ * `startValue` is where the person was when it was created (for the percent).
+ */
+export const goals = pgTable(
+    "goals",
+    {
+        id: id(),
+        workspaceId: uuid("workspace_id")
+            .notNull()
+            .references(() => workspaces.id, { onDelete: "cascade" }),
+        userId: uuid("user_id")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+        kind: text("kind", { enum: GOAL_KINDS }).notNull(),
+        exerciseId: uuid("exercise_id").references(() => exercises.id),
+        targetValue: numeric("target_value", { precision: 6, scale: 2 }).notNull(),
+        startValue: numeric("start_value", { precision: 6, scale: 2 }).notNull(),
+        deadline: date("deadline").notNull(),
+        ...auditColumns(),
+    },
+    (table) => [index("goals_workspace_user_idx").on(table.workspaceId, table.userId)],
 );

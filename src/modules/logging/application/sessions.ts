@@ -235,15 +235,16 @@ export async function getLastSetsByExercise(
     return result;
 }
 
-/** All effective sets since a date, for records and weekly volume. */
+/** Every set logged since a date (discarded sessions left out), for records, volume and stagnation. */
 export async function listSetsSince(
     context: TenantContext,
     since: Date,
-): Promise<{ exerciseId: string; startedAt: Date; set: PerformedSet }[]> {
+): Promise<{ exerciseId: string; sessionId: string; startedAt: Date; set: PerformedSet }[]> {
     const db = await getDb();
     const rows = await db
         .select({
             exerciseId: performedExercises.exerciseId,
+            sessionId: workoutSessions.id,
             startedAt: workoutSessions.startedAt,
             set: performedSets,
         })
@@ -253,12 +254,14 @@ export async function listSetsSince(
         .where(
             and(
                 inTenant(performedSets, context),
+                inTenant(workoutSessions, context),
                 eq(workoutSessions.userId, context.userId),
                 gte(workoutSessions.startedAt, since),
             ),
         );
     return rows.map((row) => ({
         exerciseId: row.exerciseId,
+        sessionId: row.sessionId,
         startedAt: row.startedAt,
         set: toPerformedSet(row.set),
     }));
