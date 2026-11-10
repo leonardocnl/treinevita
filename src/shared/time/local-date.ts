@@ -50,3 +50,25 @@ export function monthName(localDate: string): string {
     });
     return text.charAt(0).toUpperCase() + text.slice(1);
 }
+
+/** The hour (0–23) of an instant in a time zone. */
+export function localHour(instant: Date, timezone: string): number {
+    return Number(
+        instant.toLocaleString("en-US", { hour: "numeric", hourCycle: "h23", timeZone: timezone }),
+    );
+}
+
+/** "nov" */
+export function shortMonthName(localDate: string): string {
+    return new Date(`${localDate}T12:00:00Z`)
+        .toLocaleDateString("pt-BR", { month: "short", timeZone: "UTC" })
+        .replace(".", "");
+}
+
+/** "31 mar" */
+export function shortDate(localDate: string): string {
+    return new Date(`${localDate}T12:00:00Z`)
+        .toLocaleDateString("pt-BR", { day: "numeric", month: "short", timeZone: "UTC" })
+        .replace(".", "")
+        .replace(" de ", " ");
+}

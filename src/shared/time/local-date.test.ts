@@ -24,3 +24,12 @@ describe("local dates", () => {
         expect(weekdayIndex("2026-11-01")).toBe(6);
     });
 });
+
+describe("short labels", () => {
+    it("formats hours, months and short dates in Portuguese", async () => {
+        const { localHour, shortDate, shortMonthName } = await import("./local-date");
+        expect(localHour(new Date("2026-11-10T21:30:00Z"), "America/Sao_Paulo")).toBe(18);
+        expect(shortMonthName("2026-11-10")).toBe("nov");
+        expect(shortDate("2027-03-31")).toBe("31 mar");
+    });
+});

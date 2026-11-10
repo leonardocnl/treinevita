@@ -534,13 +534,6 @@
     mask-image: linear-gradient(transparent, #000 34%, #000 66%, transparent);
 }
 
-@utility widget-grid {
-    grid-auto-rows: calc((100cqw - 0.75rem) / 2);
-    @media (min-width: 48rem) {
-        grid-auto-rows: calc((100cqw - 2.25rem) / 4);
-    }
-}
-
 /*
  * Reduced motion: nothing slides or scales. Entrances become quick fades,
  * transitions keep only opacity, loops stop.
