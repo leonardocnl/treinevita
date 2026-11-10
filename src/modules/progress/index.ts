@@ -36,6 +36,7 @@ export {
     type WeeklyTop,
 } from "./domain/metrics";
 export { getWorkoutView, type ExerciseView, type WorkoutView } from "./application/workout-view";
+export { getWorkoutSummary, type WorkoutSummary } from "./application/workout-summary";
 export {
     doubleProgression,
     noProgression,

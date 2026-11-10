@@ -5,7 +5,13 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { devSignIn, destroySession } from "@/modules/identity";
-import { discardOpenSession, finishSession, logSet, undoLastSet } from "@/modules/logging";
+import {
+    discardOpenSession,
+    finishSession,
+    logSet,
+    undoLastSet,
+    updateSet,
+} from "@/modules/logging";
 import { startNextWorkout } from "@/modules/progress";
 import { requireAppContext } from "@/modules/tenancy";
 import { timed } from "@/platform/db/timing";
@@ -76,11 +82,27 @@ export async function undoSetAction(input: unknown): Promise<boolean> {
     });
 }
 
+const editSchema = setSchema.extend({ position: z.number().int().min(0).max(50) });
+
+/** Corrects a logged set of the open session (optimistic, like logging). */
+export async function updateSetAction(input: unknown): Promise<boolean> {
+    return timed("updateSetAction", async () => {
+        const context = await requireAppContext();
+        const parsed = editSchema.safeParse(input);
+        if (!parsed.success) {
+            return false;
+        }
+        const { performedExerciseId, position, ...set } = parsed.data;
+        return updateSet(context, performedExerciseId, position, set);
+    });
+}
+
+/** Finishes the open workout and shows its summary. */
 export async function finishWorkoutAction(): Promise<void> {
     const context = await requireAppContext();
-    await finishSession(context);
+    const finished = await finishSession(context);
     revalidatePath("/", "layout");
-    redirect("/");
+    redirect(finished ? "/treino/concluido" : "/");
 }
 
 export async function discardWorkoutAction(): Promise<void> {

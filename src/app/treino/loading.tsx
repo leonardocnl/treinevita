@@ -1,20 +1,18 @@
 import { Skeleton, SkeletonScreen } from "@/shared/ui/skeleton";
 
-/** The workout list while the open workout loads, once, when the workout opens. */
+/** The set screen dimmed, while the open workout loads once. */
 export default function Loading() {
     return (
         <SkeletonScreen>
-            <div className="flex items-center justify-between">
-                <Skeleton className="size-11 rounded-full" />
-                <Skeleton className="size-11 rounded-full" />
+            <div className="flex h-10 items-center justify-between">
+                <Skeleton className="size-10 rounded-full" />
+                <Skeleton className="size-10 rounded-full" />
             </div>
-            <Skeleton className="mt-6 h-9 w-40" />
-            <Skeleton className="mt-2 h-5 w-56" />
-            <div className="mt-6 flex flex-col gap-2">
-                {Array.from({ length: 6 }, (_, index) => (
-                    <Skeleton key={index} className="h-16" />
-                ))}
-            </div>
+            <Skeleton className="mt-intro h-1" />
+            <Skeleton className="mt-block h-3 w-32" />
+            <Skeleton className="mt-inner h-8 w-3/4" />
+            <Skeleton className="mt-intro h-[152px]" />
+            <Skeleton className="mt-block h-[216px]" />
         </SkeletonScreen>
     );
 }

@@ -22,9 +22,11 @@ type ExerciseDemoProps = {
     /** The exercise name in Portuguese: labels the drawing. */
     name: string;
     media: Media | null;
+    /** Height in px: 152 on the set screen, larger in its full-screen sheet. */
+    height?: number;
 };
 
-export function ExerciseDemo({ name, media }: ExerciseDemoProps) {
+export function ExerciseDemo({ name, media, height = 152 }: ExerciseDemoProps) {
     if (!media) {
         return null;
     }
@@ -32,7 +34,8 @@ export function ExerciseDemo({ name, media }: ExerciseDemoProps) {
         <div
             role="img"
             aria-label={`${name}: posição inicial e final`}
-            className="relative h-44 w-full text-ink motion-reduce:grid motion-reduce:grid-cols-2 motion-reduce:gap-4"
+            className="relative w-full text-ink motion-reduce:grid motion-reduce:grid-cols-2 motion-reduce:gap-gutter"
+            style={{ height }}
         >
             <span
                 className="pose pose-cycle absolute inset-0 motion-reduce:static motion-reduce:animate-none"
@@ -54,7 +57,7 @@ export function ExerciseThumb({ media }: { media: Media | null }) {
     return (
         <span
             aria-hidden
-            className="pose size-10 shrink-0 text-ink-secondary"
+            className="pose size-10 shrink-0 text-secondary"
             style={maskStyle(media.start)}
         />
     );

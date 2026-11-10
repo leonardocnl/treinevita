@@ -30,7 +30,15 @@ export type SetOperation =
           readonly performedExerciseId: string;
           readonly set: LoggedSet;
       }
-    | { readonly id: number; readonly kind: "undo"; readonly performedExerciseId: string };
+    | { readonly id: number; readonly kind: "undo"; readonly performedExerciseId: string }
+    | {
+          readonly id: number;
+          readonly kind: "edit";
+          readonly performedExerciseId: string;
+          /** Index (and position) of the corrected set. */
+          readonly index: number;
+          readonly set: LoggedSet;
+      };
 
 export type WorkoutState = {
     readonly confirmed: readonly WorkoutExercise[];
@@ -53,7 +61,11 @@ export function applyOperation(
         const doneSets =
             operation.kind === "log"
                 ? [...exercise.doneSets, operation.set]
-                : exercise.doneSets.slice(0, -1);
+                : operation.kind === "edit"
+                  ? exercise.doneSets.map((set, index) =>
+                        index === operation.index ? operation.set : set,
+                    )
+                  : exercise.doneSets.slice(0, -1);
         return { ...exercise, doneSets };
     });
 }

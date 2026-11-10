@@ -89,26 +89,6 @@
     --vita-ease-enter: cubic-bezier(0.2, 0, 0, 1);
     --vita-duration-fade: 150ms;
 
-    /*
-     * Legacy "Ponto e linha" names, mapped onto v2 values while the screens are
-     * rebuilt. Removed with the last screen that uses them (feat/design-v2-workout).
-     */
-    --vita-canvas: var(--vita-bg);
-    --vita-ink-secondary: var(--vita-secondary);
-    --vita-hairline: var(--vita-off);
-    --vita-dot-off: var(--vita-off);
-    --vita-ink-tertiary: var(--vita-secondary);
-    --vita-on-ink-secondary: var(--vita-cta-meta);
-    --vita-red: var(--vita-accent);
-    --vita-red-text: var(--vita-accent-text);
-    --vita-on-red: var(--vita-on-accent);
-    --vita-panel: #0b0b0d;
-    --vita-on-panel: #f4f2f1;
-    --vita-on-panel-secondary: #8c8c92;
-    --vita-on-panel-dim: #8c8c92;
-    --vita-panel-track: #2a2a2e;
-    --vita-panel-divider: rgb(255 255 255 / 0.08);
-
     @variant dark {
         --vita-bg: #0b0b0d;
         --vita-paper: #161618;
@@ -120,7 +100,6 @@
         --vita-scrim: rgb(0 0 0 / 0.5);
         --vita-cta-bg: var(--vita-paper);
         --vita-cta-fg: var(--vita-ink);
-        --vita-panel: #161618;
     }
 }
 
@@ -138,23 +117,6 @@
     --color-cta-bg: var(--vita-cta-bg);
     --color-cta-fg: var(--vita-cta-fg);
     --color-cta-meta: var(--vita-cta-meta);
-
-    /* Legacy names (see :root). */
-    --color-canvas: var(--vita-canvas);
-    --color-ink-secondary: var(--vita-ink-secondary);
-    --color-hairline: var(--vita-hairline);
-    --color-dot-off: var(--vita-dot-off);
-    --color-ink-tertiary: var(--vita-ink-tertiary);
-    --color-on-ink-secondary: var(--vita-on-ink-secondary);
-    --color-red: var(--vita-red);
-    --color-red-text: var(--vita-red-text);
-    --color-on-red: var(--vita-on-red);
-    --color-panel: var(--vita-panel);
-    --color-on-panel: var(--vita-on-panel);
-    --color-on-panel-secondary: var(--vita-on-panel-secondary);
-    --color-on-panel-dim: var(--vita-on-panel-dim);
-    --color-panel-track: var(--vita-panel-track);
-    --color-panel-divider: var(--vita-panel-divider);
 
     --ease-enter: var(--vita-ease-enter);
     --ease-exit: var(--vita-ease-exit);
@@ -196,10 +158,6 @@
     --radius-button: 14px;
     --radius-selector: 10px;
     --radius-sheet: 32px;
-    /* Legacy radii (see :root). */
-    --radius-tile: 20px;
-    --radius-panel: 20px;
-    --radius-inner: 14px;
 }
 
 /* Headlines: Mona 900, width 125, uppercase, tight (34px and up). */
@@ -508,30 +466,6 @@
     &::-webkit-scrollbar {
         display: none;
     }
-}
-
-/*
- * Legacy "Ponto e linha" utilities, still used by screens that the next design
- * PRs rebuild (set logger, dashboard grid, toast). Removed with the legacy tokens.
- */
-@utility panel {
-    background-color: var(--vita-panel);
-    color: var(--vita-on-panel);
-}
-
-@utility quiet {
-    background-color: rgb(255 255 255 / 0.07);
-}
-
-@utility smoke {
-    background-color: rgb(11 11 13 / 0.88);
-    -webkit-backdrop-filter: blur(24px);
-    backdrop-filter: blur(24px);
-    color: var(--vita-on-panel);
-}
-
-@utility fade-y {
-    mask-image: linear-gradient(transparent, #000 34%, #000 66%, transparent);
 }
 
 /*
