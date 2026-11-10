@@ -4,6 +4,8 @@
 
 Locked on 2026-11-09. It replaces "Ponto e linha" (v1). The owner designed v2 in Figma and approved it screen by screen; this file is the single source of truth. Visual changes need the owner's approval.
 
+Revised on 2026-11-10 with the owner's approval: square blocks with round accents (section 6), black on black in the dark theme, `PrimaryAction` on paper, two glasses, the bottom bar as a glass surface, the dot-matrix navbar icons and the red label of the active tab.
+
 When a case is not described here, apply the rules of sections 1 to 9. Never invent decoration.
 
 Values live in `src/app/globals.css` (tokens and utilities) and `src/shared/ui/` (components). If the code and this file disagree, the code is wrong.
@@ -67,20 +69,24 @@ Examples:
 
 | Token                | Light      | Dark         | Tailwind                |
 | -------------------- | ---------- | ------------ | ----------------------- |
-| `--vita-bg`          | `#F4F2F1`  | `#0B0B0D`    | `bg-bg`                 |
-| `--vita-paper`       | `#FCF8F7`  | `#161618`    | `bg-paper`              |
+| `--vita-bg`          | `#F4F2F1`  | `#000000`    | `bg-bg`                 |
+| `--vita-paper`       | `#FCF8F7`  | `#0E0E10`    | `bg-paper`              |
 | `--vita-ink`         | `#0B0B0D`  | `#F4F2F1`    | `text-ink`, `bg-ink`    |
 | `--vita-secondary`   | `#6E6E73`  | `#8C8C92`    | `text-secondary`        |
 | `--vita-off`         | `#D6D2CF`  | `#2A2A2E`    | `bg-off`                |
 | `--vita-accent`      | `#FF1744`  | `#FF1744`    | `bg-accent`             |
-| `--vita-accent-text` | `#FF1744`  | `#FF4D6D`    | `text-accent-text`      |
-| `--vita-tint`        | ink at 6%  | ink at 6%    | `bg-tint`               |
+| `--vita-accent-text` | `#FF1744`  | `#FF1744`    | `text-accent-text`      |
+| `--vita-tint`        | ink at 6%  | paper        | `bg-tint`               |
 | `--vita-on-accent`   | `#FFFFFF`  | `#FFFFFF`    | dots in the red cell    |
 | `--vita-scrim`       | ink at 28% | black at 50% | the backdrop of a sheet |
 
 Light and dark follow the system, unless the person forced a theme (the `vita_theme` cookie, read by the root layout, which sets `data-theme` on `<html>`).
 
-`PrimaryAction` has its own three values, because its surface is the inverse of the screen: background `--vita-cta-bg` (ink in light, paper in dark), label `--vita-cta-fg` (bg in light, ink in dark) and meta `--vita-cta-meta` (`#8C8C92`, the secondary that reads on a dark surface in both themes).
+**Dark is black on black.** The background is pure black and every surface (the `PrimaryAction`, choice rows, inputs, icon buttons, the undo button) is one near-black, paper (`#0E0E10`). There is no grey surface on black. Red text is the accent itself in both themes (`#FF1744`, about 5.1:1 on black).
+
+`PrimaryAction` has its own three values: background `--vita-cta-bg` (paper in both themes), label `--vita-cta-fg` (ink) and meta `--vita-cta-meta` (secondary). Its red cell is what marks it as the main action.
+
+The browser theme color and the PWA manifest use the background (`#000000` in dark).
 
 ### The red rule
 
@@ -88,7 +94,8 @@ Red marks only:
 
 - **what is live:** today, the current set, the current exercise, the session clock dot;
 - **achievements:** records, the "+2,5 kg" note, the best hour;
-- **the primary action's cell.**
+- **the primary action's cell;**
+- **the label of the active tab** in the navbar (the icon stays ink).
 
 Red is a fill (dots, ticks, the cell) or `accent-text` for a short note. It never fills an area larger than the red cell, and Doto numbers are never red. Off dots and empty states are never red.
 
@@ -109,7 +116,7 @@ Red is a fill (dots, ticks, the cell) or `accent-text` for a short note. It neve
 There are no other spacings. Insets that are not spacing between elements (the safe areas, the 6 px padding of the red cell, the 2 px padding of the size selector) are part of the component.
 
 - **Top inset:** `max(env(safe-area-inset-top), 24px)`, then the 40 px top bar (`pt-top`).
-- **Bottom clearance:** screens with the navbar leave 136 px (34 + 68 + 32) under the last element; screens with a bottom bar leave its height plus 32 px.
+- **Bottom clearance:** screens with the navbar leave 136 px (34 + 68 + 32) under the last element; screens with a bottom bar leave 112 px above the safe inset (16 px of glass, the 64 px bar and 32 px of air), and the set logging screen 176 px, for the "PRÓXIMO" row.
 - Every element aligns to a column edge or to the baseline of its neighbor. A widget of size P takes 2 columns; M and G take 4.
 
 ## 5. No borders
@@ -118,19 +125,22 @@ No strokes, outlines, dividers or shadows anywhere. Separation comes from space,
 
 Only things you can tap may have a background fill: buttons, the size selector, icon buttons, choice rows, text inputs. Information never sits in a box.
 
-The only surfaces are the glass navbar (`glass` utility: paper at 60% with a 24 px background blur) and sheets (opaque paper).
+The only surfaces are the two glasses and sheets (opaque `bg`, so paper controls stay visible on them):
+
+- `glass`: paper at 50% with a 32 px blur and a 160% saturation lift. The bottom bar of task screens and the toast: content scrolling under it blurs, so it never collides with the bar's text.
+- `glass-clear`: paper at 35% with a 12 px blur and a 180% saturation lift. The navbar only: the content behind stays legible.
 
 Focus is shown with the `focus-ring` utility: a 2 px ink outline offset by 2 px, only for keyboard focus (`:focus-visible`). It is an accessibility signal, not decoration.
 
 ## 6. Shape
 
-- **Buttons with text** are rounded rectangles, radius ≈ 0.3 × height: 64 px → 20 (`rounded-cta`), 44 px → 14 (`rounded-button`). **Never pills.**
-- **Icon-only buttons** are 40 px circles with the tint background and a 20 px icon.
+Square blocks with round accents. The mix is deliberate: blocks carry content, round shapes mark what you act on or where you are.
+
+- **Square (radius 0):** choice rows, text inputs, `TextButton`, the size selector and its cells, sheets, the toast, the rows of Perfil and Ajustes. The radius tokens (`rounded-cta`, `rounded-button`, `rounded-selector`, `rounded-sheet`) are all 0.
+- **Pills:** `PrimaryAction` and the navbar (`rounded-full`).
+- **Circles:** the red cell of `PrimaryAction` (52 px, concentric with the pill's end: 32 − 6 = 26), icon-only buttons (40 px), the undo button of the set logging screen (64 px).
 - Dots, ticks and the 4 px bars are fully round: they are marks, not containers.
-- **Nested radius rule:** inner radius = outer radius − padding. Never work it out by hand: `concentricRadius(outer, padding)` in `src/shared/ui/concentric.ts`.
-    - The red cell in `PrimaryAction`: `concentricRadius(20, 6)` = 14.
-    - The size selector: container 10 with 2 px padding, so the active cell is `concentricRadius(10, 2)` = 8.
-- Sheets have a 32 px top radius (`rounded-t-sheet`). The navbar has a 20 px radius.
+- When a rounded shape sits inside another with even padding, use `concentricRadius(outer, padding)` in `src/shared/ui/concentric.ts`; never work it out by hand.
 
 ## 7. Components
 
@@ -140,9 +150,9 @@ All in `src/shared/ui/`.
 
 The one main action of a screen.
 
-- 64 px high, radius 20, solid `cta-bg`, no gradient, no shadow. Full width, or the rest of a row.
+- A 64 px pill, solid `cta-bg` (paper), no gradient, no shadow. Full width, or the rest of a row.
 - Left, 20 px in: the label in Mona 900/125 at 15 px, +3% tracking, and under it the meta line at 10 px, uppercase, +10% tracking, in `cta-meta`.
-- Right: a red cell of 52 × 52, 6 px from the top, bottom and end, radius 14, holding a **5 × 5 dot-matrix glyph**: white dots of 4 px every 6.5 px; "off" dots at 18% opacity.
+- Right: a red circle of 52 px, 6 px from the top, bottom and end, holding a **5 × 5 dot-matrix glyph**: white dots of 4 px every 6.5 px; "off" dots at 18% opacity.
 - Glyphs (`#` lit, `.` off):
 
     ```
@@ -155,7 +165,6 @@ The one main action of a screen.
     ```
 
 - Press: the button scales to 0.97 and the glyph's lit dots light up one by one along the shape (left to right), with `snappy`.
-- In the dark theme it inverts: paper background, ink label, same red cell.
 - Disabled: 40% opacity, no press.
 
 ```tsx
@@ -168,7 +177,7 @@ A 40 px circle, `tint` background, 20 px icon, `aria-label` in Portuguese (requi
 
 ### `TextButton`
 
-A rounded rectangle, 44 px high, radius 14, label in Mona 900/125 at 13 px, +3%. Tones: `tint` (tint background, ink label) and `ink` (ink background, bg label). "CONCLUIR" in edit mode is `ink`; "PULAR", "SAIR", "LIMPAR FICHA" are `tint`.
+A square-cornered rectangle, 44 px high, label in Mona 900/125 at 13 px, +3%. Tones: `tint` (tint background, ink label) and `ink` (ink background, bg label). "CONCLUIR" in edit mode is `ink`; "PULAR", "SAIR", "LIMPAR FICHA" are `tint`.
 
 ### `PlusButton`
 
@@ -194,11 +203,11 @@ Segment lines: one 4 px rounded segment per step, 4 px apart, filling the width.
 
 ### `Sheet`
 
-Paper, 32 px top radius, a grab handle (36 × 4 px, `off`), the title as a 20 px headline and a close `IconButton`. It slides up with `settle`, follows the finger when dragged by the handle or the title, closes past 96 px or with a flick, and also with Esc or a tap on the backdrop. Focus stays inside while open and returns to the opener on close.
+Opaque `bg`, square corners, a grab handle (36 × 4 px, `off`), the title as a 20 px headline and a close `IconButton`. It slides up with `settle`, follows the finger when dragged by the handle or the title, closes past 96 px or with a flick, and also with Esc or a tap on the backdrop. Focus stays inside while open and returns to the opener on close.
 
 ### `SizeSelector`
 
-P · M · G, segmented: container radius 10 with 2 px padding and the tint background; cells 32 × 32 with radius 8; the active size is an ink cell with a bg letter; unavailable sizes are greyed (`off` letter) and disabled. A radio group: arrow keys move the choice.
+P · M · G, segmented: a square container with 2 px padding and the tint background; square cells of 32 × 32; the active size is an ink cell with a bg letter; unavailable sizes are greyed (`off` letter) and disabled. A radio group: arrow keys move the choice.
 
 ### `EmptyState`
 
@@ -208,13 +217,26 @@ P · M · G, segmented: container radius 10 with 2 px padding and the tint backg
 
 ### Choice rows and inputs
 
-Choice lists (onboarding, Perfil, Ajustes) are tappable rows, so they have a fill: 64 px rounded rectangles (radius 20), `tint` when not chosen and an ink cell with bg text when chosen, 8 px apart. A text input is a 64 px tint rectangle (radius 20) with the value at 20 px.
+Choice lists (onboarding, Perfil, Ajustes) are tappable rows, so they have a fill: 64 px square-cornered rectangles, `tint` when not chosen and an ink cell with bg text when chosen, 8 px apart. A text input is a 64 px square tint rectangle with the value at 20 px.
 
 ## 8. Icons
 
-`src/shared/ui/icons.tsx`: a 24 px grid, 1.75 px stroke in `currentColor`, round caps and joins, no fill. 24 px in the navbar, 20 px in icon buttons. Every icon-only button has an `aria-label` in Portuguese.
+`src/shared/ui/icons.tsx`: a 24 px grid, 1.75 px stroke in `currentColor`, round caps and joins, no fill, 20 px in icon buttons. Every icon-only button has an `aria-label` in Portuguese.
 
-Navbar: **Resumo** four rounded squares; **Treinos** a dumbbell; **Evolução** a rising line with an arrow; **Perfil** a person.
+The navbar has its own **dot-matrix icons** (Doto style), in `src/app/_components/app-nav.tsx`: 9 × 9 cells, an SVG of 24 px with `viewBox 0 0 9 9`, a dot centered in each lit cell, `currentColor`. Sized for 3× screens: a cell is 8 device pixels and an inactive dot 6 (r 0.375), so the dots stay sharp on an iPhone. The glyphs are balanced to 32–42 dots each (`#` lit):
+
+```
+resumo     treinos    evolucao   perfil
+.##...##.  .#.....#.  ......##.  ...###...
+#..#.#..#  ##.....##  ......##.  ..#####..
+#..#.#..#  ##.....##  ...##.##.  ..#####..
+.##...##.  ##.....##  ...##.##.  ..#####..
+.........  #########  ##.##.##.  ...###...
+.##...##.  ##.....##  ##.##.##.  .........
+#..#.#..#  ##.....##  ##.##.##.  ..#####..
+#..#.#..#  ##.....##  ##.##.##.  .#######.
+.##...##.  .#.....#.  ##.##.##.  #########
+```
 
 ## 9. Motion
 
@@ -251,9 +273,9 @@ The `vita` wordmark in Doto at 24 px on the left; circle `IconButton`s on the ri
 
 ### Navbar (`AppNav`)
 
-- Floating, 20 px from the sides and 34 px from the bottom (or the safe area, whichever is larger); 68 px high, radius 20, `glass`, no border, no shadow.
-- Four equal slots: Resumo, Treinos, Evolução, Perfil; each a 24 px icon over an 11 px label.
-- Inactive: `secondary`, weight 600. Active: ink, the label in 900/112 and a 4 px red dot 6 px under the label.
+- Floating, 20 px from the sides and 34 px from the bottom (or the safe area, whichever is larger); a 68 px pill, `glass-clear`, no border, no shadow.
+- Four equal slots: Resumo, Treinos, Evolução, Perfil; each a 24 px dot-matrix icon 6 px over an 11 px label at 600, centered in the pill.
+- Inactive: icon and label in `secondary`. Active: the icon in ink and bold (dots of r 0.4375), its dots lighting up along the diagonal in about 110 ms (`light-up`), and the label in `accent`. The label never changes weight, so the bar does not shift. No dot under the label.
 - Switching tabs crossfades the icon states (the bar keeps its view transition name, `vita-bar`).
 
 ### Home (Resumo)
@@ -325,8 +347,8 @@ Top to bottom, 20 px margins:
 5. 24 px, the `ExerciseDemo`, 152 px high, full width. Tapping it opens it large in a `Sheet`.
 6. 32 px, the wheels: kg 2/3 and reps 1/3, 12 px apart. The selected value is Doto 64; one neighbor above and one below in Doto 36 at 22%. A 6 px red dot marks the selected row on the outer side of each wheel. Under each wheel its label ("KG", "REPETIÇÕES"). They open on last time's value; no "última vez" text anywhere. Vertical only, momentum, a firm snap on every value and a short pulse on the center value at each step. "102,5" never clips.
 7. 32 px, the set stepper: 3 equal columns, 12 px apart, each with a two-digit label ("01"), 8 px, the value at 15 px in 900/112, 12 px, a 4 px bar. Done: ink with the logged value. Current: red, showing live the wheel values ("52,5 × 11"). Future: an off "—". Tapping a done set opens a sheet to correct it.
-8. Pinned 24 px above the bottom bar: the label "PRÓXIMO", the next exercise at 13 px and a chevron; tappable. A horizontal swipe anywhere also changes exercise.
-9. Bottom bar, 34 px from the bottom: a 64 × 64 undo button (radius 20, tint), 12 px, `PrimaryAction` "CONFIRMAR" with the live meta "52,5 KG × 11" and the check.
+8. The bottom bar: a `glass` surface from the screen's bottom edge up, so the wheels and the set stepper blur under it instead of colliding with its text. On it, 16 px from its top: the label "PRÓXIMO", the next exercise at 13 px and a chevron, tappable (the bar's `above` slot). A horizontal swipe anywhere also changes exercise.
+9. 16 px below, 34 px from the bottom: a 64 px round undo button (tint), 12 px, `PrimaryAction` "CONFIRMAR" with the live meta "52,5 KG × 11" and the check.
 10. Stagnation: only after 3+ weeks without progress, under the kg label, a 6 px red dot and "parado há 4 semanas" (13 px, 600). Nothing else ever suggests a load.
 
 Confirm: in the same frame the current bar turns ink, the next turns red, the value appears in the done column and the wheels move to the next suggestion. Saving is optimistic.
@@ -351,14 +373,15 @@ Onboarding, Treinos, Evolução, Perfil, Ajustes and Créditos use the same part
 Do:
 
 - Let numbers be large and words small.
-- Use red only for live states, achievements and the primary cell.
+- Use red only for live states, achievements, the primary cell and the active tab label.
 - Use only the tokens and utilities from `globals.css`.
 
 Don't:
 
 - Borders, outlines, dividers, hairlines, shadows, gradients.
 - Boxes or cards around information.
-- Pills for text buttons.
+- Pills for anything other than `PrimaryAction` and the navbar; rounded corners on blocks.
+- Grey surfaces on black in the dark theme.
 - Red Doto numbers, red text longer than a short note.
 - Text that coaches or suggests, except the stagnation fact.
 - Shimmer, bounce, motion that waits for the network.

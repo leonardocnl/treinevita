@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     },
 };
 
-const CANVAS = { light: "#f4f2f1", dark: "#0b0b0d" };
+const CANVAS = { light: "#f4f2f1", dark: "#000000" };
 
 async function readTheme() {
     return parseTheme((await cookies()).get(THEME_COOKIE)?.value);
