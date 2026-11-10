@@ -1,7 +1,6 @@
 /*
  * The VITA icon set (design v2): a 24×24 grid, 1.75px line in currentColor,
- * round caps and joins, no fill (the tile shapes of the old size switch are the
- * only solid ones, until the edit mode moves to the SizeSelector). One component, one API: <Icon name="check" size={20} />.
+ * round caps and joins, no fill . One component, one API: <Icon name="check" size={20} />.
  * Icons are always decorative (aria-hidden); the button around them carries
  * the label in Portuguese.
  */
@@ -97,22 +96,6 @@ const icons = {
         ),
     },
     moon: { shape: <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z" /> },
-    /* Widget size switch */
-    "tile-small": {
-        filled: true,
-        size: 16,
-        shape: <rect x="8" y="8" width="8" height="8" rx="2" />,
-    },
-    "tile-medium": {
-        filled: true,
-        size: 16,
-        shape: <rect x="4" y="8" width="16" height="8" rx="2" />,
-    },
-    "tile-large": {
-        filled: true,
-        size: 16,
-        shape: <rect x="5" y="5" width="14" height="14" rx="3" />,
-    },
 } satisfies Record<string, IconDefinition>;
 
 export type IconName = keyof typeof icons;
@@ -121,7 +104,7 @@ export const ICON_NAMES = Object.keys(icons) as IconName[];
 
 type IconProps = {
     name: IconName;
-    /** Width and height in px. Defaults to 24 (16 for the tile shapes). */
+    /** Width and height in px. Defaults to 24. */
     size?: number;
 };
 

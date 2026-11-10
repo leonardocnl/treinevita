@@ -3,16 +3,14 @@
 import { useState } from "react";
 
 import { formatDuration, formatNumber, setsLabel } from "@/shared/format/numbers";
-import { Dot } from "@/shared/ui/dot";
 import { DotMeter } from "@/shared/ui/dot-meter";
 import { BottomBar } from "@/shared/ui/bottom-bar";
 import { List, ListRow } from "@/shared/ui/list";
 import { Panel, PanelNote } from "@/shared/ui/panel";
 import { PrimaryAction } from "@/shared/ui/primary-action";
-import { QuietBand } from "@/shared/ui/quiet-band";
 import { IconButton } from "@/shared/ui/icon-button";
 import { Label } from "@/shared/ui/text";
-import { WHEEL_ITEM_HEIGHT, WheelPicker } from "@/shared/ui/wheel-picker";
+import { WheelPicker } from "@/shared/ui/wheel-picker";
 import { cx } from "@/shared/ui/cx";
 
 import type { LoggedSet } from "./workout-state";
@@ -48,8 +46,6 @@ export function SetLogger(props: SetLoggerProps) {
     const [repValues] = useState(() => range(1, Math.max(30, reps + 5), 1));
     const [durationValues] = useState(() => range(5, Math.max(180, durationSeconds + 30), 5));
 
-    const showIncrease =
-        props.increasedTo !== null && currentIndex === 0 && loadKg === props.increasedTo;
     const summaryText = isDuration
         ? formatDuration(durationSeconds)
         : `${formatNumber(loadKg)} × ${reps}`;
@@ -107,7 +103,6 @@ export function SetLogger(props: SetLoggerProps) {
                             </p>
                         ) : null}
                         <div className="relative mt-3">
-                            <QuietBand top={WHEEL_ITEM_HEIGHT + 2} height={WHEEL_ITEM_HEIGHT - 4} />
                             <div
                                 className={`relative grid ${isDuration ? "grid-cols-1" : "grid-cols-2"}`}
                             >
@@ -130,16 +125,6 @@ export function SetLogger(props: SetLoggerProps) {
                                             label="Carga em quilos"
                                             unit="kg"
                                             align="start"
-                                            marker={
-                                                showIncrease ? (
-                                                    <Dot
-                                                        size={6}
-                                                        tone="accent"
-                                                        label="Carga subiu desde a última vez"
-                                                        className="mb-6 self-center"
-                                                    />
-                                                ) : null
-                                            }
                                         />
                                         <WheelPicker
                                             values={repValues}

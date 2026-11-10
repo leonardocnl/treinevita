@@ -1,32 +1,31 @@
 "use client";
 
 /*
- * Selection wheel built on native scroll snapping. On the iPhone, scrolling runs
- * on the compositor with the system's own momentum, and mandatory snapping always
- * lands exactly on a value; a JavaScript spring would fight Safari's touch
- * scrolling and lose frames. `scroll-snap-stop` stays `normal` so a flick can
- * cross many values (`always` would stop at every one).
+ * Selection wheel (design v2) on native scroll snapping. On the iPhone the
+ * scroll runs on the compositor with the system's momentum, and mandatory
+ * snapping always lands exactly on a value; a JavaScript spring would fight
+ * Safari's touch scrolling and lose frames.
  *
- * The value under the center follows the scroll on every frame, and each value
- * passing the center gets a short tick (a 2% scale pulse, 80ms). The new value is
- * committed when scrolling ends. Arrow keys move one step; taps on a neighbour
- * and the mouse wheel work too. The column only scrolls vertically, and a long
- * value ("102,5") gets a smaller font so it always fits.
- *
- * Made for the dark panel; the selection band (QuietBand) is drawn by the parent
- * so it can span several wheels.
+ * Three rows: the selected value in Doto 64 (smaller only when a long value
+ * like "102,5" would not fit the column), one neighbor above and one below in
+ * Doto 36 at 22%. A 6px red dot marks the selected row on the outer side, and
+ * the 11px label sits under the wheel. The value under the center follows the
+ * scroll on every frame and pulses at each step; the new value is committed
+ * when scrolling ends. Vertical only. Arrow keys move one step.
  */
 
 import { memo, useLayoutEffect, useRef, useState } from "react";
 
-export const WHEEL_ITEM_HEIGHT = 64;
+import { cx } from "./cx";
+
+export const WHEEL_ITEM_HEIGHT = 72;
 const VISIBLE_ROWS = 3;
 /** Biggest size of the selected value, in px. */
-const MAX_FONT_PX = 56;
-/** Width of one glyph of the dot font (Doto is monospaced: 0.6em, plus 0.01em tracking). */
+const MAX_FONT_PX = 64;
+/** Width of one glyph of Doto (monospaced: 0.6em) plus a little air. */
 const GLYPH_EM = 0.61;
-/** Room for the side padding (20px) and the marker dot with its gap (14px). */
-const RESERVED_PX = 34;
+/** Room for the red dot and its gap on the outer side (6 + 10px). */
+const RESERVED_PX = 16;
 /** Silence after the last scroll event that counts as "settled" where `scrollend` is missing. */
 const SETTLE_MS = 60;
 
@@ -35,16 +34,17 @@ type WheelPickerProps = {
     value: number;
     onChange: (value: number) => void;
     format: (value: number) => string;
+    /** Spoken name ("Carga em quilos"). */
     label: string;
+    /** The 11px label under the wheel ("kg", "repetições"). */
     unit: string;
+    /** Which side is outer: the red dot and the alignment. */
     align?: "start" | "end" | "center";
-    /** Shown next to the selected value (the red "load went up" dot). */
-    marker?: React.ReactNode;
 };
 
 /**
- * Font size of a selected value: 56px, or smaller when that value would not fit
- * the column (container query width, `cqi`). "7,5" stays at 56px; "102,5" shrinks.
+ * Font size of a selected value: 64px, or smaller when it would not fit the
+ * column (container query width, `cqi`). "7,5" stays at 64px; "102,5" shrinks.
  */
 export function wheelFontSize(text: string): string {
     const ems = Math.round(text.length * GLYPH_EM * 100) / 100;
@@ -59,7 +59,6 @@ export function WheelPicker({
     label,
     unit,
     align = "center",
-    marker,
 }: WheelPickerProps) {
     const listRef = useRef<HTMLDivElement>(null);
     const settleTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -70,9 +69,9 @@ export function WheelPicker({
 
     const justify =
         align === "start"
-            ? "justify-start pl-5"
+            ? "justify-start pl-4"
             : align === "end"
-              ? "justify-end pr-5"
+              ? "justify-end pr-4"
               : "justify-center";
     const origin =
         align === "start" ? "origin-left" : align === "end" ? "origin-right" : "origin-center";
@@ -86,6 +85,20 @@ export function WheelPicker({
         // Only on mount and when the value list changes; scrolling drives updates afterwards.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [values]);
+
+    // A value set from outside (the next suggestion after a confirm) moves the wheel.
+    const [seenValue, setSeenValue] = useState(value);
+    if (value !== seenValue) {
+        setSeenValue(value);
+        setCentered(committedIndex);
+    }
+    useLayoutEffect(() => {
+        const list = listRef.current;
+        if (list && target.current === null && indexAtCenter() !== committedIndex) {
+            list.scrollTo({ top: committedIndex * WHEEL_ITEM_HEIGHT, behavior: "smooth" });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [seenValue]);
 
     function indexAtCenter(): number {
         const top = listRef.current?.scrollTop ?? 0;
@@ -118,47 +131,56 @@ export function WheelPicker({
     }
 
     return (
-        <div className="@container flex min-w-0 flex-col">
-            <div
-                ref={listRef}
-                role="spinbutton"
-                tabIndex={0}
-                aria-label={label}
-                aria-valuenow={value}
-                aria-valuetext={`${format(value)} ${unit}`}
-                onScroll={handleScroll}
-                onScrollEnd={commit}
-                onKeyDown={(event) => {
-                    if (event.key === "ArrowUp") {
-                        event.preventDefault();
-                        step(-1);
-                    }
-                    if (event.key === "ArrowDown") {
-                        event.preventDefault();
-                        step(1);
-                    }
-                }}
-                className="no-scrollbar fade-y relative w-full touch-pan-y snap-y snap-mandatory overflow-x-hidden overflow-y-scroll overscroll-contain rounded-inner outline-none focus-visible:ring-1 focus-visible:ring-on-panel-dim"
-                style={{
-                    height: WHEEL_ITEM_HEIGHT * VISIBLE_ROWS,
-                    paddingBlock: WHEEL_ITEM_HEIGHT,
-                }}
-            >
-                {values.map((option, index) => (
-                    <WheelRow
-                        key={option}
-                        text={format(option)}
-                        selected={index === centered}
-                        justify={justify}
-                        origin={origin}
-                        marker={index === centered ? marker : null}
-                        onSelect={() => step(index - (target.current ?? indexAtCenter()))}
+        <div className="@container flex min-w-0 flex-col gap-inner">
+            <div className="relative">
+                {align !== "center" ? (
+                    <span
+                        aria-hidden
+                        className={cx(
+                            "pointer-events-none absolute top-1/2 size-1.5 -translate-y-1/2 rounded-full bg-accent",
+                            align === "start" ? "left-0" : "right-0",
+                        )}
                     />
-                ))}
+                ) : null}
+                <div
+                    ref={listRef}
+                    role="spinbutton"
+                    tabIndex={0}
+                    aria-label={label}
+                    aria-valuenow={value}
+                    aria-valuetext={`${format(value)} ${unit}`}
+                    onScroll={handleScroll}
+                    onScrollEnd={commit}
+                    onKeyDown={(event) => {
+                        if (event.key === "ArrowUp") {
+                            event.preventDefault();
+                            step(-1);
+                        }
+                        if (event.key === "ArrowDown") {
+                            event.preventDefault();
+                            step(1);
+                        }
+                    }}
+                    className="no-scrollbar focus-ring relative w-full touch-pan-y snap-y snap-mandatory overflow-x-hidden overflow-y-scroll overscroll-contain"
+                    style={{
+                        height: WHEEL_ITEM_HEIGHT * VISIBLE_ROWS,
+                        paddingBlock: WHEEL_ITEM_HEIGHT,
+                    }}
+                >
+                    {values.map((option, index) => (
+                        <WheelRow
+                            key={option}
+                            text={format(option)}
+                            selected={index === centered}
+                            near={Math.abs(index - centered) === 1}
+                            justify={justify}
+                            origin={origin}
+                            onSelect={() => step(index - (target.current ?? indexAtCenter()))}
+                        />
+                    ))}
+                </div>
             </div>
-            <span className={`mt-1 flex text-[13px] text-on-panel-secondary ${justify}`}>
-                {unit}
-            </span>
+            <span className={`label flex ${justify}`}>{unit}</span>
         </div>
     );
 }
@@ -166,15 +188,15 @@ export function WheelPicker({
 type WheelRowProps = {
     text: string;
     selected: boolean;
+    near: boolean;
     justify: string;
     origin: string;
-    marker: React.ReactNode;
     onSelect: () => void;
 };
 
-/** One value. Only the two rows whose selection changes render again while scrolling. */
+/** One value. Only rows whose state changes render again while scrolling. */
 const WheelRow = memo(
-    function WheelRow({ text, selected, justify, origin, marker, onSelect }: WheelRowProps) {
+    function WheelRow({ text, selected, near, justify, origin, onSelect }: WheelRowProps) {
         return (
             <div
                 onClick={onSelect}
@@ -186,23 +208,22 @@ const WheelRow = memo(
                 <span
                     aria-hidden={!selected}
                     style={{ fontSize: wheelFontSize(text) }}
-                    className={`num absolute inset-0 flex items-center gap-1.5 whitespace-nowrap text-on-panel transition-[opacity,transform] duration-(--vita-duration-snappy) ease-snappy ${justify} ${origin} ${
-                        selected ? "opacity-100" : "scale-[0.4] opacity-0"
+                    className={`num absolute inset-0 flex items-center whitespace-nowrap text-ink transition-[opacity,transform] duration-(--vita-duration-snappy) ease-snappy ${justify} ${origin} ${
+                        selected ? "opacity-100" : "scale-[0.56] opacity-0"
                     }`}
                 >
-                    {/* Remounts when the row reaches the center, so the tick plays once per value. */}
+                    {/* Remounts when the row reaches the center, so the pulse plays once per step. */}
                     <span
                         key={selected ? "on" : "off"}
                         className={`${origin} ${selected ? "wheel-tick" : ""}`}
                     >
                         {text}
                     </span>
-                    {marker}
                 </span>
                 <span
                     aria-hidden
-                    className={`absolute inset-0 flex items-center whitespace-nowrap text-[22px] font-light tabular-nums text-on-panel-dim transition-[opacity,transform] duration-(--vita-duration-snappy) ease-snappy ${justify} ${origin} ${
-                        selected ? "scale-[2.5] opacity-0" : "opacity-100"
+                    className={`num absolute inset-0 flex items-center whitespace-nowrap text-36 text-ink transition-[opacity,transform] duration-(--vita-duration-snappy) ease-snappy ${justify} ${origin} ${
+                        selected ? "scale-[1.78] opacity-0" : near ? "opacity-[0.22]" : "opacity-0"
                     }`}
                 >
                     {text}
@@ -214,5 +235,5 @@ const WheelRow = memo(
     (before, after) =>
         before.text === after.text &&
         before.selected === after.selected &&
-        before.marker === after.marker,
+        before.near === after.near,
 );
