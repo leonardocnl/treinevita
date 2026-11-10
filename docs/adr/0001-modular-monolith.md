@@ -10,7 +10,7 @@ VITA starts as a single-user app but is expected to grow into B2C and B2B produc
 
 ## Decision
 
-One deployable app, split into business modules under `src/modules/`: `identity`, `tenancy`, `catalog`, `training`, `logging`, `progress`. Each module has `domain`, `application`, `infrastructure` and `ui` layers and a public API in `index.ts`.
+One deployable app, split into business modules under `src/modules/`: `identity`, `tenancy`, `catalog`, `training`, `logging`, `progress`, and `habits` (manual trackers, added with ADR 0013). Each module has `domain`, `application`, `infrastructure` and `ui` layers and a public API in `index.ts`.
 
 Rules, enforced by dependency-cruiser on commit and in CI:
 

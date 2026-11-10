@@ -1,6 +1,6 @@
-import { Label, Title } from "@/shared/ui/text";
-
-import { AppDock, type Tab } from "./app-dock";
+import { AppNav, NAV_CLEARANCE, type Tab } from "./app-nav";
+import { ThemeToggle } from "./theme-toggle";
+import { TopBar } from "./top-bar";
 
 /** Placeholder for tabs that arrive in the next phases. */
 export function ComingSoon({
@@ -14,15 +14,14 @@ export function ComingSoon({
 }) {
     return (
         <>
-            <main className="mx-auto w-full max-w-5xl px-6 pb-48 pt-[max(env(safe-area-inset-top),56px)] md:px-8">
-                <Title size={34} weight="normal" leading="tight">
-                    {title}
-                </Title>
-                <Label size={17} tone="secondary" className="mt-2 max-w-sm">
-                    {text}
-                </Label>
+            <main className={`pt-top mx-auto w-full max-w-md px-margin ${NAV_CLEARANCE}`}>
+                <TopBar>
+                    <ThemeToggle />
+                </TopBar>
+                <h1 className="headline mt-intro text-34">{title}</h1>
+                <p className="mt-intro text-17 text-secondary">{text}</p>
             </main>
-            <AppDock active={tab} />
+            <AppNav active={tab} />
         </>
     );
 }

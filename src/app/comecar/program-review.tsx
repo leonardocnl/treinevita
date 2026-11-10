@@ -22,11 +22,9 @@ import {
 import { cx } from "@/shared/ui/cx";
 import { ExerciseThumb } from "@/shared/ui/exercise-demo";
 import { Icon } from "@/shared/ui/icons";
-import { List, ListRow } from "@/shared/ui/list";
-import { PillAction } from "@/shared/ui/pill-action";
-import { RoundButton } from "@/shared/ui/round-button";
+import { PrimaryAction } from "@/shared/ui/primary-action";
+import { PlusButton } from "@/shared/ui/plus-button";
 import { Sheet } from "@/shared/ui/sheet";
-import { Caption, Label, Title } from "@/shared/ui/text";
 import { TextButton } from "@/shared/ui/text-button";
 
 type Picker = { kind: "swap"; day: number; position: number } | { kind: "add"; day: number };
@@ -91,21 +89,21 @@ export function ProgramReview({ draft, onChange, template, catalog }: ProgramRev
     const options = picker ? pickerOptions(picker) : [];
 
     return (
-        <div className="flex flex-col gap-10">
+        <div className="flex flex-col gap-section">
             {draft.days.map((day, dayIndex) => (
                 <section key={day.label} aria-labelledby={`dia-${day.label}`}>
                     <div className="flex items-baseline justify-between">
-                        <Title as="h2" size={22} weight="normal" id={`dia-${day.label}`}>
+                        <h2 className="action text-20" id={`dia-${day.label}`}>
                             Treino {day.label}
-                        </Title>
-                        {day.title ? <Caption as="span">{day.title}</Caption> : null}
+                        </h2>
+                        {day.title ? (
+                            <span className="text-13 text-secondary">{day.title}</span>
+                        ) : null}
                     </div>
                     {day.slugs.length === 0 ? (
-                        <Label size={17} tone="secondary" className="mt-3">
-                            Nenhum exercício neste dia.
-                        </Label>
+                        <p className="text-17 mt-label">Nenhum exercício neste dia.</p>
                     ) : (
-                        <List className="mt-1">
+                        <ol className="mt-label flex flex-col gap-inner">
                             {day.slugs.map((slug, position) => {
                                 const entry = bySlug.get(slug);
                                 return (
@@ -123,27 +121,23 @@ export function ProgramReview({ draft, onChange, template, catalog }: ProgramRev
                                     />
                                 );
                             })}
-                        </List>
+                        </ol>
                     )}
                     {day.slugs.length < MAX_EXERCISES_PER_DAY ? (
-                        <div className="mt-3 flex h-11 items-center">
-                            <RoundButton
-                                size={32}
-                                tone="canvas"
+                        <div className="mt-label flex h-11 items-center">
+                            <PlusButton
                                 onClick={() => setPicker({ kind: "add", day: dayIndex })}
                                 aria-label={`Adicionar exercício ao Treino ${day.label}`}
                             >
-                                <Icon name="plus" size={18} />
-                            </RoundButton>
+                                Adicionar
+                            </PlusButton>
                         </div>
                     ) : null}
                 </section>
             ))}
 
             <div>
-                <TextButton tone="accent" onClick={() => setConfirmClear(true)}>
-                    Limpar ficha
-                </TextButton>
+                <TextButton onClick={() => setConfirmClear(true)}>Limpar ficha</TextButton>
             </div>
 
             <Sheet
@@ -152,57 +146,52 @@ export function ProgramReview({ draft, onChange, template, catalog }: ProgramRev
                 title={picker?.kind === "swap" ? "Trocar exercício" : "Adicionar exercício"}
             >
                 {options.length === 0 ? (
-                    <Label size={17} tone="secondary" className="mt-2">
+                    <p className="text-17 mt-inner">
                         Nenhum outro exercício para esse músculo no catálogo.
-                    </Label>
+                    </p>
                 ) : (
-                    <ul className="mt-1">
+                    <ul className="flex flex-col gap-inner">
                         {options.map((entry) => (
-                            <ListRow key={entry.slug}>
+                            <li key={entry.slug}>
                                 <button
                                     type="button"
                                     onClick={() => pick(entry.slug)}
-                                    className="pressable flex min-h-16 w-full items-center gap-3 text-left"
+                                    className="pressable flex min-h-16 w-full items-center gap-gutter text-left"
                                 >
                                     <ExerciseThumb media={entry.media} />
-                                    <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                                        <Label as="span" size={17} weight="normal">
-                                            {entry.name}
-                                        </Label>
-                                        <Caption as="span">
+                                    <span className="flex min-w-0 flex-1 flex-col gap-1">
+                                        <span className="text-17 font-semibold">{entry.name}</span>
+                                        <span className="text-13 text-secondary">
                                             {entry.primaryMuscles
                                                 .map((muscle) => muscle.name)
                                                 .join(", ")}
-                                        </Caption>
+                                        </span>
                                     </span>
                                 </button>
-                            </ListRow>
+                            </li>
                         ))}
                     </ul>
                 )}
                 {picker?.kind === "swap" ? (
-                    <div className="mt-6">
-                        <TextButton tone="accent" onClick={removeFromPicker}>
-                            Remover do treino
-                        </TextButton>
+                    <div className="mt-intro">
+                        <TextButton onClick={removeFromPicker}>Remover do treino</TextButton>
                     </div>
                 ) : null}
             </Sheet>
 
             <Sheet open={confirmClear} onClose={() => setConfirmClear(false)} title="Limpar ficha">
-                <Label size={17} className="mt-2">
+                <p className="text-17 mt-inner">
                     Todos os dias ficam vazios. Depois você adiciona os exercícios que quiser.
-                </Label>
-                <div className="mt-6">
-                    <PillAction
-                        icon={<Icon name="trash" size={20} />}
+                </p>
+                <div className="mt-intro">
+                    <PrimaryAction
+                        glyph="check"
+                        label="Limpar ficha"
                         onClick={() => {
                             onChange(clearDraft(draft));
                             setConfirmClear(false);
                         }}
-                    >
-                        Limpar ficha
-                    </PillAction>
+                    />
                 </div>
             </Sheet>
         </div>
@@ -286,11 +275,11 @@ function SwipeRow({ name, detail, media, onTap, onRemove }: SwipeRowProps) {
     }
 
     return (
-        <ListRow className="relative overflow-hidden">
+        <li className="relative overflow-hidden">
             <span
                 aria-hidden
                 className={cx(
-                    "absolute inset-y-0 right-0 flex items-center pr-2 text-red-text transition-opacity duration-150",
+                    "absolute inset-y-0 right-0 flex items-center pr-2 text-ink transition-opacity duration-150",
                     offset < -24 || leaving ? "opacity-100" : "opacity-0",
                 )}
             >
@@ -322,20 +311,16 @@ function SwipeRow({ name, detail, media, onTap, onRemove }: SwipeRowProps) {
                           : undefined
                 }
                 className={cx(
-                    "relative flex min-h-16 w-full touch-pan-y items-center gap-3 bg-canvas text-left",
+                    "relative flex min-h-16 w-full touch-pan-y items-center gap-gutter bg-bg text-left",
                     leaving ? "leave opacity-0" : "pressable",
                 )}
             >
                 <ExerciseThumb media={media} />
-                <span className="flex min-w-0 flex-1 flex-col gap-0.5 py-2">
-                    <Label as="span" size={17} weight="normal">
-                        {name}
-                    </Label>
-                    <Caption as="span" className="tabular-nums">
-                        {detail}
-                    </Caption>
+                <span className="flex min-w-0 flex-1 flex-col gap-1 py-2">
+                    <span className="text-17 font-semibold">{name}</span>
+                    <span className="text-13 text-secondary tabular-nums">{detail}</span>
                 </span>
             </button>
-        </ListRow>
+        </li>
     );
 }

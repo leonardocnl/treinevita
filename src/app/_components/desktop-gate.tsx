@@ -1,7 +1,6 @@
 import { headers } from "next/headers";
 import type { ReactNode } from "react";
 
-import { Label, Title } from "@/shared/ui/text";
 import { Wordmark } from "@/shared/ui/wordmark";
 
 /**
@@ -17,17 +16,11 @@ export async function DesktopGate({ children }: { children: ReactNode }) {
             <main className="hidden min-h-dvh flex-col justify-between p-16 lg:flex">
                 <Wordmark label="VITA" />
                 <div className="max-w-md">
-                    <Title as="p" size={40} weight="light" leading="1.08">
-                        A versão para computador está em construção.
-                    </Title>
-                    <Label size={17} tone="secondary" className="mt-4">
+                    <p className="headline text-34">A versão para computador está em construção.</p>
+                    <p className="text-17 text-secondary mt-label">
                         Por enquanto, use o VITA no celular.
-                    </Label>
-                    {host ? (
-                        <Label size={17} weight="normal" className="mt-1">
-                            {host}
-                        </Label>
-                    ) : null}
+                    </p>
+                    {host ? <p className="text-17 font-semibold mt-inner">{host}</p> : null}
                 </div>
             </main>
         </>

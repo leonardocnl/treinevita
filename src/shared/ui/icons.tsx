@@ -1,13 +1,12 @@
 /*
- * The VITA icon set, drawn to match "Ponto e linha": a 24×24 grid, 1.5px line
- * in currentColor, round caps and joins, no fill (play and the tile shapes are
- * the only solid ones). One component, one API: <Icon name="check" size={20} />.
+ * The VITA icon set (design v2): a 24×24 grid, 1.75px line in currentColor,
+ * round caps and joins, no fill . One component, one API: <Icon name="check" size={20} />.
  * Icons are always decorative (aria-hidden); the button around them carries
  * the label in Portuguese.
  */
 import type { ReactNode } from "react";
 
-const STROKE = 1.5;
+const STROKE = 1.75;
 
 type IconDefinition = {
     filled?: boolean;
@@ -29,11 +28,12 @@ const icons = {
         ),
     },
     dumbbell: { shape: <path d="M6.5 7.5v9M3.5 10v4M17.5 7.5v9M20.5 10v4M6.5 12h11" /> },
+    /** A rising line with an arrow (Evolução). */
     chart: {
         shape: (
             <>
-                <path d="M4 4v16h16" />
-                <path d="M8 15l4-4 3 3 5-6" />
+                <path d="M3.5 17.5l5.5-5.5 4 4 7-7.5" />
+                <path d="M15 8.5h5v5" />
             </>
         ),
     },
@@ -96,23 +96,6 @@ const icons = {
         ),
     },
     moon: { shape: <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z" /> },
-    play: { filled: true, size: 18, shape: <path d="M8 5.5v13l11-6.5z" /> },
-    /* Widget size switch */
-    "tile-small": {
-        filled: true,
-        size: 16,
-        shape: <rect x="8" y="8" width="8" height="8" rx="2" />,
-    },
-    "tile-medium": {
-        filled: true,
-        size: 16,
-        shape: <rect x="4" y="8" width="16" height="8" rx="2" />,
-    },
-    "tile-large": {
-        filled: true,
-        size: 16,
-        shape: <rect x="5" y="5" width="14" height="14" rx="3" />,
-    },
 } satisfies Record<string, IconDefinition>;
 
 export type IconName = keyof typeof icons;
@@ -121,7 +104,7 @@ export const ICON_NAMES = Object.keys(icons) as IconName[];
 
 type IconProps = {
     name: IconName;
-    /** Width and height in px. Defaults to 24 (18 for play, 16 for the tile shapes). */
+    /** Width and height in px. Defaults to 24. */
     size?: number;
 };
 

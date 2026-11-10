@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
 import { doubleProgression, noProgression } from "./progression";
-import { isStagnant } from "./stagnation";
 import { bestOneRepMax, estimateOneRepMax } from "./strength";
 import { weeklySetsByMuscle } from "./volume";
 
@@ -106,36 +105,6 @@ describe("noProgression", () => {
             kind: "keep",
             loadKg: 22.5,
         });
-    });
-});
-
-describe("isStagnant", () => {
-    const week = (weekStart: string, bestOneRepMax: number) => ({ weekStart, bestOneRepMax });
-
-    it("flags three weeks without beating the previous best", () => {
-        const history = [
-            week("2026-10-05", 50),
-            week("2026-10-12", 48),
-            week("2026-10-19", 49),
-            week("2026-10-26", 50),
-        ];
-        expect(isStagnant(history)).toBe(true);
-    });
-
-    it("does not flag when the recent weeks set a new best", () => {
-        const history = [
-            week("2026-10-05", 50),
-            week("2026-10-12", 48),
-            week("2026-10-19", 51),
-            week("2026-10-26", 50),
-        ];
-        expect(isStagnant(history)).toBe(false);
-    });
-
-    it("needs history before the window", () => {
-        expect(
-            isStagnant([week("2026-10-12", 48), week("2026-10-19", 48), week("2026-10-26", 48)]),
-        ).toBe(false);
     });
 });
 

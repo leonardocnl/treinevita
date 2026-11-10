@@ -1,8 +1,17 @@
 import "server-only";
 
 import { getExercisesByIds, type ExerciseMedia } from "@/modules/catalog";
-import { getLastSetsByExercise, type OpenSession, type PerformedSet } from "@/modules/logging";
+import {
+    getLastSetsByExercise,
+    listSetsSince,
+    type OpenSession,
+    type PerformedSet,
+} from "@/modules/logging";
 import type { TenantContext } from "@/shared/db/tenant";
+import { addDays, startOfWeek, toLocalDate } from "@/shared/time/local-date";
+
+import { STAGNATION_WEEKS, weeksSinceProgress, type WeeklyTop } from "../domain/metrics";
+import { isEffectiveSet } from "../domain/strength";
 
 import { progressionStrategies, type LoadDecision } from "../domain/progression";
 
@@ -27,6 +36,8 @@ export type ExerciseView = {
         readonly sets: readonly PerformedSet[];
     } | null;
     readonly decision: LoadDecision | null;
+    /** Weeks without load or rep progress, only when 3 or more (the stagnation fact). */
+    readonly stagnantWeeks: number | null;
     /** Where the wheel opens for the next set. */
     readonly suggested: {
         readonly loadKg: number;
@@ -47,14 +58,39 @@ export type WorkoutView = {
  * the wheel opens on the right load and the screen only asks when in doubt.
  */
 export async function getWorkoutView(
-    context: TenantContext,
+    context: TenantContext & { timezone: string },
     session: OpenSession,
 ): Promise<WorkoutView> {
     const exerciseIds = session.exercises.map((exercise) => exercise.exerciseId);
-    const [catalog, history] = await Promise.all([
+    const today = toLocalDate(new Date(), context.timezone);
+    const [catalog, history, recent] = await Promise.all([
         getExercisesByIds(context, exerciseIds),
         getLastSetsByExercise(context, exerciseIds),
+        listSetsSince(context, new Date(`${addDays(today, -7 * 20)}T00:00:00Z`)),
     ]);
+
+    // Heaviest set of each week per exercise, from finished sessions only, for the stagnation fact.
+    const tops = new Map<string, Map<string, WeeklyTop>>();
+    for (const row of recent) {
+        const { loadKg, reps, setType } = row.set;
+        if (row.sessionId === session.sessionId || loadKg === null || reps === null) {
+            continue;
+        }
+        if (!isEffectiveSet({ loadKg, reps, setType })) {
+            continue;
+        }
+        const week = startOfWeek(toLocalDate(row.startedAt, context.timezone));
+        const byWeek = tops.get(row.exerciseId) ?? new Map<string, WeeklyTop>();
+        const top = byWeek.get(week);
+        if (!top || loadKg > top.loadKg || (loadKg === top.loadKg && reps > top.reps)) {
+            byWeek.set(week, { weekStart: week, loadKg, reps });
+        }
+        tops.set(row.exerciseId, byWeek);
+    }
+    const stagnantWeeks = (exerciseId: string) => {
+        const weeks = weeksSinceProgress([...(tops.get(exerciseId)?.values() ?? [])], today);
+        return weeks !== null && weeks >= STAGNATION_WEEKS ? weeks : null;
+    };
 
     const exercises = session.exercises.map((exercise): ExerciseView => {
         const info = catalog.get(exercise.exerciseId);
@@ -115,6 +151,7 @@ export async function getWorkoutView(
             doneSets: exercise.sets,
             lastTime,
             decision,
+            stagnantWeeks: stagnantWeeks(exercise.exerciseId),
             suggested,
         };
     });

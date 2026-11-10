@@ -1,11 +1,11 @@
 "use client";
 
 /*
- * The workout screens (list and exercise focus) run on the client from the
- * workout loaded once by the layout. Moving between them changes the screen in
+ * The workout screens (list and set logging) run on the client from the
+ * workout loaded once by the page. Moving between them changes the screen in
  * the same frame, with the slide, and updates the URL with `history.pushState`
  * (refresh and back keep working) without asking the server for anything.
- * Logging and undoing sets are optimistic (see workout-state.ts).
+ * Logging, undoing and correcting sets are optimistic (see workout-state.ts).
  */
 import {
     addTransitionType,
@@ -18,25 +18,26 @@ import {
 import { usePathname } from "next/navigation";
 
 import type { WorkoutView } from "@/modules/progress";
-import { DotNumber } from "@/shared/ui/dot-number";
-import { ExerciseDemo, youtubeSearchUrl } from "@/shared/ui/exercise-demo";
-import { FloatBar } from "@/shared/ui/float-bar";
-import { GlassIconButton } from "@/shared/ui/glass-icon-button";
+import { BottomBar } from "@/shared/ui/bottom-bar";
+import { ExerciseThumb } from "@/shared/ui/exercise-demo";
+import { IconButton } from "@/shared/ui/icon-button";
 import { Icon } from "@/shared/ui/icons";
-import { PillAction } from "@/shared/ui/pill-action";
+import { PrimaryAction } from "@/shared/ui/primary-action";
 import { NAV_BACK, NAV_FORWARD, ScreenTransition } from "@/shared/ui/screen-transition";
-import { Label, Title } from "@/shared/ui/text";
+import { Stepper } from "@/shared/ui/stepper";
 import { Toast } from "@/shared/ui/toast";
-import { safeExternalUrl } from "@/shared/url/external-url";
 
-import { finishWorkoutAction, logSetAction, undoSetAction } from "../../_components/actions";
+import {
+    finishWorkoutAction,
+    logSetAction,
+    undoSetAction,
+    updateSetAction,
+} from "../../_components/actions";
 
 import { DiscardWorkout } from "./discard-workout";
-import { ExerciseList } from "./exercise-list";
-import { SetLogger } from "./set-logger";
+import { ExerciseScreen } from "./exercise-screen";
 import {
     createWorkoutStore,
-    nextSuggestion,
     positionFromPath,
     runOperation,
     visibleExercises,
@@ -45,19 +46,29 @@ import {
     type WorkoutExercise,
     type WorkoutStore,
 } from "./workout-state";
-import { askText, lastTimeText, prescriptionText } from "./workout-text";
 
 function sendOperation(operation: SetOperation): Promise<boolean> {
-    return operation.kind === "log"
-        ? logSetAction({ performedExerciseId: operation.performedExerciseId, ...operation.set })
-        : undoSetAction({ performedExerciseId: operation.performedExerciseId });
+    switch (operation.kind) {
+        case "log":
+            return logSetAction({
+                performedExerciseId: operation.performedExerciseId,
+                ...operation.set,
+            });
+        case "undo":
+            return undoSetAction({ performedExerciseId: operation.performedExerciseId });
+        case "edit":
+            return updateSetAction({
+                performedExerciseId: operation.performedExerciseId,
+                position: operation.index,
+                ...operation.set,
+            });
+    }
 }
 
 /*
  * The open workout lives in this module for the whole visit, so leaving to the
- * Summary and coming back (even with the browser's back button, which reuses
- * the first render) keeps every set logged since. Browser only: on the server
- * each request renders from its own data and nothing is shared between people.
+ * home and coming back keeps every set logged since. Browser only: on the
+ * server each request renders from its own data and nothing is shared.
  */
 let browserStore: WorkoutStore | null = null;
 /** Unique for the whole visit, so an operation still on its way never shares an id. */
@@ -99,54 +110,62 @@ export function WorkoutScreens({ workout }: { workout: WorkoutView }) {
         [store],
     );
 
-    const go = useCallback((next: number | null) => {
-        startTransition(() => {
-            addTransitionType(next === null ? NAV_BACK[0] : NAV_FORWARD[0]);
-            setPosition(next);
-        });
-        window.history.pushState(null, "", next === null ? "/treino" : `/treino/${next}`);
-    }, []);
-
-    const log = (performedExerciseId: string, set: LoggedSet) =>
-        run({ id: nextOperationId++, kind: "log", performedExerciseId, set });
-    const undo = (performedExerciseId: string) =>
-        run({ id: nextOperationId++, kind: "undo", performedExerciseId });
+    const go = useCallback(
+        (next: number | null) => {
+            startTransition(() => {
+                addTransitionType(
+                    next === null || (position !== null && next < position)
+                        ? NAV_BACK[0]
+                        : NAV_FORWARD[0],
+                );
+                setPosition(next);
+            });
+            window.history.pushState(null, "", next === null ? "/treino" : `/treino/${next}`);
+        },
+        [position],
+    );
 
     const exercise = position === null ? undefined : exercises[position - 1];
 
     return (
         <>
-            <aside aria-label="Exercícios do treino" className="hidden md:block md:pt-16">
-                <div className="sticky top-10">
-                    <Title as="h2" size={28} weight="normal">
-                        Treino {workout.label}
-                    </Title>
-                    <div className="mt-6">
-                        <ExerciseList exercises={exercises} active={position} onOpen={go} />
-                    </div>
-                </div>
-            </aside>
-            <div className="min-w-0">
-                <ScreenTransition key={exercise ? exercise.performedExerciseId : "list"}>
-                    {exercise && position !== null ? (
-                        <ExerciseFocus
-                            exercise={exercise}
-                            position={position}
-                            total={exercises.length}
-                            onGo={go}
-                            onLog={(set) => log(exercise.performedExerciseId, set)}
-                            onUndo={() => undo(exercise.performedExerciseId)}
-                        />
-                    ) : (
-                        <WorkoutOverview
-                            label={workout.label}
-                            startedAt={workout.startedAt}
-                            exercises={exercises}
-                            onOpen={go}
-                        />
-                    )}
-                </ScreenTransition>
-            </div>
+            <ScreenTransition key={exercise ? exercise.performedExerciseId : "list"}>
+                {exercise && position !== null ? (
+                    <ExerciseScreen
+                        exercise={exercise}
+                        exercises={exercises}
+                        position={position}
+                        startedAt={workout.startedAt}
+                        onGo={go}
+                        onLog={(set: LoggedSet) =>
+                            run({
+                                id: nextOperationId++,
+                                kind: "log",
+                                performedExerciseId: exercise.performedExerciseId,
+                                set,
+                            })
+                        }
+                        onUndo={() =>
+                            run({
+                                id: nextOperationId++,
+                                kind: "undo",
+                                performedExerciseId: exercise.performedExerciseId,
+                            })
+                        }
+                        onEdit={(index, set) =>
+                            run({
+                                id: nextOperationId++,
+                                kind: "edit",
+                                performedExerciseId: exercise.performedExerciseId,
+                                index,
+                                set,
+                            })
+                        }
+                    />
+                ) : (
+                    <WorkoutOverview label={workout.label} exercises={exercises} onOpen={go} />
+                )}
+            </ScreenTransition>
             {failed ? (
                 <Toast
                     message="Não foi possível salvar. Tente de novo."
@@ -161,162 +180,90 @@ export function WorkoutScreens({ workout }: { workout: WorkoutView }) {
 
 function WorkoutOverview({
     label,
-    startedAt,
     exercises,
     onOpen,
 }: {
     label: string;
-    startedAt: Date;
     exercises: readonly WorkoutExercise[];
     onOpen: (position: number) => void;
 }) {
-    const doneExercises = exercises.filter(
-        (exercise) => exercise.doneSets.length >= exercise.targetSets,
-    ).length;
-    const [minutes] = useState(() =>
-        Math.max(1, Math.round((Date.now() - startedAt.getTime()) / 60000)),
-    );
+    const complete = (exercise: WorkoutExercise) => exercise.doneSets.length >= exercise.targetSets;
+    const doneCount = exercises.filter(complete).length;
+    const firstOpen = exercises.findIndex((exercise) => !complete(exercise));
 
     return (
         <>
-            <main className="px-6 pb-36 pt-[max(env(safe-area-inset-top),52px)] md:px-0 md:pt-16">
-                <div className="flex items-center justify-between md:hidden">
-                    <GlassIconButton href="/" aria-label="Voltar ao Resumo" className="-ml-2">
-                        <Icon name="chevron-left" size={20} />
-                    </GlassIconButton>
-                    <div className="flex items-center gap-4">
-                        <Label as="span" weight="normal">
-                            <span className="tabular-nums" suppressHydrationWarning>
-                                {minutes}
-                            </span>{" "}
-                            min
-                        </Label>
-                        <DiscardWorkout />
-                    </div>
+            <main className="pt-top mx-auto w-full max-w-md px-margin pb-[calc(max(34px,env(safe-area-inset-bottom))+96px)]">
+                <div className="flex h-10 items-center justify-between">
+                    <IconButton icon="chevron-left" href="/" aria-label="Voltar ao Resumo" />
+                    <DiscardWorkout />
                 </div>
 
-                <header className="mt-6 md:hidden">
-                    <Title size={34} weight="normal" leading="tight">
-                        Treino {label}
-                    </Title>
-                    <Label tone="secondary" className="mt-1.5">
-                        {doneExercises} de {exercises.length} exercícios concluídos
-                    </Label>
-                </header>
-
-                <div className="mt-6 md:hidden">
-                    <ExerciseList exercises={exercises} active={null} onOpen={onOpen} />
+                <p className="label mt-intro">Em andamento</p>
+                <h1 className="headline mt-inner text-34">Treino {label}</h1>
+                <div className="mt-intro">
+                    <Stepper
+                        label="Exercícios do treino"
+                        steps={exercises.map((exercise, index) =>
+                            complete(exercise)
+                                ? "done"
+                                : index === firstOpen
+                                  ? "current"
+                                  : "future",
+                        )}
+                        onSelect={(index) => onOpen(index + 1)}
+                        stepLabel={(index) => exercises[index].name}
+                    />
                 </div>
 
-                <div className="hidden min-h-[50vh] flex-col justify-center md:flex">
-                    <DotNumber as="p" size={96} leading="0.8" of={exercises.length}>
-                        {doneExercises}
-                    </DotNumber>
-                    <Label size={17} tone="secondary" className="mt-5">
-                        Exercícios concluídos em <span suppressHydrationWarning>{minutes}</span>{" "}
-                        min. Escolha um exercício na lista.
-                    </Label>
-                    <div className="mt-8">
-                        <DiscardWorkout />
-                    </div>
-                </div>
+                <ol className="mt-block flex flex-col gap-inner">
+                    {exercises.map((exercise, index) => (
+                        <li
+                            key={exercise.performedExerciseId}
+                            className="rise-in"
+                            style={{ "--stagger": index } as React.CSSProperties}
+                        >
+                            <a
+                                href={`/treino/${index + 1}`}
+                                onClick={(event) => {
+                                    if (event.metaKey || event.ctrlKey || event.shiftKey) {
+                                        return;
+                                    }
+                                    event.preventDefault();
+                                    onOpen(index + 1);
+                                }}
+                                className="pressable focus-ring flex min-h-16 items-center gap-gutter"
+                            >
+                                <ExerciseThumb media={exercise.media} />
+                                <span className="flex min-w-0 flex-1 flex-col gap-1">
+                                    <span
+                                        className={`truncate text-17 font-semibold ${complete(exercise) ? "text-secondary" : ""}`}
+                                    >
+                                        {exercise.name}
+                                    </span>
+                                    <span className="text-13 text-secondary tabular-nums">
+                                        {complete(exercise)
+                                            ? "concluído"
+                                            : `${exercise.doneSets.length} de ${exercise.targetSets} séries`}
+                                    </span>
+                                </span>
+                                <Icon name="chevron-right" size={20} />
+                            </a>
+                        </li>
+                    ))}
+                </ol>
             </main>
 
-            <FloatBar>
+            <BottomBar>
                 <form action={finishWorkoutAction} className="flex-1">
-                    <PillAction
+                    <PrimaryAction
                         type="submit"
-                        icon={<Icon name="check" size={20} />}
-                        detail={`${doneExercises} de ${exercises.length}`}
-                    >
-                        Finalizar treino
-                    </PillAction>
+                        glyph="check"
+                        label="Finalizar"
+                        meta={`${doneCount} de ${exercises.length} exercícios`}
+                    />
                 </form>
-            </FloatBar>
+            </BottomBar>
         </>
-    );
-}
-
-function ExerciseFocus({
-    exercise,
-    position,
-    total,
-    onGo,
-    onLog,
-    onUndo,
-}: {
-    exercise: WorkoutExercise;
-    position: number;
-    total: number;
-    onGo: (position: number | null) => void;
-    onLog: (set: LoggedSet) => void;
-    onUndo: () => void;
-}) {
-    const next = position < total ? position + 1 : null;
-    const increasedTo = exercise.decision?.kind === "increase" ? exercise.decision.loadKg : null;
-    // The catalog's reference page when it has one (https only), otherwise a YouTube search.
-    const reference = safeExternalUrl(exercise.referenceUrl);
-
-    return (
-        <main className="px-4 pb-36 pt-[max(env(safe-area-inset-top),52px)] md:px-0 md:pb-16 md:pt-16">
-            <div className="grid grid-cols-[44px_1fr_44px] items-center">
-                <GlassIconButton
-                    onClick={() => onGo(null)}
-                    aria-label="Voltar à lista de exercícios"
-                    className="md:invisible"
-                >
-                    <Icon name="chevron-left" size={20} />
-                </GlassIconButton>
-                <Label as="span" weight="normal" className="text-center tabular-nums">
-                    {position} de {total}
-                </Label>
-            </div>
-
-            <header className="mt-6 flex items-start gap-4 px-2">
-                <div className="flex min-w-0 flex-1 flex-col gap-2">
-                    <Title size={32} weight="light" leading="1.1">
-                        {exercise.name}
-                    </Title>
-                    <Label tone="secondary">{prescriptionText(exercise)}</Label>
-                </div>
-                {/* Apart from back and next, so it cannot be read as "próximo". */}
-                <GlassIconButton
-                    href={reference ?? youtubeSearchUrl(exercise.name)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={
-                        reference
-                            ? `Ver ${exercise.name} em outro site, abre em nova aba`
-                            : `Buscar ${exercise.name} no YouTube, abre em nova aba`
-                    }
-                    className="mt-1 shrink-0"
-                >
-                    <Icon name="external-link" size={20} />
-                </GlassIconButton>
-            </header>
-
-            {exercise.media ? (
-                <div className="mt-6">
-                    <ExerciseDemo name={exercise.name} media={exercise.media} />
-                </div>
-            ) : null}
-
-            <div className="mt-6">
-                <SetLogger
-                    measurement={exercise.measurement}
-                    targetSets={exercise.targetSets}
-                    doneSets={exercise.doneSets}
-                    incrementKg={exercise.incrementKg}
-                    suggested={nextSuggestion(exercise)}
-                    increasedTo={increasedTo}
-                    askText={askText(exercise)}
-                    lastTimeText={lastTimeText(exercise)}
-                    hasNext={next !== null}
-                    onLog={onLog}
-                    onUndo={onUndo}
-                    onNext={() => onGo(next)}
-                />
-            </div>
-        </main>
     );
 }

@@ -1,10 +1,10 @@
 /*
- * The "vita" wordmark in dots at 20px: the one place the dot-matrix font goes
- * under 36px, on purpose (it is a logo, not data).
+ * The "vita" wordmark in Doto at 24px: the one place the dot font goes under
+ * 36px, on purpose (it is a logo, not data).
  */
-export function Wordmark({ label }: { label?: string }) {
+export function Wordmark({ label = "VITA" }: { label?: string }) {
     return (
-        <p className="num text-[20px]" aria-label={label}>
+        <p className="num text-24 leading-none" aria-label={label}>
             vita
         </p>
     );

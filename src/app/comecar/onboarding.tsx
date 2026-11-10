@@ -21,14 +21,11 @@ import {
     type TemplateId,
 } from "@/modules/training/client";
 import { ChoiceList } from "@/shared/ui/choice-list";
-import { DotMeter } from "@/shared/ui/dot-meter";
-import { StatusDot } from "@/shared/ui/dot";
-import { FloatBar } from "@/shared/ui/float-bar";
-import { GlassIconButton } from "@/shared/ui/glass-icon-button";
-import { Icon } from "@/shared/ui/icons";
-import { List, ListRow } from "@/shared/ui/list";
-import { PillAction } from "@/shared/ui/pill-action";
-import { Caption, Label, Title } from "@/shared/ui/text";
+import { Dot } from "@/shared/ui/dot";
+import { BottomBar } from "@/shared/ui/bottom-bar";
+import { IconButton } from "@/shared/ui/icon-button";
+import { Stepper } from "@/shared/ui/stepper";
+import { PrimaryAction } from "@/shared/ui/primary-action";
 import { TextButton } from "@/shared/ui/text-button";
 import { TextField } from "@/shared/ui/text-field";
 import { Wordmark } from "@/shared/ui/wordmark";
@@ -271,17 +268,19 @@ export function Onboarding({
                             extra: (
                                 <>
                                     {candidate.id === suggested ? (
-                                        <span className="flex items-start gap-2">
-                                            <StatusDot className="mt-[7px]" />
+                                        <span className="flex items-start gap-inner">
+                                            <Dot size={6} tone="ink" className="mt-[7px]" />
                                             <span className="flex flex-col">
-                                                <Label as="span" weight="normal">
+                                                <span className="text-15 font-semibold">
                                                     Sugerido para você
-                                                </Label>
-                                                <Caption as="span">{suggestion.reason}</Caption>
+                                                </span>
+                                                <span className="text-13 text-secondary">
+                                                    {suggestion.reason}
+                                                </span>
                                             </span>
                                         </span>
                                     ) : null}
-                                    <Label as="span">{candidate.audience}</Label>
+                                    <span className="text-15">{candidate.audience}</span>
                                     <DayLines
                                         days={candidate.days.map((day) => ({
                                             label: day.label,
@@ -325,51 +324,33 @@ export function Onboarding({
 
     return (
         <>
-            <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-6 pb-40 pt-[max(env(safe-area-inset-top),52px)]">
-                <div className="grid h-11 grid-cols-[44px_1fr_44px] items-center">
+            <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-margin pt-top pb-[calc(max(34px,env(safe-area-inset-bottom))+96px)]">
+                <div className="flex h-11 items-center gap-gutter">
                     {step === 0 ? (
-                        <div className="col-span-3">
-                            <Wordmark label="VITA" />
-                        </div>
+                        <Wordmark />
                     ) : (
                         <>
-                            <GlassIconButton onClick={back} aria-label="Voltar" className="-ml-2">
-                                <Icon name="chevron-left" size={20} />
-                            </GlassIconButton>
-                            <div
-                                role="group"
-                                aria-label={`Passo ${step} de ${QUESTIONS}`}
-                                className="flex items-center justify-center gap-2.5"
-                            >
-                                <span aria-hidden>
-                                    <DotMeter
-                                        total={QUESTIONS}
-                                        done={step - 1}
-                                        current={step - 1}
-                                        label={`Passo ${step} de ${QUESTIONS}`}
-                                    />
-                                </span>
-                                <span
-                                    aria-hidden
-                                    key={step}
-                                    className="roll-in text-[13px] tabular-nums text-ink-secondary"
+                            <IconButton icon="chevron-left" onClick={back} aria-label="Voltar" />
+                            <Stepper
+                                label={`Passo ${step} de ${QUESTIONS}`}
+                                steps={Array.from({ length: QUESTIONS }, (_, index) =>
+                                    index < step - 1
+                                        ? "done"
+                                        : index === step - 1
+                                          ? "current"
+                                          : "future",
+                                )}
+                            />
+                            {screen.optional ? (
+                                <TextButton
+                                    onClick={() => {
+                                        screen.optional?.();
+                                        next();
+                                    }}
                                 >
-                                    {step} de {QUESTIONS}
-                                </span>
-                            </div>
-                            <div className="flex justify-end">
-                                {screen.optional ? (
-                                    <TextButton
-                                        tone="secondary"
-                                        onClick={() => {
-                                            screen.optional?.();
-                                            next();
-                                        }}
-                                    >
-                                        Pular
-                                    </TextButton>
-                                ) : null}
-                            </div>
+                                    Pular
+                                </TextButton>
+                            ) : null}
                         </>
                     )}
                 </div>
@@ -377,37 +358,37 @@ export function Onboarding({
                 <div
                     key={step}
                     className={`flex flex-col ${direction === "forward" ? "slide-forward" : "slide-back"} ${
-                        step === 0 ? "mt-auto" : "mt-10"
+                        step === 0 ? "mt-auto" : "mt-block"
                     }`}
                 >
-                    <Title size={step === 0 ? 40 : 34} weight="light" leading="1.1">
+                    <h1 className={`headline ${step === 0 ? "text-58" : "text-34"}`}>
                         {screen.title}
-                    </Title>
+                    </h1>
                     {screen.hint ? (
-                        <Label size={17} tone="secondary" className="mt-3 max-w-sm">
-                            {screen.hint}
-                        </Label>
+                        <p className="mt-label max-w-sm text-17 text-secondary">{screen.hint}</p>
                     ) : null}
-                    {screen.body ? <div className="mt-8">{screen.body}</div> : null}
+                    {screen.body ? <div className="mt-block">{screen.body}</div> : null}
                 </div>
 
                 {error ? (
-                    <Label role="alert" size={17} tone="accent" className="mt-8">
+                    <p className="mt-block text-17 font-semibold" role="alert">
                         {error}
-                    </Label>
+                    </p>
                 ) : null}
             </main>
 
-            <FloatBar>
-                <PillAction
+            <BottomBar>
+                <PrimaryAction
                     grow
                     disabled={!screen.ready || pending}
                     onClick={step === LAST ? submit : next}
-                    icon={<Icon name={step === LAST ? "check" : "arrow-right"} size={20} />}
-                >
-                    {step === 0 ? "Começar" : step === LAST && pending ? "Salvando" : "Continuar"}
-                </PillAction>
-            </FloatBar>
+                    glyph={step === LAST ? "check" : "arrow"}
+                    label={
+                        step === 0 ? "Começar" : step === LAST && pending ? "Salvando" : "Continuar"
+                    }
+                    meta={step === 0 ? undefined : `${step} de ${QUESTIONS}`}
+                />
+            </BottomBar>
         </>
     );
 }
@@ -415,11 +396,11 @@ export function Onboarding({
 /** "A: peito, costas, ombro": what each day of a model trains. */
 function DayLines({ days }: { days: { label: string; text: string }[] }) {
     return (
-        <span className="flex flex-col gap-0.5">
+        <span className="flex flex-col gap-1">
             {days.map((day) => (
-                <Caption as="span" key={day.label}>
-                    <span className="font-normal text-ink">{day.label}:</span> {day.text}
-                </Caption>
+                <span className="text-13 text-secondary" key={day.label}>
+                    <span className="font-semibold text-ink">{day.label}:</span> {day.text}
+                </span>
             ))}
         </span>
     );
@@ -442,21 +423,17 @@ function dayFocus(slugs: readonly string[], catalog: readonly CatalogEntry[]): s
 
 function CurrentProgram({ days }: { days: { label: string; exercises: string[] }[] }) {
     return (
-        <div className="flex flex-col gap-10">
+        <div className="flex flex-col gap-block">
             {days.map((day) => (
                 <section key={day.label}>
-                    <Title as="h2" size={22} weight="normal">
-                        Treino {day.label}
-                    </Title>
-                    <List>
+                    <h2 className="action text-20">Treino {day.label}</h2>
+                    <ol className="mt-label flex flex-col gap-inner">
                         {day.exercises.map((exercise, index) => (
-                            <ListRow key={index} className="flex min-h-12 items-center">
-                                <Label as="span" size={17}>
-                                    {exercise}
-                                </Label>
-                            </ListRow>
+                            <li key={index} className="text-17">
+                                {exercise}
+                            </li>
                         ))}
-                    </List>
+                    </ol>
                 </section>
             ))}
         </div>

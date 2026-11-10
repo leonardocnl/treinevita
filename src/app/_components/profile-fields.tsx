@@ -7,9 +7,7 @@
 import type { Experience, Goal, SessionMinutes, TrainingPlace } from "@/modules/identity";
 import { formatNumber } from "@/shared/format/numbers";
 import type { Choice } from "@/shared/ui/choice-list";
-import { Panel } from "@/shared/ui/panel";
-import { QuietBand } from "@/shared/ui/quiet-band";
-import { WHEEL_ITEM_HEIGHT, WheelPicker } from "@/shared/ui/wheel-picker";
+import { WheelPicker } from "@/shared/ui/wheel-picker";
 
 export const GOAL_OPTIONS: Choice<Goal>[] = [
     { value: "hypertrophy", label: "Ganhar massa", detail: "Músculos maiores." },
@@ -54,7 +52,7 @@ const WEEKLY_VALUES = range(1, 7, 1);
 const WEIGHT_VALUES = range(30, 300, 0.5);
 const HEIGHT_VALUES = range(100, 250, 1);
 
-/** One wheel on the dark panel, under the selection band. */
+/** One wheel, labelled for screen readers. */
 function SingleWheel({
     label,
     ...wheel
@@ -67,14 +65,13 @@ function SingleWheel({
     unit: string;
 }) {
     return (
-        <Panel aria-label={label}>
+        <div role="group" aria-label={label}>
             <div className="relative">
-                <QuietBand top={WHEEL_ITEM_HEIGHT + 2} height={WHEEL_ITEM_HEIGHT - 4} />
                 <div className="relative">
                     <WheelPicker label={label} {...wheel} />
                 </div>
             </div>
-        </Panel>
+        </div>
     );
 }
 
@@ -129,10 +126,9 @@ export function BodyPicker({
     onChange: (value: { weightKg: number; heightCm: number }) => void;
 }) {
     return (
-        <Panel aria-label="Peso e altura">
+        <div role="group" aria-label="Peso e altura">
             <div className="relative">
-                <QuietBand top={WHEEL_ITEM_HEIGHT + 2} height={WHEEL_ITEM_HEIGHT - 4} />
-                <div className="relative grid grid-cols-2">
+                <div className="relative grid grid-cols-2 gap-gutter">
                     <WheelPicker
                         values={WEIGHT_VALUES}
                         value={weightKg}
@@ -153,6 +149,6 @@ export function BodyPicker({
                     />
                 </div>
             </div>
-        </Panel>
+        </div>
     );
 }

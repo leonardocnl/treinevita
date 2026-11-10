@@ -1,25 +1,19 @@
 import type { Metadata } from "next";
 
-import { GlassIconButton } from "@/shared/ui/glass-icon-button";
-import { Icon } from "@/shared/ui/icons";
-import { Label, Title } from "@/shared/ui/text";
+import { IconButton } from "@/shared/ui/icon-button";
 
 export const metadata: Metadata = { title: "Créditos · VITA" };
 
-const link = "font-normal text-ink underline decoration-hairline underline-offset-4";
+const link = "font-semibold text-ink underline decoration-hairline underline-offset-4";
 
 /** Attribution required by CC BY-SA 4.0 for the exercise drawings. */
 export default function CreditsPage() {
     return (
-        <main className="mx-auto w-full max-w-md px-6 pb-24 pt-[max(env(safe-area-inset-top),52px)]">
-            <GlassIconButton href="/ajustes" aria-label="Voltar aos Ajustes" className="-ml-2">
-                <Icon name="chevron-left" size={20} />
-            </GlassIconButton>
-            <Title size={34} weight="normal" leading="tight" className="mt-6">
-                Créditos
-            </Title>
-            <div className="mt-6 flex flex-col gap-4">
-                <Label size={17}>
+        <main className="mx-auto w-full max-w-md px-margin pb-24 pt-top">
+            <IconButton icon="chevron-left" href="/ajustes" aria-label="Voltar aos Ajustes" />
+            <h1 className="headline text-34 mt-intro">Créditos</h1>
+            <div className="mt-intro flex flex-col gap-label">
+                <p className="text-17">
                     As ilustrações dos exercícios vêm do{" "}
                     <a href="https://github.com/everkinetic/data" className={link}>
                         Everkinetic
@@ -32,11 +26,11 @@ export default function CreditsPage() {
                         CC BY-SA 4.0
                     </a>
                     .
-                </Label>
-                <Label size={17} tone="secondary">
+                </p>
+                <p className="text-17 text-secondary">
                     Os desenhos foram adaptados para o VITA: as cores mudam com o tema do app. Os
                     desenhos adaptados seguem sob a mesma licença, CC BY-SA 4.0.
-                </Label>
+                </p>
             </div>
         </main>
     );

@@ -12,13 +12,16 @@ import type { ProfileInput } from "@/modules/identity";
 import { formatNumber } from "@/shared/format/numbers";
 import { ChoiceList } from "@/shared/ui/choice-list";
 import { Icon } from "@/shared/ui/icons";
-import { PillAction } from "@/shared/ui/pill-action";
+import { PrimaryAction } from "@/shared/ui/primary-action";
 import { Sheet } from "@/shared/ui/sheet";
-import { Sparkline } from "@/shared/ui/sparkline";
-import { Caption, Label, Title } from "@/shared/ui/text";
+import { SectionLabel } from "@/shared/ui/section-label";
+import { WeightChart } from "@/shared/ui/weight-chart";
 import { TextField } from "@/shared/ui/text-field";
 
+import { NAV_CLEARANCE } from "../../_components/app-nav";
 import { recordWeightAction, updateProfileAction } from "../../_components/profile-actions";
+import { ThemeToggle } from "../../_components/theme-toggle";
+import { TopBar } from "../../_components/top-bar";
 import {
     EXPERIENCE_OPTIONS,
     GOAL_OPTIONS,
@@ -159,10 +162,11 @@ export function Profile({ profile, weightTrend }: ProfileProps) {
     };
 
     return (
-        <main className="mx-auto w-full max-w-md px-6 pb-40 pt-[max(env(safe-area-inset-top),52px)]">
-            <Title size={34} weight="normal" leading="tight">
-                Perfil
-            </Title>
+        <main className={`pt-top mx-auto w-full max-w-md px-margin ${NAV_CLEARANCE}`}>
+            <TopBar>
+                <ThemeToggle />
+            </TopBar>
+            <h1 className="headline mt-intro text-34">Perfil</h1>
 
             <Group title="Você">
                 {person.map((row) => (
@@ -176,21 +180,26 @@ export function Profile({ profile, weightTrend }: ProfileProps) {
             </Group>
 
             <Group title="Corpo">
-                <div className="flex min-h-16 items-center gap-3 border-b border-hairline py-3">
-                    <span className="flex flex-1 flex-col gap-0.5">
-                        <Label as="span" size={17}>
-                            Peso
-                        </Label>
-                        <Label as="span" tone="secondary" className="tabular-nums">
+                <div className="flex min-h-16 items-center gap-gutter py-inner">
+                    <span className="flex flex-1 flex-col gap-1">
+                        <span className="text-17">Peso</span>
+                        <span className="text-15 text-secondary tabular-nums">
                             {formatNumber(profile.weightKg, 1)} kg
-                        </Label>
+                        </span>
                     </span>
-                    <Sparkline
-                        values={weightTrend}
-                        width={96}
-                        height={32}
-                        label="Peso nas últimas pesagens"
-                    />
+                    <span className="w-24 shrink-0">
+                        <WeightChart
+                            points={weightTrend.map((value, index) => ({
+                                day: String(index),
+                                value,
+                            }))}
+                            width={96}
+                            height={32}
+                            compact
+                            label="Peso nas últimas pesagens"
+                            format={(kg) => formatNumber(kg, 1)}
+                        />
+                    </span>
                 </div>
                 <EditRow
                     label="Altura"
@@ -200,12 +209,10 @@ export function Profile({ profile, weightTrend }: ProfileProps) {
                 <button
                     type="button"
                     onClick={() => open("weight")}
-                    className="pressable flex min-h-16 w-full items-center justify-between gap-3 text-left"
+                    className="pressable focus-ring flex min-h-16 w-full items-center justify-between gap-gutter rounded-cta bg-tint px-margin text-left"
                 >
-                    <Label as="span" size={17} weight="normal">
-                        Registrar peso
-                    </Label>
-                    <span className="text-ink-secondary">
+                    <span className="text-17 font-semibold">Registrar peso</span>
+                    <span className="text-secondary">
                         <Icon name="plus" size={20} />
                     </span>
                 </button>
@@ -214,12 +221,10 @@ export function Profile({ profile, weightTrend }: ProfileProps) {
             <Group>
                 <Link
                     href="/ajustes"
-                    className="pressable flex min-h-16 items-center justify-between gap-3"
+                    className="pressable focus-ring flex min-h-16 items-center justify-between gap-gutter rounded-cta bg-tint px-margin"
                 >
-                    <Label as="span" size={17}>
-                        Ajustes
-                    </Label>
-                    <span className="text-ink-secondary">
+                    <span className="text-17">Ajustes</span>
+                    <span className="text-secondary">
                         <Icon name="chevron-right" size={20} />
                     </span>
                 </Link>
@@ -230,20 +235,19 @@ export function Profile({ profile, weightTrend }: ProfileProps) {
                 onClose={() => setEditing(null)}
                 title={editing ? FIELD_TITLES[editing] : ""}
             >
-                <div className="mt-4">{editing ? editors[editing] : null}</div>
+                <div className="mt-label">{editing ? editors[editing] : null}</div>
                 {error ? (
-                    <Label role="alert" size={17} tone="accent" className="mt-4">
+                    <p className="text-17 font-semibold mt-label" role="alert">
                         {error}
-                    </Label>
+                    </p>
                 ) : null}
-                <div className="mt-6">
-                    <PillAction
+                <div className="mt-intro">
+                    <PrimaryAction
                         onClick={save}
                         disabled={pending || draft.displayName.trim().length === 0}
-                        icon={<Icon name="check" size={20} />}
-                    >
-                        {pending ? "Salvando" : "Salvar"}
-                    </PillAction>
+                        glyph="check"
+                        label={pending ? "Salvando" : "Salvar"}
+                    />
                 </div>
             </Sheet>
         </main>
@@ -257,15 +261,11 @@ function EditRow({ label, value, onEdit }: { label: string; value: string; onEdi
             type="button"
             onClick={onEdit}
             aria-label={`Editar ${label}: ${value}`}
-            className="pressable flex min-h-16 w-full items-center gap-3 border-b border-hairline text-left last:border-b-0"
+            className="pressable focus-ring flex min-h-16 w-full items-center gap-gutter rounded-cta bg-tint px-margin text-left"
         >
-            <Label as="span" size={17} className="flex-1">
-                {label}
-            </Label>
-            <Label as="span" tone="secondary" className="truncate tabular-nums">
-                {value}
-            </Label>
-            <span className="text-ink-secondary">
+            <span className="text-17 flex-1">{label}</span>
+            <span className="text-15 text-secondary truncate tabular-nums">{value}</span>
+            <span className="text-secondary">
                 <Icon name="pencil" size={18} />
             </span>
         </button>
@@ -274,9 +274,9 @@ function EditRow({ label, value, onEdit }: { label: string; value: string; onEdi
 
 function Group({ title, children }: { title?: string; children: ReactNode }) {
     return (
-        <section className="mt-10">
-            {title ? <Caption as="h2">{title}</Caption> : null}
-            <div className="mt-2">{children}</div>
+        <section className="mt-section">
+            {title ? <SectionLabel>{title}</SectionLabel> : null}
+            <div className="mt-label flex flex-col gap-inner">{children}</div>
         </section>
     );
 }

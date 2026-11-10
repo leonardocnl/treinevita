@@ -235,15 +235,16 @@ export async function getLastSetsByExercise(
     return result;
 }
 
-/** All effective sets since a date, for records and weekly volume. */
+/** Every set logged since a date (discarded sessions left out), for records, volume and stagnation. */
 export async function listSetsSince(
     context: TenantContext,
     since: Date,
-): Promise<{ exerciseId: string; startedAt: Date; set: PerformedSet }[]> {
+): Promise<{ exerciseId: string; sessionId: string; startedAt: Date; set: PerformedSet }[]> {
     const db = await getDb();
     const rows = await db
         .select({
             exerciseId: performedExercises.exerciseId,
+            sessionId: workoutSessions.id,
             startedAt: workoutSessions.startedAt,
             set: performedSets,
         })
@@ -253,12 +254,14 @@ export async function listSetsSince(
         .where(
             and(
                 inTenant(performedSets, context),
+                inTenant(workoutSessions, context),
                 eq(workoutSessions.userId, context.userId),
                 gte(workoutSessions.startedAt, since),
             ),
         );
     return rows.map((row) => ({
         exerciseId: row.exerciseId,
+        sessionId: row.sessionId,
         startedAt: row.startedAt,
         set: toPerformedSet(row.set),
     }));
@@ -390,6 +393,45 @@ export async function undoLastSet(
         .where(and(inTenant(performedSets, context), inArray(performedSets.id, lastSet)))
         .returning({ id: performedSets.id });
     return deleted.length > 0;
+}
+
+/**
+ * Corrects a logged set (by its position) of an exercise in the open session.
+ * The exercise must belong to the person's open session; otherwise nothing changes.
+ */
+export async function updateSet(
+    context: TenantContext,
+    performedExerciseId: string,
+    position: number,
+    input: SetInput,
+): Promise<boolean> {
+    const db = await getDb();
+    const owned = db
+        .select({ id: performedExercises.id })
+        .from(performedExercises)
+        .innerJoin(workoutSessions, inOpenSession(context))
+        .where(
+            and(
+                inTenant(performedExercises, context),
+                eq(performedExercises.id, performedExerciseId),
+            ),
+        );
+    const updated = await db
+        .update(performedSets)
+        .set({
+            loadKg: input.loadKg === null ? null : String(input.loadKg),
+            reps: input.reps,
+            durationSeconds: input.durationSeconds,
+        })
+        .where(
+            and(
+                inTenant(performedSets, context),
+                eq(performedSets.position, position),
+                inArray(performedSets.performedExerciseId, owned),
+            ),
+        )
+        .returning({ id: performedSets.id });
+    return updated.length > 0;
 }
 
 export async function finishSession(context: TenantContext): Promise<boolean> {

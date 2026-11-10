@@ -9,10 +9,10 @@ import { useState, useTransition, type ReactNode } from "react";
 
 import type { Theme } from "@/shared/theme/theme";
 import { ChoiceList, type Choice } from "@/shared/ui/choice-list";
-import { GlassIconButton } from "@/shared/ui/glass-icon-button";
+import { IconButton } from "@/shared/ui/icon-button";
+import { SectionLabel } from "@/shared/ui/section-label";
 import { Icon } from "@/shared/ui/icons";
 import { NAV_BACK } from "@/shared/ui/screen-transition";
-import { Caption, Label, Title } from "@/shared/ui/text";
 import { TextButton } from "@/shared/ui/text-button";
 
 import { signOutAction } from "../../_components/actions";
@@ -36,43 +36,31 @@ export function Settings({ theme: initialTheme, email }: SettingsProps) {
     }
 
     return (
-        <main className="mx-auto w-full max-w-md px-6 pb-24 pt-[max(env(safe-area-inset-top),52px)]">
-            <GlassIconButton
+        <main className="mx-auto w-full max-w-md px-margin pb-24 pt-top">
+            <IconButton
+                icon="chevron-left"
                 href="/perfil"
                 transitionTypes={NAV_BACK}
                 aria-label="Voltar ao Perfil"
-                className="-ml-2"
-            >
-                <Icon name="chevron-left" size={20} />
-            </GlassIconButton>
-            <Title size={34} weight="normal" leading="tight" className="mt-6">
-                Ajustes
-            </Title>
+            />
+            <h1 className="headline text-34 mt-intro">Ajustes</h1>
 
             <Group title="Conta">
-                <div className="flex min-h-16 items-center justify-between gap-3 border-b border-hairline">
-                    <Label as="span" size={17}>
-                        Email
-                    </Label>
-                    <Label as="span" tone="secondary" className="truncate">
-                        {email}
-                    </Label>
+                <div className="flex min-h-16 items-center justify-between gap-gutter">
+                    <span className="text-17">Email</span>
+                    <span className="text-15 truncate">{email}</span>
                 </div>
                 <Link
                     href="/creditos"
-                    className="pressable flex min-h-16 items-center justify-between border-b border-hairline"
+                    className="pressable focus-ring flex min-h-16 items-center justify-between gap-gutter rounded-cta bg-tint px-margin"
                 >
-                    <Label as="span" size={17}>
-                        Créditos
-                    </Label>
-                    <span className="text-ink-secondary">
+                    <span className="text-17">Créditos</span>
+                    <span className="text-secondary">
                         <Icon name="chevron-right" size={20} />
                     </span>
                 </Link>
                 <form action={signOutAction} className="flex min-h-16 items-center">
-                    <TextButton type="submit" tone="accent">
-                        Sair
-                    </TextButton>
+                    <TextButton type="submit">Sair</TextButton>
                 </form>
             </Group>
 
@@ -90,9 +78,9 @@ export function Settings({ theme: initialTheme, email }: SettingsProps) {
 
 function Group({ title, children }: { title: string; children: ReactNode }) {
     return (
-        <section className="mt-10">
-            <Caption as="h2">{title}</Caption>
-            <div className="mt-2">{children}</div>
+        <section className="mt-section">
+            <SectionLabel>{title}</SectionLabel>
+            <div className="mt-label flex flex-col gap-inner">{children}</div>
         </section>
     );
 }

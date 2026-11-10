@@ -3,6 +3,7 @@
  * Each module owns its own `infrastructure/schema.ts`; this file only re-exports.
  */
 import * as catalog from "@/modules/catalog/infrastructure/schema";
+import * as habits from "@/modules/habits/infrastructure/schema";
 import * as identity from "@/modules/identity/infrastructure/schema";
 import * as logging from "@/modules/logging/infrastructure/schema";
 import * as progress from "@/modules/progress/infrastructure/schema";
@@ -16,4 +17,5 @@ export const schema = {
     ...training,
     ...logging,
     ...progress,
+    ...habits,
 };

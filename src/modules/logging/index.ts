@@ -13,6 +13,7 @@ export {
     logSet,
     startSession,
     undoLastSet,
+    updateSet,
     type OpenSession,
     type PerformedExercise,
     type PerformedSet,
