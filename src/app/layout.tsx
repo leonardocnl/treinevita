@@ -7,16 +7,16 @@ import { THEME_COOKIE, parseTheme } from "@/shared/theme/theme";
 import "./globals.css";
 
 /**
- * Fonts are self-hosted: no request to Google at runtime (faster, better for the LGPD).
- * Inter (variable) for text; Doto (variable dot-matrix) only for numbers.
+ * Fonts are self-hosted: no request to a third party at runtime (faster, better for the LGPD).
+ * Mona Sans (variable: width 75–125, weight, optical size) for all text, from the
+ * official repository (github/mona-sans, SIL OFL); Doto (dot matrix) only for numbers.
  */
-const inter = localFont({
-    variable: "--font-inter",
-    src: [
-        { path: "./fonts/inter-latin-wght-normal.woff2", style: "normal" },
-        { path: "./fonts/inter-latin-ext-wght-normal.woff2", style: "normal" },
-    ],
-    weight: "100 900",
+const mona = localFont({
+    variable: "--font-mona",
+    src: [{ path: "./fonts/mona-sans-vf.woff2", style: "normal" }],
+    weight: "200 900",
+    // The width axis, so font-stretch 100% to 125% picks the real width instead of a synthetic one.
+    declarations: [{ prop: "font-stretch", value: "75% 125%" }],
     display: "swap",
 });
 
@@ -67,7 +67,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             lang="pt-BR"
             // The setting from Ajustes; without it, globals.css follows the system.
             data-theme={theme === "system" ? undefined : theme}
-            className={`${inter.variable} ${doto.variable} h-full`}
+            className={`${mona.variable} ${doto.variable} h-full`}
         >
             <body className="min-h-full">{children}</body>
         </html>

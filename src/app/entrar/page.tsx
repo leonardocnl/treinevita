@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 
 import { isDevSignInAvailable } from "@/modules/identity";
-import { Icon } from "@/shared/ui/icons";
-import { PillAction } from "@/shared/ui/pill-action";
+import { PrimaryAction } from "@/shared/ui/primary-action";
 import { Label, Title } from "@/shared/ui/text";
 import { Wordmark } from "@/shared/ui/wordmark";
 
@@ -49,15 +48,15 @@ export default async function SignInPage({
                 <div className="flex flex-col gap-3">
                     {/* A native GET form, not a <Link>: prefetching would start the OAuth flow. */}
                     <form action="/api/auth/google" method="get">
-                        <PillAction type="submit" icon={<Icon name="arrow-right" size={20} />}>
-                            Entrar com Google
-                        </PillAction>
+                        <PrimaryAction type="submit" glyph="arrow" label="Entrar com Google" />
                     </form>
                     {devAvailable ? (
                         <form action={devSignInAction}>
-                            <PillAction type="submit" icon={<Icon name="arrow-right" size={20} />}>
-                                Entrar como Leonardo
-                            </PillAction>
+                            <PrimaryAction
+                                type="submit"
+                                glyph="arrow"
+                                label="Entrar como Leonardo"
+                            />
                         </form>
                     ) : null}
                 </div>

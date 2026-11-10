@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import type { DashboardExtras, Summary, WidgetKind, WidgetSize } from "@/modules/progress";
 import { formatNumber } from "@/shared/format/numbers";
-import { Dot, StatusDot } from "@/shared/ui/dot";
+import { Dot } from "@/shared/ui/dot";
 import { DotNumber } from "@/shared/ui/dot-number";
 import { DotRing } from "@/shared/ui/dot-ring";
 import { EmptyState } from "@/shared/ui/empty-state";
@@ -38,7 +38,7 @@ const weekly: Render = ({ summary, extras }, size) => {
                 title="Semana"
                 aside={<DotRing done={done} goal={goal} label={ringLabel} size={40} dots={16} />}
             >
-                <DotNumber as="p" size={56} leading="0.8" of={goal} className="mt-auto">
+                <DotNumber as="p" size={56} of={goal}>
                     {done}
                 </DotNumber>
                 <Caption className="mt-3">{caption}</Caption>
@@ -49,7 +49,7 @@ const weekly: Render = ({ summary, extras }, size) => {
     const hero = (
         <div className="flex items-end justify-between gap-3">
             <div>
-                <DotNumber as="p" size={80} leading="0.8" of={goal}>
+                <DotNumber as="p" size={64} of={goal}>
                     {done}
                 </DotNumber>
                 <Label tone="secondary" className="mt-3">
@@ -80,11 +80,11 @@ const weekly: Render = ({ summary, extras }, size) => {
                             {day.label}
                         </Caption>
                         {day.trained ? (
-                            <Dot size={12} fill="ink" />
+                            <Dot size={12} tone="ink" />
                         ) : day.isToday ? (
-                            <Dot size={12} ring="red" />
+                            <Dot size={12} tone="accent" />
                         ) : (
-                            <Dot size={12} fill={day.isFuture ? "hairline" : "off"} />
+                            <Dot size={12} tone="off" />
                         )}
                     </div>
                 ))}
@@ -111,7 +111,7 @@ const consistency: Render = ({ summary }, size) => {
     const metCount = closed.filter((week) => week.trained >= goal).length;
     const average = (big: boolean) => (
         <Metric
-            size={big ? 64 : 48}
+            size={big ? 64 : 56}
             value={formatNumber(summary.activity.averagePerWeek, 1)}
             unit="por semana"
         />
@@ -170,14 +170,14 @@ const nextWorkout: Render = ({ summary }, size) => {
     if (!next) {
         return (
             <Frame title={title}>
-                <EmptyState>Monte sua ficha em Treinos.</EmptyState>
+                <EmptyState ghost="0" sentence="Monte sua ficha em Treinos." />
             </Frame>
         );
     }
     const increasing =
         next.increasing.length === 0 ? null : (
             <p className="flex items-center gap-2 text-[13px]">
-                <StatusDot />
+                <Dot size={6} tone="accent" />
                 <span className="truncate">
                     {next.increasing.length === 1 && size !== "small"
                         ? `${next.increasing[0]} sobe de carga`
@@ -225,7 +225,11 @@ const nextWorkout: Render = ({ summary }, size) => {
                         key={index}
                         size="sm"
                         label={exercise.name}
-                        marker={exercise.increases ? <StatusDot label="sobe de carga" /> : null}
+                        marker={
+                            exercise.increases ? (
+                                <Dot size={6} tone="accent" label="sobe de carga" />
+                            ) : null
+                        }
                     />
                 ))}
             </List>
@@ -248,7 +252,7 @@ const lastWorkout: Render = ({ extras }, size) => {
     if (!last) {
         return (
             <Frame title="Último treino">
-                <EmptyState>Seu primeiro treino aparece aqui.</EmptyState>
+                <EmptyState ghost="0" sentence="Seu primeiro treino aparece aqui." />
             </Frame>
         );
     }
@@ -260,7 +264,7 @@ const lastWorkout: Render = ({ extras }, size) => {
     if (size === "small") {
         return (
             <Frame title="Último treino">
-                <Metric size={48} value={last.minutes} unit="min" className="mt-auto" />
+                <Metric size={56} value={last.minutes} unit="min" className="mt-auto" />
                 <Caption className="mt-2">
                     Treino {last.label}, {shortDate(last.date)}
                 </Caption>
@@ -314,7 +318,7 @@ const bodyWeight: Render = ({ summary }, size) => {
     if (!weight) {
         return (
             <Frame title="Peso">
-                <EmptyState>Registre seu peso em Perfil.</EmptyState>
+                <EmptyState ghost="0" sentence="Registre seu peso em Perfil." />
             </Frame>
         );
     }
@@ -322,7 +326,7 @@ const bodyWeight: Render = ({ summary }, size) => {
         weight.monthDeltaKg === null
             ? "kg"
             : `kg, ${weight.monthDeltaKg >= 0 ? "+" : ""}${formatNumber(weight.monthDeltaKg, 1)} no mês`;
-    const value = <DotNumber size={48}>{formatNumber(weight.latestKg, 1, 1)}</DotNumber>;
+    const value = <DotNumber size={56}>{formatNumber(weight.latestKg, 1, 1)}</DotNumber>;
 
     if (size === "small") {
         return (
@@ -380,13 +384,13 @@ const waist: Render = ({ summary }) => (
     <Frame title="Cintura">
         {summary.waistCm !== null ? (
             <>
-                <DotNumber as="p" size={48} className="mt-auto">
+                <DotNumber as="p" size={56}>
                     {formatNumber(summary.waistCm, 1, 1)}
                 </DotNumber>
                 <Caption className="mt-2">cm</Caption>
             </>
         ) : (
-            <EmptyState>Sem medida ainda.</EmptyState>
+            <EmptyState ghost="0" sentence="Sem medida ainda." />
         )}
     </Frame>
 );
@@ -396,18 +400,18 @@ const records: Render = ({ extras }, size) => {
     if (list.length === 0) {
         return (
             <Frame title="Recordes">
-                <EmptyState>Nenhum recorde nos últimos 30 dias.</EmptyState>
+                <EmptyState ghost="0" sentence="Nenhum recorde nos últimos 30 dias." />
             </Frame>
         );
     }
     const top = list[0];
-    const marker = <StatusDot className="mt-1" />;
+    const marker = <Dot size={6} tone="accent" className="mt-1" />;
 
     if (size === "small") {
         return (
             <Frame title="Recorde" aside={marker}>
                 <Metric
-                    size={48}
+                    size={56}
                     value={formatNumber(top.loadKg)}
                     unit="kg"
                     spacing="tight"
@@ -455,7 +459,7 @@ const muscleVolume: Render = ({ extras }, size) => {
     if (list.length === 0) {
         return (
             <Frame title="Volume por músculo">
-                <EmptyState>Ainda sem séries nesta semana.</EmptyState>
+                <EmptyState ghost="0" sentence="Ainda sem séries nesta semana." />
             </Frame>
         );
     }
@@ -467,7 +471,7 @@ const muscleVolume: Render = ({ extras }, size) => {
         return (
             <Frame title="Mais treinado">
                 <Metric
-                    size={48}
+                    size={56}
                     value={formatNumber(top.sets, 1)}
                     unit="séries"
                     spacing="tight"
@@ -516,7 +520,7 @@ const stagnant: Render = ({ extras }, size) => {
     if (size === "small" || list.length === 0) {
         return (
             <Frame title="Estagnados">
-                <DotNumber as="p" size={56} leading="0.8" className="mt-auto">
+                <DotNumber as="p" size={56}>
                     {list.length}
                 </DotNumber>
                 <Caption className="mt-3">

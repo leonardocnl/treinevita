@@ -10,7 +10,7 @@
 import { useState, useTransition } from "react";
 
 import { parseTheme, toggledTheme } from "@/shared/theme/theme";
-import { GlassIconButton } from "@/shared/ui/glass-icon-button";
+import { IconButton } from "@/shared/ui/icon-button";
 import { Icon } from "@/shared/ui/icons";
 
 import { setThemeAction } from "./profile-actions";
@@ -31,11 +31,7 @@ export function ThemeToggle() {
     }
 
     return (
-        <GlassIconButton
-            onClick={toggle}
-            aria-label="Alternar tema claro e escuro"
-            className="group"
-        >
+        <IconButton onClick={toggle} aria-label="Alternar tema claro e escuro" className="group">
             {/* The key restarts the spin on every tap. */}
             <span key={spins} className={spins > 0 ? "spin-once block" : "block"}>
                 <span className="relative block size-5 transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:rotate-[20deg] group-hover:scale-115">
@@ -47,6 +43,6 @@ export function ThemeToggle() {
                     </span>
                 </span>
             </span>
-        </GlassIconButton>
+        </IconButton>
     );
 }

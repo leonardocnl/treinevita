@@ -3,7 +3,8 @@
 /*
  * A sheet that slides up from the bottom (translateY) while the backdrop fades
  * in. It closes by dragging the handle or the title down, tapping the backdrop,
- * pressing Esc or the close button. The panel is opaque paper with ink text.
+ * pressing Esc or the close button. Opaque paper, 32px top radius, a grab
+ * handle and the title as a small headline.
  * While open, Tab stays inside it, and on closing the focus returns to whatever
  * opened it.
  */
@@ -18,9 +19,7 @@ import {
 } from "react";
 
 import { cx } from "./cx";
-import { Icon } from "./icons";
-import { RoundButton } from "./round-button";
-import { Title } from "./text";
+import { IconButton } from "./icon-button";
 
 type SheetProps = {
     open: boolean;
@@ -174,7 +173,7 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
                 onKeyDown={trapTab}
                 style={{ transform: leaving ? "translateY(100%)" : `translateY(${dragY}px)` }}
                 className={cx(
-                    "relative flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-panel bg-paper text-ink outline-none",
+                    "relative flex max-h-[92dvh] w-full max-w-md flex-col rounded-t-sheet bg-paper text-ink outline-none",
                     // Rises once on open; follows the finger while dragged; springs back (settle) on release.
                     leaving ? "leave" : cx("sheet-in", !dragging && "sheet-snap"),
                 )}
@@ -184,21 +183,19 @@ export function Sheet({ open, onClose, title, children }: SheetProps) {
                     onPointerMove={moveDrag}
                     onPointerUp={endDrag}
                     onPointerCancel={endDrag}
-                    className="shrink-0 cursor-grab touch-none select-none px-5 pb-1"
+                    className="shrink-0 cursor-grab touch-none select-none px-margin pb-inner"
                 >
                     <div className="flex h-6 items-center justify-center">
-                        <span aria-hidden className="h-[5px] w-9 rounded-full bg-dot-off" />
+                        <span aria-hidden className="h-1 w-9 rounded-full bg-off" />
                     </div>
-                    <div className="flex min-h-11 items-center justify-between gap-4">
-                        <Title as="h2" size={22} weight="normal" id={titleId}>
+                    <div className="flex min-h-11 items-center justify-between gap-gutter">
+                        <h2 id={titleId} className="action min-w-0 truncate text-20">
                             {title}
-                        </Title>
-                        <RoundButton size={32} tone="canvas" onClick={onClose} aria-label="Fechar">
-                            <Icon name="close" size={16} />
-                        </RoundButton>
+                        </h2>
+                        <IconButton icon="close" onClick={onClose} aria-label="Fechar" />
                     </div>
                 </div>
-                <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-5 pb-[max(env(safe-area-inset-bottom),24px)] text-[17px]">
+                <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-margin pt-inner pb-[max(env(safe-area-inset-bottom),32px)] text-17">
                     {children}
                 </div>
             </div>

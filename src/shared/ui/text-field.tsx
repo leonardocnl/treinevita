@@ -1,9 +1,8 @@
 "use client";
 
 /*
- * A single line of text on the canvas: a 13px label and a large, thin input
- * over a hairline. While focused an ink line draws over the hairline from the
- * left (scaleX, so nothing but transform moves). No box around it.
+ * A single line of text: the 11px label over a tappable 64px tint field
+ * (radius 20) with the value at 20px. Tappable, so it has a fill; no border.
  */
 import { useId, type InputHTMLAttributes } from "react";
 
@@ -16,23 +15,17 @@ type TextFieldProps = {
 export function TextField({ label, value, onChange, ...rest }: TextFieldProps) {
     const id = useId();
     return (
-        <div className="flex flex-col gap-2">
-            <label htmlFor={id} className="text-[13px] text-ink-secondary">
+        <div className="flex flex-col gap-label">
+            <label htmlFor={id} className="label">
                 {label}
             </label>
-            <div className="group relative">
-                <input
-                    id={id}
-                    value={value}
-                    onChange={(event) => onChange(event.target.value)}
-                    className="w-full rounded-none border-b border-hairline bg-transparent pb-2 text-[28px] font-light text-ink outline-none placeholder:text-ink-tertiary"
-                    {...rest}
-                />
-                <span
-                    aria-hidden
-                    className="absolute inset-x-0 bottom-0 h-px origin-left scale-x-0 bg-ink transition-transform duration-(--vita-duration-snappy) ease-snappy group-focus-within:scale-x-100"
-                />
-            </div>
+            <input
+                id={id}
+                value={value}
+                onChange={(event) => onChange(event.target.value)}
+                className="focus-ring h-16 w-full rounded-cta bg-tint px-margin text-20 font-semibold text-ink placeholder:text-secondary"
+                {...rest}
+            />
         </div>
     );
 }

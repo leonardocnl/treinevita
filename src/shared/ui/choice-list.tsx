@@ -1,12 +1,11 @@
 "use client";
 
 /*
- * A list where one row is chosen (goal, experience, theme): 64px rows with
- * hairlines, the name at 17px, an optional detail at 13px and a check on the
- * chosen row. With `variant="cards"` each option is a paper tile with room for
- * more lines (the program models); the chosen tile gets an ink ring. It is a
- * radio group: arrow keys move the choice, and only the chosen option (or the
- * first, when none is) is in the Tab order.
+ * A list where one row is chosen (goal, experience, theme). Rows are tappable,
+ * so they have a fill: 64px rounded rectangles (radius 20), tint when not chosen
+ * and an ink cell with bg text when chosen, 8px apart. `variant="cards"` leaves
+ * room for more lines (the program models). It is a radio group: arrow keys move
+ * the choice, and only the chosen option (or the first, when none is) is in the Tab order.
  */
 import { useRef, type KeyboardEvent, type ReactNode } from "react";
 
@@ -64,7 +63,7 @@ export function ChoiceList<Value extends string | number>({
             role="radiogroup"
             aria-label={label}
             onKeyDown={onKeyDown}
-            className={cards ? "flex flex-col gap-3" : undefined}
+            className="flex flex-col gap-inner"
         >
             {options.map((option, index) => {
                 const checked = index === selected;
@@ -77,25 +76,30 @@ export function ChoiceList<Value extends string | number>({
                         tabIndex={checked || (selected === -1 && index === 0) ? 0 : -1}
                         onClick={() => onChange(option.value)}
                         className={cx(
-                            "pressable flex w-full gap-4 text-left",
-                            cards
-                                ? "items-start rounded-tile bg-paper p-4 ring-inset"
-                                : "min-h-16 items-center border-b border-hairline py-3 last:border-b-0",
-                            cards && (checked ? "ring-[1.5px] ring-ink" : "ring-0"),
+                            "pressable focus-ring flex min-h-16 w-full gap-gutter rounded-cta px-margin text-left",
+                            cards ? "items-start py-label" : "items-center py-inner",
+                            checked ? "bg-ink text-bg" : "bg-tint text-ink",
                         )}
                     >
-                        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                            <span className="text-[17px] font-normal">{option.label}</span>
+                        <span className="flex min-w-0 flex-1 flex-col gap-1">
+                            <span className="text-17 font-semibold">{option.label}</span>
                             {option.detail ? (
-                                <span className="text-[13px] text-ink-secondary">
+                                <span
+                                    className={cx(
+                                        "text-13",
+                                        checked ? "opacity-70" : "text-secondary",
+                                    )}
+                                >
                                     {option.detail}
                                 </span>
                             ) : null}
                             {cards && option.extra ? (
-                                <span className="mt-2 flex flex-col gap-2">{option.extra}</span>
+                                <span className="mt-inner flex flex-col gap-inner">
+                                    {option.extra}
+                                </span>
                             ) : null}
                         </span>
-                        <span className={checked ? "text-ink" : "invisible"}>
+                        <span className={checked ? undefined : "invisible"}>
                             <Icon name="check" size={20} />
                         </span>
                     </button>

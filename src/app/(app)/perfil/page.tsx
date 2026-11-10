@@ -6,7 +6,7 @@ import { getWeightTrend } from "@/modules/progress";
 import { requireAppContext } from "@/modules/tenancy";
 import { getWeeklyGoal } from "@/modules/training";
 
-import { AppDock } from "../../_components/app-dock";
+import { AppNav } from "../../_components/app-nav";
 
 import { Profile } from "./profile";
 
@@ -25,7 +25,7 @@ export default async function ProfilePage() {
     return (
         <>
             <Profile profile={{ ...profile, weeklyGoal }} weightTrend={weight?.trend ?? []} />
-            <AppDock active="perfil" />
+            <AppNav active="perfil" />
         </>
     );
 }

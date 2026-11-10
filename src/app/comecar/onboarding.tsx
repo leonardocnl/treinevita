@@ -22,12 +22,11 @@ import {
 } from "@/modules/training/client";
 import { ChoiceList } from "@/shared/ui/choice-list";
 import { DotMeter } from "@/shared/ui/dot-meter";
-import { StatusDot } from "@/shared/ui/dot";
-import { FloatBar } from "@/shared/ui/float-bar";
-import { GlassIconButton } from "@/shared/ui/glass-icon-button";
-import { Icon } from "@/shared/ui/icons";
+import { Dot } from "@/shared/ui/dot";
+import { BottomBar } from "@/shared/ui/bottom-bar";
+import { IconButton } from "@/shared/ui/icon-button";
 import { List, ListRow } from "@/shared/ui/list";
-import { PillAction } from "@/shared/ui/pill-action";
+import { PrimaryAction } from "@/shared/ui/primary-action";
 import { Caption, Label, Title } from "@/shared/ui/text";
 import { TextButton } from "@/shared/ui/text-button";
 import { TextField } from "@/shared/ui/text-field";
@@ -272,7 +271,7 @@ export function Onboarding({
                                 <>
                                     {candidate.id === suggested ? (
                                         <span className="flex items-start gap-2">
-                                            <StatusDot className="mt-[7px]" />
+                                            <Dot size={6} tone="accent" className="mt-[7px]" />
                                             <span className="flex flex-col">
                                                 <Label as="span" weight="normal">
                                                     Sugerido para você
@@ -333,9 +332,7 @@ export function Onboarding({
                         </div>
                     ) : (
                         <>
-                            <GlassIconButton onClick={back} aria-label="Voltar" className="-ml-2">
-                                <Icon name="chevron-left" size={20} />
-                            </GlassIconButton>
+                            <IconButton icon="chevron-left" onClick={back} aria-label="Voltar" />
                             <div
                                 role="group"
                                 aria-label={`Passo ${step} de ${QUESTIONS}`}
@@ -360,7 +357,6 @@ export function Onboarding({
                             <div className="flex justify-end">
                                 {screen.optional ? (
                                     <TextButton
-                                        tone="secondary"
                                         onClick={() => {
                                             screen.optional?.();
                                             next();
@@ -384,7 +380,7 @@ export function Onboarding({
                         {screen.title}
                     </Title>
                     {screen.hint ? (
-                        <Label size={17} tone="secondary" className="mt-3 max-w-sm">
+                        <Label size={17} className="mt-3 max-w-sm">
                             {screen.hint}
                         </Label>
                     ) : null}
@@ -392,22 +388,24 @@ export function Onboarding({
                 </div>
 
                 {error ? (
-                    <Label role="alert" size={17} tone="accent" className="mt-8">
+                    <Label role="alert" size={17} className="mt-8">
                         {error}
                     </Label>
                 ) : null}
             </main>
 
-            <FloatBar>
-                <PillAction
+            <BottomBar>
+                <PrimaryAction
                     grow
                     disabled={!screen.ready || pending}
                     onClick={step === LAST ? submit : next}
-                    icon={<Icon name={step === LAST ? "check" : "arrow-right"} size={20} />}
-                >
-                    {step === 0 ? "Começar" : step === LAST && pending ? "Salvando" : "Continuar"}
-                </PillAction>
-            </FloatBar>
+                    glyph={step === LAST ? "check" : "arrow"}
+                    label={
+                        step === 0 ? "Começar" : step === LAST && pending ? "Salvando" : "Continuar"
+                    }
+                    meta={step === 0 ? undefined : `${step} de ${QUESTIONS}`}
+                />
+            </BottomBar>
         </>
     );
 }

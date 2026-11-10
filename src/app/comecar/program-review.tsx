@@ -23,8 +23,8 @@ import { cx } from "@/shared/ui/cx";
 import { ExerciseThumb } from "@/shared/ui/exercise-demo";
 import { Icon } from "@/shared/ui/icons";
 import { List, ListRow } from "@/shared/ui/list";
-import { PillAction } from "@/shared/ui/pill-action";
-import { RoundButton } from "@/shared/ui/round-button";
+import { PrimaryAction } from "@/shared/ui/primary-action";
+import { PlusButton } from "@/shared/ui/plus-button";
 import { Sheet } from "@/shared/ui/sheet";
 import { Caption, Label, Title } from "@/shared/ui/text";
 import { TextButton } from "@/shared/ui/text-button";
@@ -101,7 +101,7 @@ export function ProgramReview({ draft, onChange, template, catalog }: ProgramRev
                         {day.title ? <Caption as="span">{day.title}</Caption> : null}
                     </div>
                     {day.slugs.length === 0 ? (
-                        <Label size={17} tone="secondary" className="mt-3">
+                        <Label size={17} className="mt-3">
                             Nenhum exercício neste dia.
                         </Label>
                     ) : (
@@ -127,23 +127,19 @@ export function ProgramReview({ draft, onChange, template, catalog }: ProgramRev
                     )}
                     {day.slugs.length < MAX_EXERCISES_PER_DAY ? (
                         <div className="mt-3 flex h-11 items-center">
-                            <RoundButton
-                                size={32}
-                                tone="canvas"
+                            <PlusButton
                                 onClick={() => setPicker({ kind: "add", day: dayIndex })}
                                 aria-label={`Adicionar exercício ao Treino ${day.label}`}
                             >
-                                <Icon name="plus" size={18} />
-                            </RoundButton>
+                                Adicionar
+                            </PlusButton>
                         </div>
                     ) : null}
                 </section>
             ))}
 
             <div>
-                <TextButton tone="accent" onClick={() => setConfirmClear(true)}>
-                    Limpar ficha
-                </TextButton>
+                <TextButton onClick={() => setConfirmClear(true)}>Limpar ficha</TextButton>
             </div>
 
             <Sheet
@@ -152,7 +148,7 @@ export function ProgramReview({ draft, onChange, template, catalog }: ProgramRev
                 title={picker?.kind === "swap" ? "Trocar exercício" : "Adicionar exercício"}
             >
                 {options.length === 0 ? (
-                    <Label size={17} tone="secondary" className="mt-2">
+                    <Label size={17} className="mt-2">
                         Nenhum outro exercício para esse músculo no catálogo.
                     </Label>
                 ) : (
@@ -182,9 +178,7 @@ export function ProgramReview({ draft, onChange, template, catalog }: ProgramRev
                 )}
                 {picker?.kind === "swap" ? (
                     <div className="mt-6">
-                        <TextButton tone="accent" onClick={removeFromPicker}>
-                            Remover do treino
-                        </TextButton>
+                        <TextButton onClick={removeFromPicker}>Remover do treino</TextButton>
                     </div>
                 ) : null}
             </Sheet>
@@ -194,15 +188,14 @@ export function ProgramReview({ draft, onChange, template, catalog }: ProgramRev
                     Todos os dias ficam vazios. Depois você adiciona os exercícios que quiser.
                 </Label>
                 <div className="mt-6">
-                    <PillAction
-                        icon={<Icon name="trash" size={20} />}
+                    <PrimaryAction
+                        glyph="check"
+                        label="Limpar ficha"
                         onClick={() => {
                             onChange(clearDraft(draft));
                             setConfirmClear(false);
                         }}
-                    >
-                        Limpar ficha
-                    </PillAction>
+                    />
                 </div>
             </Sheet>
         </div>

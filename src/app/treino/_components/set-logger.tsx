@@ -3,15 +3,14 @@
 import { useState } from "react";
 
 import { formatDuration, formatNumber, setsLabel } from "@/shared/format/numbers";
-import { StatusDot } from "@/shared/ui/dot";
+import { Dot } from "@/shared/ui/dot";
 import { DotMeter } from "@/shared/ui/dot-meter";
-import { FloatBar } from "@/shared/ui/float-bar";
-import { Icon } from "@/shared/ui/icons";
+import { BottomBar } from "@/shared/ui/bottom-bar";
 import { List, ListRow } from "@/shared/ui/list";
 import { Panel, PanelNote } from "@/shared/ui/panel";
-import { PillAction } from "@/shared/ui/pill-action";
+import { PrimaryAction } from "@/shared/ui/primary-action";
 import { QuietBand } from "@/shared/ui/quiet-band";
-import { RoundButton } from "@/shared/ui/round-button";
+import { IconButton } from "@/shared/ui/icon-button";
 import { Label } from "@/shared/ui/text";
 import { WHEEL_ITEM_HEIGHT, WheelPicker } from "@/shared/ui/wheel-picker";
 import { cx } from "@/shared/ui/cx";
@@ -133,8 +132,9 @@ export function SetLogger(props: SetLoggerProps) {
                                             align="start"
                                             marker={
                                                 showIncrease ? (
-                                                    <StatusDot
-                                                        size={7}
+                                                    <Dot
+                                                        size={6}
+                                                        tone="accent"
                                                         label="Carga subiu desde a última vez"
                                                         className="mb-6 self-center"
                                                     />
@@ -195,23 +195,24 @@ export function SetLogger(props: SetLoggerProps) {
                 </List>
             ) : null}
 
-            <FloatBar inlineOnDesktop>
+            <BottomBar>
                 {doneSets.length > 0 ? (
-                    <RoundButton onClick={props.onUndo} aria-label="Desfazer a última série">
-                        <Icon name="undo" size={20} />
-                    </RoundButton>
+                    <IconButton
+                        icon="undo"
+                        onClick={props.onUndo}
+                        aria-label="Desfazer a última série"
+                    />
                 ) : null}
 
                 {finished ? (
-                    <PillAction
+                    <PrimaryAction
                         onClick={props.onNext}
                         grow
-                        icon={<Icon name="arrow-right" size={20} />}
-                    >
-                        {props.hasNext ? "Próximo exercício" : "Voltar à lista"}
-                    </PillAction>
+                        glyph="arrow"
+                        label={props.hasNext ? "Próximo exercício" : "Voltar à lista"}
+                    />
                 ) : (
-                    <PillAction
+                    <PrimaryAction
                         grow
                         onClick={() =>
                             props.onLog(
@@ -220,15 +221,12 @@ export function SetLogger(props: SetLoggerProps) {
                                     : { loadKg, reps, durationSeconds: null },
                             )
                         }
-                        icon={<Icon name="check" size={20} />}
-                    >
-                        Confirmar{" "}
-                        <span key={summaryText} className="roll-in tabular-nums">
-                            {summaryText}
-                        </span>
-                    </PillAction>
+                        glyph="check"
+                        label="Confirmar"
+                        meta={summaryText}
+                    />
                 )}
-            </FloatBar>
+            </BottomBar>
         </>
     );
 }

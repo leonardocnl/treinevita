@@ -1,32 +1,26 @@
 /*
- * A button that is only text at 15px, with a 44×44px hit area. Text actions
- * live only in Ajustes and Perfil, plus "Pular" and "Limpar ficha" (DESIGN.md, "Labels").
+ * TextButton: a rounded rectangle (44px high, radius 14, never a pill) with
+ * the label in Mona 900/125 at 13px. `tint` for secondary actions ("Pular",
+ * "Sair"), `ink` for the one that closes a mode ("Concluir").
  */
 import type { ReactNode } from "react";
 
 import { ActionElement, type ActionElementProps } from "./action-element";
-
-const toneClass = {
-    primary: "font-normal",
-    secondary: "text-ink-secondary",
-    accent: "font-normal text-red-text",
-    "accent-strong": "font-medium text-red-text",
-} as const;
+import { cx } from "./cx";
 
 type TextButtonProps = ActionElementProps & {
     children: ReactNode;
-    /**
-     * primary: ink at 400 ("Editar"); secondary: grey at 300 ("Cancelar", "Fechar");
-     * accent: red at 400 ("Descartar treino"); accent-strong: red at 500 ("Concluir").
-     */
-    tone?: keyof typeof toneClass;
+    tone?: "tint" | "ink";
 };
 
-export function TextButton({ tone = "primary", ...props }: TextButtonProps) {
+export function TextButton({ tone = "tint", ...props }: TextButtonProps) {
     return (
         <ActionElement
             {...props}
-            className={`pressable tap-target text-[15px] ${toneClass[tone]}`}
+            className={cx(
+                "pressable focus-ring action inline-flex h-11 shrink-0 items-center justify-center rounded-button px-4 text-13 disabled:opacity-40",
+                tone === "ink" ? "bg-ink text-bg" : "bg-tint text-ink",
+            )}
         />
     );
 }

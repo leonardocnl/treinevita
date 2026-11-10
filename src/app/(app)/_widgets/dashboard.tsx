@@ -3,12 +3,10 @@
 import { useState, useTransition, type ReactNode } from "react";
 
 import type { WidgetDefinition, WidgetKind, WidgetPlacement, WidgetSize } from "@/modules/progress";
-import { concentricGap } from "@/shared/ui/concentric";
-import { GlassIconButton } from "@/shared/ui/glass-icon-button";
+import { IconButton } from "@/shared/ui/icon-button";
 import { Icon } from "@/shared/ui/icons";
 import { List, ListRow } from "@/shared/ui/list";
-import { AccentCircle } from "@/shared/ui/round-action";
-import { RoundButton } from "@/shared/ui/round-button";
+import { PlusLabel } from "@/shared/ui/plus-button";
 import { SegmentedControl, type SegmentedOption } from "@/shared/ui/segmented-control";
 import { Sheet } from "@/shared/ui/sheet";
 import { Caption, Label } from "@/shared/ui/text";
@@ -19,6 +17,8 @@ import { saveLayoutAction } from "../../_components/actions";
 
 type DashboardProps = {
     header: ReactNode;
+    /** The workout to start, between the top bar and the widgets. */
+    hero: ReactNode;
     /** The theme toggle, at the top right next to the edit button. */
     themeToggle: ReactNode;
     initialLayout: WidgetPlacement[];
@@ -27,8 +27,7 @@ type DashboardProps = {
     renders: Record<string, Partial<Record<WidgetSize, ReactNode>>>;
 };
 
-/** The edit chips (32px, radius 16) sit concentric inside the 26px tile. */
-const TILE_INSET = concentricGap(26, 16);
+const TILE_INSET = 8;
 
 const sizeOptions: Record<WidgetSize, SegmentedOption<WidgetSize>> = {
     small: { value: "small", label: "Pequeno", content: <Icon name="tile-small" /> },
@@ -39,6 +38,7 @@ const sizeOptions: Record<WidgetSize, SegmentedOption<WidgetSize>> = {
 /** The Summary grid: widgets in three sizes, editable with the pencil button. */
 export function Dashboard({
     header,
+    hero,
     themeToggle,
     initialLayout,
     catalog,
@@ -99,31 +99,29 @@ export function Dashboard({
                 <div className="min-w-0">{header}</div>
                 {editing ? (
                     <div className="flex items-center gap-3 self-start">
-                        <GlassIconButton onClick={cancel} aria-label="Cancelar edição">
-                            <Icon name="close" size={20} />
-                        </GlassIconButton>
-                        <GlassIconButton
+                        <IconButton icon="close" onClick={cancel} aria-label="Cancelar edição" />
+                        <IconButton
+                            icon="check"
                             onClick={finish}
                             disabled={pending}
                             aria-label={pending ? "Salvando o painel" : "Salvar o painel"}
-                        >
-                            <Icon name="check" size={20} />
-                        </GlassIconButton>
+                        />
                     </div>
                 ) : (
                     <div className="flex items-center gap-3 self-start">
-                        <GlassIconButton
+                        <IconButton
+                            icon="pencil"
                             onClick={() => setEditing(true)}
                             aria-label="Editar o painel"
-                        >
-                            <Icon name="pencil" size={20} />
-                        </GlassIconButton>
+                        />
                         {themeToggle}
                     </div>
                 )}
             </div>
 
-            <div className="mt-6">
+            {hero && !editing ? <div className="mt-intro">{hero}</div> : null}
+
+            <div className="mt-section">
                 <WidgetGrid>
                     {layout.map((item, index) => {
                         const definition = catalog[item.kind];
@@ -141,31 +139,24 @@ export function Dashboard({
                                             style={{ padding: TILE_INSET }}
                                         >
                                             <div className="flex justify-between">
-                                                <RoundButton
-                                                    size={32}
-                                                    tone="ink"
+                                                <IconButton
+                                                    icon="minus"
                                                     onClick={() => update(index, null)}
                                                     aria-label={`Remover ${definition.title}`}
-                                                >
-                                                    <Icon name="minus" size={14} />
-                                                </RoundButton>
+                                                />
                                                 <div className="flex gap-3">
-                                                    <RoundButton
-                                                        size={32}
+                                                    <IconButton
+                                                        icon="chevron-left"
                                                         onClick={() => move(index, -1)}
                                                         disabled={index === 0}
                                                         aria-label={`Mover ${definition.title} para antes`}
-                                                    >
-                                                        <Icon name="chevron-left" size={14} />
-                                                    </RoundButton>
-                                                    <RoundButton
-                                                        size={32}
+                                                    />
+                                                    <IconButton
+                                                        icon="chevron-right"
                                                         onClick={() => move(index, 1)}
                                                         disabled={index === layout.length - 1}
                                                         aria-label={`Mover ${definition.title} para depois`}
-                                                    >
-                                                        <Icon name="chevron-right" size={14} />
-                                                    </RoundButton>
+                                                    />
                                                 </div>
                                             </div>
                                             <div className="flex flex-col items-start gap-2">
@@ -229,9 +220,7 @@ export function Dashboard({
                                             {definition.description}
                                         </Caption>
                                     </span>
-                                    <AccentCircle size={32}>
-                                        <Icon name="plus" size={18} />
-                                    </AccentCircle>
+                                    <PlusLabel size={32} />
                                 </button>
                             </ListRow>
                         );

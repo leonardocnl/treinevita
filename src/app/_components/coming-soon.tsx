@@ -1,6 +1,6 @@
 import { Label, Title } from "@/shared/ui/text";
 
-import { AppDock, type Tab } from "./app-dock";
+import { AppNav, type Tab } from "./app-nav";
 
 /** Placeholder for tabs that arrive in the next phases. */
 export function ComingSoon({
@@ -22,7 +22,7 @@ export function ComingSoon({
                     {text}
                 </Label>
             </main>
-            <AppDock active={tab} />
+            <AppNav active={tab} />
         </>
     );
 }

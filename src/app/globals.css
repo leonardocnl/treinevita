@@ -17,43 +17,31 @@
 }
 
 /*
- * VITA design tokens — "Ponto e linha" (see docs/design/DESIGN.md).
- * Color rule 60/30/10: light = paper 60, ink 30, red 10; dark swaps paper and ink.
+ * VITA design v2 tokens (docs/design/DESIGN.md). Black and white, with red only
+ * for what is live, what was achieved and the primary action's cell.
  */
 :root {
-    --vita-canvas: #f4f2f1;
+    --vita-bg: #f4f2f1;
     --vita-paper: #fcf8f7;
     --vita-ink: #0b0b0d;
-    --vita-ink-secondary: #5b5b60;
-    --vita-hairline: #dedad9;
-    --vita-dot-off: #d6d2d1;
-    /* unlit text that still has to be read (a fraction's goal, placeholders): 3:1 on canvas and paper */
-    --vita-ink-tertiary: #878384;
-    --vita-on-ink-secondary: #a1a1a6;
-    --vita-level-1: #bdb8b7;
-    --vita-level-2: #7d797c;
-    --vita-level-3: #0b0b0d;
-
-    --vita-red: #ff1744;
-    --vita-red-text: #c8102e;
-    --vita-on-red: #ffffff;
-
-    /* dark surfaces (panel, smoke glass) keep the same values in both themes */
-    --vita-panel: #0b0b0d;
-    --vita-on-panel: #fcf8f7;
-    --vita-on-panel-secondary: #9a9a9f;
-    --vita-on-panel-dim: #8a8a8f;
-    --vita-panel-track: #3a3a3f;
-    --vita-panel-divider: rgb(255 255 255 / 0.08);
+    --vita-secondary: #6e6e73;
+    --vita-off: #d6d2cf;
+    --vita-accent: #ff1744;
+    --vita-accent-text: #ff1744;
+    --vita-tint: rgb(11 11 13 / 0.06);
+    --vita-on-accent: #ffffff;
     --vita-scrim: rgb(11 11 13 / 0.28);
 
+    /* PrimaryAction: the inverse surface of the screen. */
+    --vita-cta-bg: var(--vita-ink);
+    --vita-cta-fg: var(--vita-bg);
+    --vita-cta-meta: #8c8c92;
+
     /*
-     * Motion (docs/design/DESIGN.md, "Motion"). Only transform and opacity move,
-     * and motion starts on input, never after the network.
-     *
-     * Two springs, sampled from a damped spring into linear():
-     * - snappy (critically damped, 180ms, no overshoot): press, toggles, chips, the wheel;
-     * - settle (damping 0.8, 280ms, 1.5% overshoot): sheets, screen slides, cards entering.
+     * Motion (DESIGN.md, "Motion"). Only transform and opacity move, and motion
+     * starts on input, never after the network. Two springs, sampled into linear():
+     * - snappy (critically damped, 180ms, no overshoot);
+     * - settle (damping 0.8, 280ms, 1.5% overshoot).
      */
     --vita-spring-snappy: linear(
         0,
@@ -95,44 +83,69 @@
         1
     );
     --vita-duration-settle: 280ms;
-    /* Press-in: fast and plain, so the control reacts under the finger. */
     --vita-duration-press-in: 80ms;
     --vita-ease-exit: cubic-bezier(0.4, 0, 1, 1);
     --vita-duration-exit: 200ms;
-    /* Kept for fades and the pose drawings. */
     --vita-ease-enter: cubic-bezier(0.2, 0, 0, 1);
-    --vita-duration-press: 150ms;
+    --vita-duration-fade: 150ms;
+
+    /*
+     * Legacy "Ponto e linha" names, mapped onto v2 values while the screens are
+     * rebuilt. Removed with the last screen that uses them (feat/design-v2-workout).
+     */
+    --vita-canvas: var(--vita-bg);
+    --vita-ink-secondary: var(--vita-secondary);
+    --vita-hairline: var(--vita-off);
+    --vita-dot-off: var(--vita-off);
+    --vita-ink-tertiary: var(--vita-secondary);
+    --vita-on-ink-secondary: var(--vita-cta-meta);
+    --vita-red: var(--vita-accent);
+    --vita-red-text: var(--vita-accent-text);
+    --vita-on-red: var(--vita-on-accent);
+    --vita-panel: #0b0b0d;
+    --vita-on-panel: #f4f2f1;
+    --vita-on-panel-secondary: #8c8c92;
+    --vita-on-panel-dim: #8c8c92;
+    --vita-panel-track: #2a2a2e;
+    --vita-panel-divider: rgb(255 255 255 / 0.08);
 
     @variant dark {
-        --vita-canvas: #0b0b0d;
+        --vita-bg: #0b0b0d;
         --vita-paper: #161618;
-        --vita-ink: #fcf8f7;
-        --vita-ink-secondary: #a1a1a6;
-        --vita-hairline: #26262a;
-        --vita-dot-off: #2e2e33;
-        --vita-ink-tertiary: #727277;
-        --vita-on-ink-secondary: #5b5b60;
-        --vita-level-1: #4a4a50;
-        --vita-level-2: #96969b;
-        --vita-level-3: #fcf8f7;
-        --vita-red-text: #ff4d6d;
-        --vita-panel: #1a1a1d;
+        --vita-ink: #f4f2f1;
+        --vita-secondary: #8c8c92;
+        --vita-off: #2a2a2e;
+        --vita-accent-text: #ff4d6d;
+        --vita-tint: rgb(244 242 241 / 0.06);
         --vita-scrim: rgb(0 0 0 / 0.5);
+        --vita-cta-bg: var(--vita-paper);
+        --vita-cta-fg: var(--vita-ink);
+        --vita-panel: #161618;
     }
 }
 
 @theme inline {
-    --color-canvas: var(--vita-canvas);
+    --color-bg: var(--vita-bg);
     --color-paper: var(--vita-paper);
     --color-ink: var(--vita-ink);
+    --color-secondary: var(--vita-secondary);
+    --color-off: var(--vita-off);
+    --color-accent: var(--vita-accent);
+    --color-accent-text: var(--vita-accent-text);
+    --color-tint: var(--vita-tint);
+    --color-on-accent: var(--vita-on-accent);
+    --color-scrim: var(--vita-scrim);
+    --color-cta-bg: var(--vita-cta-bg);
+    --color-cta-fg: var(--vita-cta-fg);
+    --color-cta-meta: var(--vita-cta-meta);
+
+    /* Legacy names (see :root). */
+    --color-canvas: var(--vita-canvas);
     --color-ink-secondary: var(--vita-ink-secondary);
     --color-hairline: var(--vita-hairline);
     --color-dot-off: var(--vita-dot-off);
     --color-ink-tertiary: var(--vita-ink-tertiary);
     --color-on-ink-secondary: var(--vita-on-ink-secondary);
-    --color-level-1: var(--vita-level-1);
-    --color-level-2: var(--vita-level-2);
-    --color-level-3: var(--vita-level-3);
     --color-red: var(--vita-red);
     --color-red-text: var(--vita-red-text);
     --color-on-red: var(--vita-on-red);
@@ -142,124 +155,118 @@
     --color-on-panel-dim: var(--vita-on-panel-dim);
     --color-panel-track: var(--vita-panel-track);
     --color-panel-divider: var(--vita-panel-divider);
-    --color-scrim: var(--vita-scrim);
 
     --ease-enter: var(--vita-ease-enter);
     --ease-exit: var(--vita-ease-exit);
     --ease-snappy: var(--vita-spring-snappy);
     --ease-settle: var(--vita-spring-settle);
 
-    /*
-     * Radii outside Tailwind's scale. Nested radii follow the concentric rule
-     * (src/shared/ui/concentric.ts): inner = outer - gap.
-     */
-    --radius-tile: 26px;
-    --radius-panel: 30px;
-    /* inside the panel (30px) with its 20px padding */
-    --radius-inner: 10px;
-
-    --font-sans: var(--font-inter), -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    --font-sans: var(--font-mona), system-ui, -apple-system, sans-serif;
     --font-dot: var(--font-doto), ui-monospace, monospace;
+
+    /* The only type sizes (DESIGN.md, "Size scale"). */
+    --text-10: 10px;
+    --text-11: 11px;
+    --text-12: 12px;
+    --text-13: 13px;
+    --text-15: 15px;
+    --text-17: 17px;
+    --text-20: 20px;
+    --text-24: 24px;
+    --text-28: 28px;
+    --text-34: 34px;
+    --text-36: 36px;
+    --text-56: 56px;
+    --text-58: 58px;
+    --text-64: 64px;
+    --text-128: 128px;
+
+    /* The only spacings, on the 8px grid (DESIGN.md, "Spacing and layout"). */
+    --spacing-section: 64px;
+    --spacing-edit: 48px;
+    --spacing-block: 32px;
+    --spacing-intro: 24px;
+    --spacing-label: 16px;
+    --spacing-gutter: 12px;
+    --spacing-inner: 8px;
+    --spacing-margin: 20px;
+
+    /* Radii. Nested radii follow concentricRadius() in src/shared/ui/concentric.ts. */
+    --radius-cta: 20px;
+    --radius-button: 14px;
+    --radius-selector: 10px;
+    --radius-sheet: 32px;
+    /* Legacy radii (see :root). */
+    --radius-tile: 20px;
+    --radius-panel: 20px;
+    --radius-inner: 14px;
 }
 
-/* Dot-matrix numerals: only for data (weights, loads, reps, counts). */
+/* Headlines: Mona 900, width 125, uppercase, tight (34px and up). */
+@utility headline {
+    font-weight: 900;
+    font-stretch: 125%;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    line-height: 0.92;
+}
+
+/* Labels of action and small headlines (20px and down): Mona 900/125, +3%. */
+@utility action {
+    font-weight: 900;
+    font-stretch: 125%;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    line-height: 1.1;
+}
+
+/* "900/112": values, the active tab, the clock. */
+@utility strong {
+    font-weight: 900;
+    font-stretch: 112%;
+}
+
+/* Small labels: 11px, 600, uppercase, +8%, secondary. */
+@utility label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+    color: var(--vita-secondary);
+}
+
+/* Doto numbers, 36px and up only (DotNumber). Never red. */
 @utility num {
     font-family: var(--font-dot);
     font-weight: 900;
     font-variation-settings: "ROND" 100;
     font-variant-numeric: tabular-nums;
-    letter-spacing: 0.01em;
+    line-height: 0.8;
 }
 
-/* Smoke glass (from Kinne's navbar): translucent black, light sheen from the top,
-   what passes behind is blurred, saturated and darkened so text stays legible. */
-@utility smoke {
-    background-color: rgb(11 11 13 / 0.64);
-    background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.07), rgb(255 255 255 / 0));
-    -webkit-backdrop-filter: blur(14px) saturate(165%) brightness(0.55);
-    backdrop-filter: blur(14px) saturate(165%) brightness(0.55);
-    border: 1px solid rgb(255 255 255 / 0.1);
-    box-shadow: 0 22px 50px -24px rgb(11 11 13 / 0.6);
-    color: var(--vita-on-panel);
+/* The glass navbar: paper at 60% with a 24px background blur. No border, no shadow. */
+@utility glass {
+    background-color: color-mix(in srgb, var(--vita-paper) 60%, transparent);
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
 }
 
-/* Panel glass (from Kinne's "Escolher agora"): solid dark with a sheen and a top light edge. */
-@utility panel {
-    background-color: var(--vita-panel);
-    background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.06), rgb(255 255 255 / 0) 45%);
-    border: 1px solid rgb(255 255 255 / 0.06);
-    box-shadow:
-        inset 0 1px 0 rgb(255 255 255 / 0.12),
-        0 24px 50px -32px rgb(11 11 13 / 0.55);
-    color: var(--vita-on-panel);
-}
-
-/* Quiet glass: inner pill on dark surfaces (selection band of the wheel). */
-@utility quiet {
-    background-color: rgb(255 255 255 / 0.07);
-    border: 1px solid rgb(255 255 255 / 0.08);
-}
-
-/* Floating bar (the "ponto e linha" bottom bar): frosted paper, no shadow, a faint 1px edge
-   so it does not vanish over the light canvas. */
-@utility float-bar {
-    background-color: rgb(252 248 247 / 0.46);
-    -webkit-backdrop-filter: blur(28px) saturate(200%);
-    backdrop-filter: blur(28px) saturate(200%);
-    border: 1px solid rgb(11 11 13 / 0.06);
-    @variant dark {
-        background-color: rgb(30 30 33 / 0.5);
-        border-color: rgb(255 255 255 / 0.08);
+/* Keyboard focus: an accessibility signal, never shown for a tap. */
+@utility focus-ring {
+    outline: none;
+    &:focus-visible {
+        outline: 2px solid var(--vita-ink);
+        outline-offset: 2px;
     }
 }
 
-/* Light glass: small round buttons over the light canvas. */
-@utility glass-light {
-    background-color: rgb(252 248 247 / 0.72);
-    -webkit-backdrop-filter: blur(20px) saturate(165%);
-    backdrop-filter: blur(20px) saturate(165%);
-    border: 1px solid rgb(11 11 13 / 0.05);
-    box-shadow: 0 8px 24px -16px rgb(11 11 13 / 0.45);
-    color: var(--vita-ink);
-    @variant dark {
-        background-color: rgb(28 28 30 / 0.72);
-        border-color: rgb(255 255 255 / 0.08);
-    }
-}
-
-/* Red light rising from the bottom edge behind the active tab (Kinne's limelight, in red). */
-@utility limelight {
-    background-image: radial-gradient(
-        50% 100% at 50% 100%,
-        rgb(255 23 68 / 0.42),
-        rgb(255 23 68 / 0.12) 40%,
-        rgb(255 23 68 / 0) 75%
-    );
-}
-
-/* Summary widget grid: square rows sized from the container width (iOS-like 1×1, 2×1, 2×2). */
-@utility widget-grid {
-    grid-auto-rows: calc((100cqw - 0.75rem) / 2);
-    @media (min-width: 48rem) {
-        grid-auto-rows: calc((100cqw - 2.25rem) / 4);
-    }
-}
-
-/*
- * Motion (docs/design/DESIGN.md, "Motion"). Every animation below moves only
- * transform and opacity, and ends with no transform left on the element
- * (`backwards` fill), so fixed children (the floating bar) are never trapped.
- */
-
-/* Press: down to 0.96 in 80ms under the finger, back with the snappy spring on release. */
+/* Press: 0.97 in 80ms under the finger, back with snappy on release. */
 @utility pressable {
     -webkit-tap-highlight-color: transparent;
-    transition:
-        transform var(--vita-duration-snappy) var(--vita-spring-snappy),
-        opacity var(--vita-duration-snappy) var(--vita-spring-snappy);
-    &:active:not(:disabled) {
-        transform: scale(0.96);
-        opacity: 0.85;
+    transition: transform var(--vita-duration-snappy) var(--vita-spring-snappy);
+    &:active:not(:disabled, [aria-disabled="true"]) {
+        transform: scale(0.97);
         transition-duration: var(--vita-duration-press-in);
         transition-timing-function: ease-out;
     }
@@ -277,6 +284,11 @@
         height: max(100%, 44px);
         transform: translate(-50%, -50%);
     }
+}
+
+/* Top inset of every screen: the safe area or 24px, whichever is larger. */
+@utility pt-top {
+    padding-top: max(env(safe-area-inset-top), 24px);
 }
 
 @keyframes vita-fade-in {
@@ -325,10 +337,10 @@
     }
 }
 
-/* The wheel's tick: the value reaching the center pulses 2%. */
+/* The wheel's step: the center value pulses 3%. */
 @keyframes vita-tick {
     50% {
-        transform: scale(1.02);
+        transform: scale(1.03);
     }
 }
 
@@ -338,17 +350,29 @@
     }
 }
 
-/* Elements enter, they never pop in: fade and rise 8px, lists staggered by 30ms. */
+/* A glyph dot lighting up along the shape (PrimaryAction press). */
+@keyframes vita-light {
+    from {
+        opacity: 0.18;
+    }
+}
+
+/* The session clock dot: a slow pulse. */
+@keyframes vita-pulse {
+    50% {
+        opacity: 0.25;
+    }
+}
+
 @utility rise-in {
     animation: vita-rise var(--vita-duration-settle) var(--vita-spring-settle) backwards;
     animation-delay: calc(var(--stagger, 0) * 30ms);
 }
 
 @utility fade-in {
-    animation: vita-fade-in var(--vita-duration-press) var(--vita-ease-enter) backwards;
+    animation: vita-fade-in var(--vita-duration-fade) var(--vita-ease-enter) backwards;
 }
 
-/* A screen moving forward comes in from the right (content goes left); back, from the left. */
 @utility slide-forward {
     --vita-slide-from: 24px;
     animation: vita-slide-in var(--vita-duration-settle) var(--vita-spring-settle) backwards;
@@ -359,13 +383,11 @@
     animation: vita-slide-in var(--vita-duration-settle) var(--vita-spring-settle) backwards;
 }
 
-/* A number that changed rolls up into place (set values, set counts). */
 @utility roll-in {
     display: inline-block;
     animation: vita-roll var(--vita-duration-snappy) var(--vita-spring-snappy) backwards;
 }
 
-/* Sheets: the panel rises with translateY; after a drag that does not close it, it snaps back. */
 @utility sheet-in {
     animation: vita-sheet-in var(--vita-duration-settle) var(--vita-spring-settle) backwards;
 }
@@ -376,7 +398,23 @@
 
 @utility wheel-tick {
     display: inline-block;
-    animation: vita-tick 80ms ease-out;
+    animation: vita-tick 90ms ease-out;
+}
+
+@utility light-up {
+    animation: vita-light var(--vita-duration-snappy) var(--vita-spring-snappy) backwards;
+    animation-delay: calc(var(--order, 0) * 22ms);
+}
+
+@utility pulse-slow {
+    animation: vita-pulse 2.4s ease-in-out infinite;
+}
+
+/* Widgets reflowing (edit mode): transforms with the settle spring. */
+@utility reflow {
+    transition:
+        transform var(--vita-duration-settle) var(--vita-spring-settle),
+        opacity var(--vita-duration-exit) var(--vita-ease-exit);
 }
 
 @utility leave {
@@ -385,9 +423,9 @@
         opacity var(--vita-duration-exit) var(--vita-ease-exit);
 }
 
-/* Loading placeholders appear only if the wait is noticeable (150ms). */
+/* Loading states appear only if the wait is noticeable (150ms). */
 @utility skeleton {
-    animation: vita-fade-in var(--vita-duration-press) var(--vita-ease-enter) 150ms backwards;
+    animation: vita-fade-in var(--vita-duration-fade) var(--vita-ease-enter) 150ms backwards;
 }
 
 @utility spin-once {
@@ -395,16 +433,16 @@
 }
 
 /*
- * Route transitions (React <ViewTransition>, see src/shared/ui/screen-transition.tsx):
- * forward slides 24px to the left with a fade, back to the right. The floating
- * bar has its own name, so it crossfades in place instead of sliding away.
+ * Route transitions (React <ViewTransition>, src/shared/ui/screen-transition.tsx):
+ * forward slides 24px to the left with a fade, back to the right. The bottom bar
+ * has its own name, so it crossfades in place.
  */
 ::view-transition {
     pointer-events: none;
 }
 
 ::view-transition-old(root) {
-    animation: vita-fade-out var(--vita-duration-press) var(--vita-ease-exit) both;
+    animation: vita-fade-out var(--vita-duration-fade) var(--vita-ease-exit) both;
 }
 
 ::view-transition-new(root) {
@@ -433,11 +471,10 @@
 
 ::view-transition-group(vita-bar) {
     z-index: 10;
-    animation-duration: var(--vita-duration-press);
+    animation-duration: var(--vita-duration-fade);
 }
 
-/* An exercise drawing (an SVG file) used as a mask over the current text color,
-   so the line art follows the ink color and the theme. */
+/* An exercise drawing (an SVG file) used as a mask over the current text color. */
 @utility pose {
     background-color: currentColor;
     -webkit-mask-repeat: no-repeat;
@@ -448,8 +485,6 @@
     mask-size: contain;
 }
 
-/* Start and end poses take turns, about 1.2s each, with a soft crossfade.
-   The end pose runs the same cycle half a turn later. */
 @keyframes vita-pose {
     0%,
     40% {
@@ -468,11 +503,6 @@
     animation: vita-pose 2.4s ease-in-out infinite;
 }
 
-/* Fades the top and bottom rows of a scroller (the selection wheel). */
-@utility fade-y {
-    mask-image: linear-gradient(transparent, #000 34%, #000 66%, transparent);
-}
-
 @utility no-scrollbar {
     scrollbar-width: none;
     &::-webkit-scrollbar {
@@ -480,27 +510,82 @@
     }
 }
 
-/* Reduced motion: every animation becomes an instant change. */
+/*
+ * Legacy "Ponto e linha" utilities, still used by screens that the next design
+ * PRs rebuild (set logger, dashboard grid, toast). Removed with the legacy tokens.
+ */
+@utility panel {
+    background-color: var(--vita-panel);
+    color: var(--vita-on-panel);
+}
+
+@utility quiet {
+    background-color: rgb(255 255 255 / 0.07);
+}
+
+@utility smoke {
+    background-color: rgb(11 11 13 / 0.88);
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+    color: var(--vita-on-panel);
+}
+
+@utility fade-y {
+    mask-image: linear-gradient(transparent, #000 34%, #000 66%, transparent);
+}
+
+@utility widget-grid {
+    grid-auto-rows: calc((100cqw - 0.75rem) / 2);
+    @media (min-width: 48rem) {
+        grid-auto-rows: calc((100cqw - 2.25rem) / 4);
+    }
+}
+
+/*
+ * Reduced motion: nothing slides or scales. Entrances become quick fades,
+ * transitions keep only opacity, loops stop.
+ */
 @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
     *::after {
-        animation-duration: 0.01ms !important;
-        animation-delay: 0ms !important;
-        transition-duration: 0.01ms !important;
+        transition-property: opacity !important;
+        transition-duration: 120ms !important;
+        scroll-behavior: auto !important;
     }
-    ::view-transition-old(*),
-    ::view-transition-new(*),
-    ::view-transition-group(*) {
-        animation-duration: 0s !important;
-        animation-delay: 0s !important;
+    .rise-in,
+    .slide-forward,
+    .slide-back,
+    .roll-in,
+    .sheet-in,
+    .fade-in,
+    .light-up {
+        animation: vita-fade-in 120ms ease-out backwards !important;
+    }
+    .wheel-tick,
+    .spin-once,
+    .pulse-slow,
+    .pose-cycle {
+        animation: none !important;
+    }
+    ::view-transition-old(*) {
+        animation: vita-fade-out 120ms ease-out both !important;
+    }
+    ::view-transition-new(*) {
+        animation: vita-fade-in 120ms ease-out both !important;
     }
 }
 
+html {
+    background: var(--vita-bg);
+}
+
 body {
-    background: var(--vita-canvas);
+    background: var(--vita-bg);
     color: var(--vita-ink);
     font-family: var(--font-sans);
-    font-weight: 300;
+    font-weight: 400;
+    font-stretch: 100%;
     -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
 }
