@@ -31,9 +31,12 @@ VITA runs on Vercel at `https://treinevita.vercel.app`, with Neon as the databas
   `[timing] /treino queries=7 db=12ms total=18ms`. No user data. See them in the Vercel function logs.
   App Router pages stream and server actions have no response headers to set, so there is no
   `Server-Timing` header; the log line is the measurement.
-- **Neon cold start:** the free plan suspends the database after a few idle minutes. The first request
-  after a pause waits for it to wake up, often half a second or more. That is expected; there are no
-  cron pings to keep it awake.
+- **Neon cold start:** the free plan suspends the database after a few idle minutes, and the first
+  query after a pause waits for it to wake up (often half a second or more). To hide most of it, the
+  app shell fires one non-blocking `GET /api/wake` when it loads (`src/app/_components/wake-database.tsx`).
+  The route runs `SELECT 1` and returns 204: no body, no user data, no session needed. It is
+  rate-limited per IP in memory (6 per minute per function instance, best effort; past it, 429), so it
+  can at most keep the database awake. There are still no cron pings. See ADR 0013.
 
 ## Environment variables
 
@@ -70,3 +73,16 @@ Preview URLs change per deployment and are not registered, so Google refuses the
   transaction. It never runs twice for the same person.
 - **Local** development keeps PGlite with mock data (`npm run db:local:reset`). That script refuses to
   run with `DATABASE_URL`, on Vercel or with `NODE_ENV=production`.
+
+## Installing on the iPhone (PWA)
+
+- The manifest comes from `src/app/manifest.ts` (name and short name "VITA", `display: standalone`,
+  start URL `/`, colors from the dark `bg` token, which matches the icon).
+- Icons are generated from `brand/icon/icon.png` (1024 × 1024) by `npx tsx scripts/generate-icons.ts`
+  with `sharp` into `public/icons/` (apple-touch-icon 180, 192, 512, a maskable 512 with safe-area
+  padding, favicons 16 and 32) and `src/app/favicon.ico`. The outputs are committed; run the script
+  again when the icon changes.
+- iOS: `apple-mobile-web-app-capable` and `apple-mobile-web-app-status-bar-style: black-translucent`,
+  so the app draws under the status bar; every screen starts at `max(env(safe-area-inset-top), 24px)`
+  and the bottom bars sit above `env(safe-area-inset-bottom)`.
+- Install: open the site in Safari, Share → "Adicionar à Tela de Início", then open VITA from the icon.
