@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 
 import { THEME_COOKIE, parseTheme } from "@/shared/theme/theme";
 
+import { WakeDatabase } from "./_components/wake-database";
 import "./globals.css";
 
 /**
@@ -33,10 +34,20 @@ const doto = localFont({
 export const metadata: Metadata = {
     title: "VITA",
     description: "Acompanhamento de treinos",
+    applicationName: "VITA",
+    // Opens as an app from the home screen; content runs under the status bar (safe areas in globals.css).
     appleWebApp: {
         capable: true,
         title: "VITA",
-        statusBarStyle: "default",
+        statusBarStyle: "black-translucent",
+    },
+    other: { "apple-mobile-web-app-capable": "yes" },
+    icons: {
+        icon: [
+            { url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" },
+            { url: "/icons/favicon-16.png", sizes: "16x16", type: "image/png" },
+        ],
+        apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],
     },
 };
 
@@ -69,7 +80,10 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
             data-theme={theme === "system" ? undefined : theme}
             className={`${mona.variable} ${doto.variable} h-full`}
         >
-            <body className="min-h-full">{children}</body>
+            <body className="min-h-full">
+                <WakeDatabase />
+                {children}
+            </body>
         </html>
     );
 }
