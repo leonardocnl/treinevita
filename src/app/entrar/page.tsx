@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 
 import { isDevSignInAvailable } from "@/modules/identity";
 import { PrimaryAction } from "@/shared/ui/primary-action";
-import { Label, Title } from "@/shared/ui/text";
 import { Wordmark } from "@/shared/ui/wordmark";
 
 import { devSignInAction } from "../_components/actions";
@@ -26,26 +25,24 @@ export default async function SignInPage({
     const message = erro ? errors[erro] : undefined;
 
     return (
-        <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-between px-6 pb-[max(env(safe-area-inset-bottom),24px)] pt-[max(env(safe-area-inset-top),64px)]">
+        <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col justify-between px-margin pb-[max(env(safe-area-inset-bottom),24px)] pt-top">
             <Wordmark />
 
             <div className="flex flex-col gap-10">
                 <div>
-                    <Title size={40} weight="light" leading="1.08">
-                        Seus treinos, sua evolução.
-                    </Title>
-                    <Label size={17} tone="secondary" className="mt-4">
+                    <h1 className="headline text-34">Seus treinos, sua evolução.</h1>
+                    <p className="text-17 text-secondary mt-label">
                         Registre cada série em segundos e veja o quanto você evoluiu.
-                    </Label>
+                    </p>
                 </div>
 
                 {message ? (
-                    <Label role="alert" tone="accent">
+                    <p className="text-15 font-semibold" role="alert">
                         {message}
-                    </Label>
+                    </p>
                 ) : null}
 
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-gutter">
                     {/* A native GET form, not a <Link>: prefetching would start the OAuth flow. */}
                     <form action="/api/auth/google" method="get">
                         <PrimaryAction type="submit" glyph="arrow" label="Entrar com Google" />
