@@ -324,7 +324,7 @@ export function Onboarding({
 
     return (
         <>
-            <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-margin pt-top pb-[calc(max(34px,env(safe-area-inset-bottom))+96px)]">
+            <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col px-margin pt-top pb-[calc(max(34px,env(safe-area-inset-bottom))+112px)]">
                 <div className="flex h-11 items-center gap-gutter">
                     {step === 0 ? (
                         <Wordmark />

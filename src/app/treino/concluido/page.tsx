@@ -50,7 +50,7 @@ export default async function WorkoutDonePage() {
 
     return (
         <>
-            <main className="pt-top mx-auto w-full max-w-md px-margin pb-[calc(max(34px,env(safe-area-inset-bottom))+96px)]">
+            <main className="pt-top mx-auto w-full max-w-md px-margin pb-[calc(max(34px,env(safe-area-inset-bottom))+112px)]">
                 <p className="label mt-section">Treino concluído</p>
                 <h1 className="headline mt-inner text-58">{summary.name}</h1>
 

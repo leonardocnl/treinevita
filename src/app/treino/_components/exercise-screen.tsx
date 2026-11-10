@@ -173,7 +173,7 @@ export function ExerciseScreen({
                 onPointerCancel={() => {
                     swipe.current = null;
                 }}
-                className="pt-top mx-auto w-full max-w-md touch-pan-y px-margin pb-[calc(max(34px,env(safe-area-inset-bottom))+168px)]"
+                className="pt-top mx-auto w-full max-w-md touch-pan-y px-margin pb-[calc(max(34px,env(safe-area-inset-bottom))+176px)]"
             >
                 <div className="flex h-10 items-center justify-between">
                     <IconButton
@@ -346,29 +346,29 @@ export function ExerciseScreen({
                 </ol>
             </main>
 
-            <div className="pointer-events-none fixed inset-x-0 bottom-[calc(max(34px,env(safe-area-inset-bottom))+88px)] z-20 flex justify-center px-margin">
-                <button
-                    type="button"
-                    onClick={() => onGo(next)}
-                    className="pressable focus-ring pointer-events-auto flex w-full max-w-md items-center justify-between gap-gutter text-left"
-                >
-                    <span className="flex min-w-0 flex-col gap-1">
-                        <span className="label">Próximo</span>
-                        <span className="truncate text-13 font-semibold">
-                            {next ? exercises[next - 1].name : "Lista do treino e finalizar"}
+            <BottomBar
+                above={
+                    <button
+                        type="button"
+                        onClick={() => onGo(next)}
+                        className="pressable focus-ring flex w-full items-center justify-between gap-gutter text-left"
+                    >
+                        <span className="flex min-w-0 flex-col gap-1">
+                            <span className="label">Próximo</span>
+                            <span className="truncate text-13 font-semibold">
+                                {next ? exercises[next - 1].name : "Lista do treino e finalizar"}
+                            </span>
                         </span>
-                    </span>
-                    <Icon name="chevron-right" size={20} />
-                </button>
-            </div>
-
-            <BottomBar>
+                        <Icon name="chevron-right" size={20} />
+                    </button>
+                }
+            >
                 <button
                     type="button"
                     onClick={onUndo}
                     disabled={done === 0}
                     aria-label="Desfazer a última série"
-                    className="pressable focus-ring flex size-16 shrink-0 items-center justify-center rounded-cta bg-tint text-ink disabled:opacity-40"
+                    className="pressable focus-ring flex size-16 shrink-0 items-center justify-center rounded-full bg-tint text-ink disabled:opacity-40"
                 >
                     <Icon name="undo" size={24} />
                 </button>
