@@ -2,7 +2,7 @@
 
 /*
  * Dark theme: follows the system, unless an ancestor forces a theme with
- * data-theme="dark" or data-theme="light" (the theme chosen in Ajustes, set on <html>
+ * data-theme="dark" or data-theme="light" (the theme chosen with the top toggle, set on <html>
  * by the root layout from the vita_theme cookie).
  */
 @custom-variant dark {
@@ -208,11 +208,27 @@
     backdrop-filter: blur(32px) saturate(160%);
 }
 
-/* Clear glass (navbar): thinner and less blurred, so the content behind stays legible as it scrolls. */
+/*
+ * Clear glass (navbar): thinner and less blurred, so the content behind stays legible as it scrolls.
+ * Its own clipped, composited layer (overflow, isolation, translateZ) so iPhone Safari keeps the
+ * blur inside the border radius, and no transition, so a theme switch never animates its color.
+ */
 @utility glass-clear {
     background-color: color-mix(in srgb, var(--vita-paper) 35%, transparent);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
     backdrop-filter: blur(12px) saturate(180%);
+    overflow: hidden;
+    isolation: isolate;
+    transform: translateZ(0);
+    transition: none;
+}
+
+/* A theme switch is instant: ThemeToggle sets this on <html> for one frame. */
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+    transition: none !important;
 }
 
 /* Keyboard focus: an accessibility signal, never shown for a tap. */

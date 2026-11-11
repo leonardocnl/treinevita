@@ -16,6 +16,14 @@ export {
 } from "./application/sessions";
 export { getProfile, saveProfile, type Profile } from "./application/profile";
 export {
+    getAvatar,
+    getAvatarVersion,
+    removeAvatar,
+    saveAvatar,
+    type Avatar,
+} from "./application/avatar";
+export { AVATAR_MAX_BYTES } from "./domain/avatar";
+export {
     EXPERIENCES,
     GOALS,
     HEIGHT_CM,

@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { getProfile } from "@/modules/identity";
-import { getWeightTrend } from "@/modules/progress";
+import { getAvatarVersion, getProfile } from "@/modules/identity";
 import { requireAppContext } from "@/modules/tenancy";
-import { getWeeklyGoal } from "@/modules/training";
+import { getActiveProgram, getWeeklyGoal, programRest } from "@/modules/training";
 
 import { AppNav } from "../../_components/app-nav";
 
@@ -14,17 +13,23 @@ export const metadata: Metadata = { title: "Perfil · VITA" };
 
 export default async function ProfilePage() {
     const context = await requireAppContext();
-    const [profile, weeklyGoal, weight] = await Promise.all([
+    const [profile, weeklyGoal, program, avatarVersion] = await Promise.all([
         getProfile(context),
         getWeeklyGoal(context),
-        getWeightTrend(context),
+        getActiveProgram(context),
+        getAvatarVersion(context),
     ]);
     if (!profile) {
         redirect("/comecar");
     }
     return (
         <>
-            <Profile profile={{ ...profile, weeklyGoal }} weightTrend={weight?.trend ?? []} />
+            <Profile
+                profile={{ ...profile, weeklyGoal }}
+                cycle={program && program.workouts.length > 0 ? program.workouts.length : null}
+                restSeconds={program ? programRest(program) : null}
+                avatarVersion={avatarVersion?.getTime() ?? null}
+            />
             <AppNav active="perfil" />
         </>
     );

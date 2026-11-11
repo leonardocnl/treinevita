@@ -76,7 +76,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     return (
         <html
             lang="pt-BR"
-            // The setting from Ajustes; without it, globals.css follows the system.
+            // The theme from the top toggle; without it, globals.css follows the system.
             data-theme={theme === "system" ? undefined : theme}
             className={`${mona.variable} ${doto.variable} h-full`}
         >

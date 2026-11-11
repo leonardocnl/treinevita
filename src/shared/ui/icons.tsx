@@ -67,6 +67,15 @@ const icons = {
         ),
     },
     moon: { shape: <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9z" /> },
+    /** A door with an arrow leaving it: sign out. */
+    "sign-out": {
+        shape: (
+            <>
+                <path d="M14 4.5h3.5A1.5 1.5 0 0 1 19 6v12a1.5 1.5 0 0 1-1.5 1.5H14" />
+                <path d="M10 8l-4 4 4 4M6 12h9" />
+            </>
+        ),
+    },
 } satisfies Record<string, IconDefinition>;
 
 export type IconName = keyof typeof icons;

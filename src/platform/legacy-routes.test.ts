@@ -16,4 +16,13 @@ describe("legacy routes", () => {
             permanent: true,
         });
     });
+
+    it("sends the old Ajustes screen to Perfil, permanently", async () => {
+        const redirects = (await nextConfig.redirects?.()) ?? [];
+        expect(redirects).toContainEqual({
+            source: "/ajustes",
+            destination: "/perfil",
+            permanent: true,
+        });
+    });
 });
