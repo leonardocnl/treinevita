@@ -8,6 +8,8 @@ export {
     getActiveProgram,
     getWeeklyGoal,
     nextWorkoutInRotation,
+    programRest,
+    setProgramRest,
     setWeeklyGoal,
     type ActiveProgram,
     type PrescribedExercise,

@@ -17,6 +17,8 @@ const nextConfig: NextConfig = {
     redirects: async () => [
         { source: "/corpo", destination: "/perfil", permanent: true },
         { source: "/corpo/:path*", destination: "/perfil", permanent: true },
+        // Ajustes became part of Perfil (theme and sign-out in its header, Créditos at the end).
+        { source: "/ajustes", destination: "/perfil", permanent: true },
     ],
     // Every screen depends on who is signed in, so pages render per request.
     // Cache Components stay off until there is public, cacheable content (ADR 0009).

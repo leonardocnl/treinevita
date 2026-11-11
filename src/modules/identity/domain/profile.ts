@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * The person's profile, asked once in the onboarding and editable in Ajustes.
+ * The person's profile, asked once in the onboarding and editable in Perfil.
  * Weight and height are health data (LGPD, ADR 0011): only what the app uses,
  * never logged.
  */
