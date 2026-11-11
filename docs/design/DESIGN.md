@@ -136,7 +136,7 @@ Focus is shown with the `focus-ring` utility: a 2 px ink outline offset by 2 px,
 
 Square blocks with round accents. The mix is deliberate: blocks carry content, round shapes mark what you act on or where you are.
 
-- **Square (radius 0):** choice rows, text inputs, `TextButton`, the size selector and its cells, sheets, the toast, the rows of Perfil and Ajustes. The radius tokens (`rounded-cta`, `rounded-button`, `rounded-selector`, `rounded-sheet`) are all 0.
+- **Square (radius 0):** choice rows, text inputs, `TextButton`, the size selector and its cells, sheets, the toast, the rows of Perfil. The radius tokens (`rounded-cta`, `rounded-button`, `rounded-selector`, `rounded-sheet`) are all 0.
 - **Pills:** `PrimaryAction` and the navbar (`rounded-full`).
 - **Circles:** the red cell of `PrimaryAction` (52 px, concentric with the pill's end: 32 − 6 = 26), icon-only buttons (40 px), the undo button of the set logging screen (64 px).
 - Dots, ticks and the 4 px bars are fully round: they are marks, not containers.
@@ -217,7 +217,7 @@ P · M · G, segmented: a square container with 2 px padding and the tint backgr
 
 ### Choice rows and inputs
 
-Choice lists (onboarding, Perfil, Ajustes) are tappable rows, so they have a fill: 64 px square-cornered rectangles, `tint` when not chosen and an ink cell with bg text when chosen, 8 px apart. A text input is a 64 px square tint rectangle with the value at 20 px.
+Choice lists (onboarding) are tappable rows, so they have a fill: 64 px square-cornered rectangles, `tint` when not chosen and an ink cell with bg text when chosen, 8 px apart. A text input is a 64 px square tint rectangle with the value at 20 px.
 
 ## 8. Icons
 
@@ -359,7 +359,7 @@ After "Finalizar": the label "TREINO CONCLUÍDO", the workout name as a headline
 
 ### Other screens
 
-Onboarding, Treinos, Evolução, Perfil, Ajustes and Créditos use the same parts: the top bar or a back `IconButton`, a 34 px headline title, `SectionLabel` groups 64 px apart, choice rows, `PrimaryAction` for the one main action. Loading states are the same components dimmed (`off` shapes at the real sizes), without shimmer, fading in after 150 ms.
+Onboarding, Treinos, Evolução and Créditos use the same parts: the top bar or a back `IconButton`, a 34 px headline title, `SectionLabel` groups 64 px apart, choice rows, `PrimaryAction` for the one main action. Loading states are the same components dimmed (`off` shapes at the real sizes), without shimmer, fading in after 150 ms.
 
 ## 12. Voice
 
@@ -386,3 +386,11 @@ Don't:
 - Text that coaches or suggests, except the stagnation fact.
 - Shimmer, bounce, motion that waits for the network.
 - Any third font family.
+
+### Perfil (mockup "Perfil v3")
+
+- Header: a back `IconButton` on the left; on the right, together, the theme toggle and "Sair" (`sign-out` icon), which asks "Sair da conta?" in a sheet.
+- The photo in a 160 px circle, or the initial over a gradient from `off` to `secondary`. A 40 px ink "+" at its bottom right, with a 4 px ring in `bg`, picks or removes the photo.
+- The name in Mona 900/125 uppercase, one word per line, each word sized to 96% of the column (worked out from the font's advance widths, capped at 192 px), line height 0.8. Nothing under it.
+- CORPO and TREINO: the 11 px label, centered. Rows have no box and no border: the label at 17 px on the left, the value at 34 px Mona Black on the right with its unit at 15 px in `secondary`. A tap opens the wheel right under the row.
+- No workout stats. "Créditos" is a centered label link at the end.

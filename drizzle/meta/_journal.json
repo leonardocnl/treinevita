@@ -36,6 +36,13 @@
       "when": 1794306484908,
       "tag": "0004_design_v2_habits_goals",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794354512927,
+      "tag": "0005_user_avatars",
+      "breakpoints": true
     }
   ]
 }

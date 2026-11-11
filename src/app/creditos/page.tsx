@@ -10,7 +10,7 @@ const link = "font-semibold text-ink underline decoration-hairline underline-off
 export default function CreditsPage() {
     return (
         <main className="mx-auto w-full max-w-md px-margin pb-24 pt-top">
-            <IconButton icon="chevron-left" href="/ajustes" aria-label="Voltar aos Ajustes" />
+            <IconButton icon="chevron-left" href="/perfil" aria-label="Voltar ao Perfil" />
             <h1 className="headline text-34 mt-intro">Créditos</h1>
             <div className="mt-intro flex flex-col gap-label">
                 <p className="text-17">

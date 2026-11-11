@@ -240,3 +240,41 @@ export async function applyProgramChoice(
     );
     return true;
 }
+
+/** The rest most of the active plan's exercises use, in seconds, or null without one. */
+export function programRest(program: ActiveProgram): number | null {
+    const counts = new Map<number, number>();
+    for (const exercise of program.workouts.flatMap((workout) => workout.exercises)) {
+        if (exercise.restSeconds !== null) {
+            counts.set(exercise.restSeconds, (counts.get(exercise.restSeconds) ?? 0) + 1);
+        }
+    }
+    let best: number | null = null;
+    for (const [seconds, count] of counts) {
+        if (best === null || count > (counts.get(best) ?? 0)) {
+            best = seconds;
+        }
+    }
+    return best;
+}
+
+/** Sets the same rest on every exercise of the active plan (Perfil, "Descanso"). */
+export async function setProgramRest(context: TenantContext, restSeconds: number): Promise<void> {
+    const program = await getActiveProgram(context);
+    if (!program || program.workouts.length === 0) {
+        return;
+    }
+    const db = await getDb();
+    await db
+        .update(prescribedExercises)
+        .set({ restSeconds, updatedAt: new Date() })
+        .where(
+            and(
+                inTenant(prescribedExercises, context),
+                inArray(
+                    prescribedExercises.workoutId,
+                    program.workouts.map((workout) => workout.workoutId),
+                ),
+            ),
+        );
+}

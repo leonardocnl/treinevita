@@ -1,15 +1,25 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
-import { getProfile, profileSchema, saveProfile } from "@/modules/identity";
+import {
+    AVATAR_MAX_BYTES,
+    getProfile,
+    profileSchema,
+    removeAvatar,
+    saveAvatar,
+    saveProfile,
+} from "@/modules/identity";
 import { recordBodyWeight } from "@/modules/progress";
 import { requireAppContext, requireOnboardingContext } from "@/modules/tenancy";
-import { applyProgramChoice, programChoiceSchema, setWeeklyGoal } from "@/modules/training";
-import { THEMES, themeCookie } from "@/shared/theme/theme";
+import {
+    applyProgramChoice,
+    programChoiceSchema,
+    setProgramRest,
+    setWeeklyGoal,
+} from "@/modules/training";
 import { toLocalDate } from "@/shared/time/local-date";
 
 /*
@@ -105,16 +115,43 @@ export async function recordWeightAction(input: unknown): Promise<ActionResult> 
     return undefined;
 }
 
-const themeSchema = z.enum(THEMES);
+/** The rest wheel in Perfil: 30 s to 5 min, in 15 s steps. */
+const restSchema = z.number().int().min(30).max(300).multipleOf(15);
 
-/** Stores the appearance in a cookie, read by the root layout on every render (top toggle and Ajustes). */
-export async function setThemeAction(input: unknown): Promise<void> {
-    await requireAppContext();
-    const parsed = themeSchema.safeParse(input);
+/** "Descanso" in Perfil: the same rest for every exercise of the active plan. */
+export async function setRestAction(input: unknown): Promise<ActionResult> {
+    const context = await requireAppContext();
+    const parsed = restSchema.safeParse(input);
     if (!parsed.success) {
-        return;
+        return { error: "Confira o descanso e tente de novo." };
     }
-    const cookie = themeCookie(parsed.data, process.env.NODE_ENV === "production");
-    (await cookies()).set(cookie.name, cookie.value, cookie.options);
+    await setProgramRest(context, parsed.data);
     revalidatePath("/", "layout");
+    return undefined;
+}
+
+/*
+ * The profile photo. The browser has already cropped, shrunk and re-encoded
+ * it; here only the size and the real bytes count (identity/domain/avatar.ts).
+ * Server actions take at most 1 MB, so nothing bigger is even read.
+ */
+export async function uploadAvatarAction(form: FormData): Promise<ActionResult> {
+    const context = await requireAppContext();
+    const file = form.get("photo");
+    if (!(file instanceof File) || file.size === 0 || file.size > AVATAR_MAX_BYTES) {
+        return { error: "Escolha uma imagem de até 300 KB." };
+    }
+    const saved = await saveAvatar(context, new Uint8Array(await file.arrayBuffer()));
+    if (!saved) {
+        return { error: "Esse arquivo não é uma imagem que dê para usar." };
+    }
+    revalidatePath("/perfil");
+    return undefined;
+}
+
+export async function removeAvatarAction(): Promise<ActionResult> {
+    const context = await requireAppContext();
+    await removeAvatar(context);
+    revalidatePath("/perfil");
+    return undefined;
 }

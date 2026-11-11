@@ -10,7 +10,7 @@ export type Database = PgDatabase<PgQueryResultHKT, typeof schema>;
 export const LOCAL_DATABASE_PATH = "./.data/pglite";
 
 /**
- * Local database for development and tests. It is real Postgres, so the same
+ * Local database for development and tests, migrated on open. It is real Postgres, so the same
  * migrations, types and future Row-Level Security policies work unchanged.
  */
 export async function createLocalDatabase(path = LOCAL_DATABASE_PATH): Promise<Database> {
@@ -18,7 +18,11 @@ export async function createLocalDatabase(path = LOCAL_DATABASE_PATH): Promise<D
     await mkdir(path, { recursive: true });
     const { PGlite } = await import("@electric-sql/pglite");
     const { drizzle } = await import("drizzle-orm/pglite");
-    return drizzle(countQueries(new PGlite(path)), { schema }) as unknown as Database;
+    const { migrate } = await import("drizzle-orm/pglite/migrator");
+    const db = drizzle(countQueries(new PGlite(path)), { schema });
+    // Applies pending migrations, keeping the data: a new table works without a reset.
+    await migrate(db, { migrationsFolder: "./drizzle" });
+    return db as unknown as Database;
 }
 
 /**

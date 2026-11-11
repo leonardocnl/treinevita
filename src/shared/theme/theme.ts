@@ -22,7 +22,7 @@ export function toggledTheme(current: Theme, systemPrefersDark: boolean): "light
 }
 
 /**
- * The cookie written by both the top toggle and Ajustes: httpOnly (only the
+ * The cookie written by the top toggle (POST /api/theme): httpOnly (only the
  * server reads it, to render the right theme on the first paint), a year long.
  */
 export function themeCookie(theme: Theme, secure: boolean) {

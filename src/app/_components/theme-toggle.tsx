@@ -4,30 +4,52 @@
  * The theme toggle at the top right, after the one in the owner's notfolio:
  * a sun in light mode and a moon in dark mode; a tap spins the icon once
  * while it swaps, and on a mouse it leans 20° and grows a little on hover.
- * Rebuilt with VITA's tokens; only transform and opacity move. It flips what
- * is shown at once, then writes the same vita_theme cookie as Ajustes.
+ * Rebuilt with VITA's tokens; only transform and opacity move.
+ *
+ * The switch is instant: every CSS transition is off for one frame (the
+ * theme-switching class in globals.css) and nothing goes through a React
+ * transition, so no View Transition snapshots the screen. A server action
+ * would refresh the router inside a transition and start one: on iPhone
+ * Safari that snapshot drops the navbar glass's rounded clip and flashes a
+ * gray rectangle. So the cookie is written by a plain fetch instead.
  */
-import { useState, useTransition } from "react";
+import { useState } from "react";
 
 import { parseTheme, toggledTheme } from "@/shared/theme/theme";
 import { IconButton } from "@/shared/ui/icon-button";
 import { Icon } from "@/shared/ui/icons";
 
-import { setThemeAction } from "./profile-actions";
+function applyTheme(theme: "light" | "dark") {
+    const root = document.documentElement;
+    root.classList.add("theme-switching");
+    root.dataset.theme = theme;
+    // Resolves the new colors now, while transitions are still off.
+    const canvas = getComputedStyle(document.body).backgroundColor;
+    for (const meta of document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')) {
+        meta.content = canvas;
+    }
+    // Back on after the first frame painted with the new theme.
+    requestAnimationFrame(() =>
+        requestAnimationFrame(() => root.classList.remove("theme-switching")),
+    );
+}
 
 export function ThemeToggle() {
     const [spins, setSpins] = useState(0);
-    const [, startTransition] = useTransition();
 
     function toggle() {
-        const root = document.documentElement;
         const next = toggledTheme(
-            parseTheme(root.dataset.theme),
+            parseTheme(document.documentElement.dataset.theme),
             window.matchMedia("(prefers-color-scheme: dark)").matches,
         );
-        root.dataset.theme = next;
+        applyTheme(next);
         setSpins((count) => count + 1);
-        startTransition(() => setThemeAction(next));
+        // Best effort: the screen already shows the theme; a failure only loses it on reload.
+        void fetch("/api/theme", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ theme: next }),
+        }).catch(() => undefined);
     }
 
     return (
